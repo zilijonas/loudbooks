@@ -21,6 +21,7 @@ export interface PlaybackSession {
   id: string; bookId: string; revision: number; mode: string; rate: number;
   requestedListeningSeconds: number | null; actualMediaDuration: number; outputPath: string;
   state: string; sourceMap: SessionSourceRange[]; lastObservedPosition: number;
+  kind?: "session" | "continuous-cache";
 }
 export interface ImportJob {
   id: string; stagingPaths: string[]; expectedFiles: number; receivedFiles: number;

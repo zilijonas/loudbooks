@@ -1,4 +1,5 @@
 import { createHashRouter } from 'react-router'
+import { lazy, Suspense } from 'react'
 import { Placeholder } from '../pages/Placeholder'
 import { ErrorFallback } from './ErrorFallback'
 import { Shell } from './Shell'
@@ -15,7 +16,10 @@ export const routes = [
   { path: 'settings', route: 'settings', title: 'settings.title' },
 ] as const
 
+const Harness = import.meta.env.VITE_DATA_HARNESS === '1' ? lazy(() => import('../../e2e/ImportHarness')) : null
+
 export const router = createHashRouter([
+  ...(Harness ? [{ path: '/__harness/import', element: <Suspense><Harness /></Suspense> }] : []),
   {
     path: '/',
     element: <Shell />,

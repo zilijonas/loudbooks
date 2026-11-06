@@ -1,18 +1,31 @@
+function contextual(error: unknown, action: string) {
+  const message = new Error(`${action}: ${String(error)}`, { cause: error });
+  if (typeof error === "object" && error !== null && "name" in error && typeof error.name === "string") message.name = error.name;
+  return message;
+}
 export class MediaStorage {
   private async root() {
-    return (await (await navigator.storage.getDirectory()).getDirectoryHandle("loud-books", { create: true })).getDirectoryHandle("v1", { create: true });
+    let root: FileSystemDirectoryHandle;
+    try { root = await navigator.storage.getDirectory(); }
+    catch (error) { throw contextual(error, "OPFS root"); }
+    try { return await (await root.getDirectoryHandle("loud-books", { create: true })).getDirectoryHandle("v1", { create: true }); }
+    catch (error) { throw contextual(error, "OPFS application directory"); }
   }
   private async parent(path: string, create = false) {
     const parts = path.split("/").filter(Boolean);
     if (!parts.length || parts.some(part => part === "." || part === "..")) throw new Error("Invalid storage path");
     const name = parts.pop()!;
     let directory = await this.root();
-    for (const part of parts) directory = await directory.getDirectoryHandle(part, { create });
+    for (const part of parts) {
+      try { directory = await directory.getDirectoryHandle(part, { create }); }
+      catch (error) { if (!create) throw error; throw contextual(error, "OPFS staging directory"); }
+    }
     return { directory, name };
   }
   async handle(path: string, create = false) {
     const { directory, name } = await this.parent(path, create);
-    return directory.getFileHandle(name, { create });
+    try { return await directory.getFileHandle(name, { create }); }
+    catch (error) { if (!create) throw error; throw contextual(error, "OPFS file handle"); }
   }
   async read(path: string) { return (await this.handle(path)).getFile(); }
   async delete(path: string) {
