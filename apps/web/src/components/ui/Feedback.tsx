@@ -114,15 +114,17 @@ export function StatusPanel({ tone = 'neutral', icon, title, body, progress, ind
   )
 }
 
-export function EmptyState({ icon, title, body, action, art, headingLevel = 2 }: { icon?: IconName; title: string; body?: string; action?: Action; art?: ReactNode; headingLevel?: 2 | 3 }) {
+/** `hero`: the empty library (larger heading, wide actions passed as children). */
+export function EmptyState({ icon, title, body, action, art, headingLevel = 2, variant, children }: { icon?: IconName; title: string; body?: string; action?: Action; art?: ReactNode; headingLevel?: 2 | 3; variant?: 'hero'; children?: ReactNode }) {
   const H = headingLevel === 2 ? 'h2' : 'h3'
   return (
-    <div className="lb-empty">
+    <div className="lb-empty" data-variant={variant}>
       {art}
       {icon && <Ic name={icon} size={28} />}
       <H>{title}</H>
       {body && <p>{body}</p>}
       {action && <Button variant="secondary" size="md" style={{ height: 44, padding: '0 18px', fontSize: 15 }} onClick={action.onClick}>{action.label}</Button>}
+      {children}
     </div>
   )
 }

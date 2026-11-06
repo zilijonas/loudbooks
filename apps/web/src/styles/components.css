@@ -19,6 +19,7 @@
   .lb-btn[data-size="dialog"] { height: 52px; padding: 0 22px; }
   .lb-btn[data-size="lg"] { height: 56px; font-size: 17px; gap: 10px; }
   .lb-btn[data-full] { width: 100%; }
+  .lb-btn[data-shape="tile"] { border-radius: var(--lb-radius-md); padding: 0 12px; font-size: 15px; }
   .lb-btn[data-variant="primary"] { background: var(--lb-action); color: var(--lb-on-action); }
   .lb-btn[data-variant="primary"]:active:not(:disabled) { background: var(--lb-action-pressed); }
   .lb-btn[data-variant="secondary"] { background: var(--lb-surface-sunken); color: var(--lb-text); font-weight: 600; }
@@ -251,6 +252,10 @@
   .lb-empty h2 { margin: 0; font: 700 20px/1.25 var(--lb-font-display); overflow-wrap: anywhere; }
   .lb-empty p { margin: 0; font: 400 15px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); max-width: 300px; }
   .lb-empty .lb-btn { margin-top: 6px; }
+  .lb-empty[data-variant="hero"] { gap: 18px; padding: 20px 0 8px; }
+  .lb-empty[data-variant="hero"] h2 { font: 800 26px/1.15 var(--lb-font-display); letter-spacing: -.02em; }
+  .lb-empty[data-variant="hero"] p { font-size: 16px; max-width: 330px; text-wrap: pretty; }
+  .lb-empty[data-variant="hero"] .lb-btn { margin-top: 0; }
 
   .lb-statusrow { display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--lb-border); }
   .lb-statusrow > .lb-ic { color: var(--lb-text-muted); }

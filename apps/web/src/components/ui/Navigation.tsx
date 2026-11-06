@@ -60,7 +60,7 @@ export function BackButton({ label, onClick, iconOnly }: { label: string; onClic
 export interface NavItem { label: string; icon: IconName; current?: boolean; onClick: () => void }
 
 /** Desktop sidebar (≥ 768 px): logo, Add book, sections, offline status at the bottom. */
-export function Sidebar({ items, onAdd, offlineReady }: { items: NavItem[]; onAdd: () => void; offlineReady: boolean }) {
+export function Sidebar({ items, onAdd, offlineReady, offline }: { items: NavItem[]; onAdd: () => void; offlineReady: boolean; offline?: boolean }) {
   return (
     <nav aria-label={t('common.library')} className="lb-sidebar">
       <Logo />
@@ -75,7 +75,7 @@ export function Sidebar({ items, onAdd, offlineReady }: { items: NavItem[]; onAd
       </div>
       <div role="status" className="lb-sidebar-status" data-ready={offlineReady || undefined}>
         <Ic name={offlineReady ? 'check' : 'spin'} size={18} />
-        <span>{t(offlineReady ? 'welcome.ready' : 'welcome.preparing')}</span>
+        <span>{t(offline ? 'common.offline' : offlineReady ? 'welcome.ready' : 'welcome.preparing')}</span>
       </div>
     </nav>
   )

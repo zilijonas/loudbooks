@@ -68,6 +68,8 @@ export class ImportCoordinator {
     if (!result.ok) throw new ImportError("form.unsupported");
     return result.value;
   }
+  /** Probes one file in the worker (the form's per-file "Checking file…" state). Throws ImportError("form.unsupported"). */
+  check(file: File) { return this.analyze(file); }
   async importBook(request: ImportRequest): Promise<Book> {
     const title = request.title.trim();
     if (!title) throw new ImportError("form.titleError");

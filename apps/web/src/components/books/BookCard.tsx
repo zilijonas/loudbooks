@@ -53,7 +53,16 @@ export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, 
   const pct = book.status === 'completed' ? 1 : book.durationSec ? book.positionSec / book.durationSec : 0
   const lift = { transform: `translateY(-5px) scale(1.035) rotate(${index % 2 ? 1 : -1}deg)` }
   return (
-    <div role="listitem" className="lb-card" data-missing={missing || undefined}>
+    // A new book pops in (success preset, never from 0); a deleted one fades out inside the grid's AnimatePresence.
+    <motion.div
+      role="listitem"
+      className="lb-card"
+      data-missing={missing || undefined}
+      initial={isNew ? p.success.initial : false}
+      animate={p.success.animate}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      transition={p.success.transition}
+    >
       <motion.div
         className="lb-card-lift"
         data-hover={hover || undefined}
@@ -84,7 +93,7 @@ export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, 
         </div>
         <IconButton className="lb-iconbtn lb-card-menu" label={t('library.moreTitle', { title: book.title })} icon="more" size={44} tone="muted" onClick={onMenu} />
       </div>
-    </div>
+    </motion.div>
   )
 }
 
