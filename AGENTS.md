@@ -65,3 +65,6 @@ Typecheck + lint + relevant tests pass, behaviour verified in a real browser (We
 - Radix Collapsible/Accordion zero `transition-duration` inline while measuring: animate a child. Radix Tabs focus() on mousedown shows a focus ring in Chromium: pre-focus with `{focusVisible:false}`.
 - Motion exits hang under jsdom without WAAPI; mock `motion` or test exits in Playwright.
 - Playwright WebKit is not Safari. Real Safari checks: `~/ai/bin/with-display-awake`, create a new window via AppleScript `make new document`, remember its `window id`, address only that id, check the tab URL is localhost before injecting JS, capture only that window with `screencapture -l <id>`. Never use `front window`, `current tab` or System Events keystrokes; the owner's own Safari windows must stay untouched.
+
+## Test policy (owner rule)
+Write only tests that catch real failures: domain logic (session planning, progress/resume rules, import commit/recovery, quota), codec/compiler output validity, transfer protocol + signaling security, and a few end-to-end user flows (import, play, timer stop, offline launch, transfer). No tests of CSS, class names, static copy, snapshots, prop pass-through, or "component renders". One owning layer per behaviour; no duplicate matrices across layers. Visual parity is checked by screenshots, not by tests.
