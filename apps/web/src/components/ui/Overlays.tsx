@@ -1,7 +1,7 @@
 import * as RAlert from '@radix-ui/react-alert-dialog'
 import * as RDialog from '@radix-ui/react-dialog'
 import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react'
-import { useRef, useState, useSyncExternalStore, type ComponentPropsWithRef, type PointerEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type ComponentPropsWithRef, type PointerEvent, type ReactNode } from 'react'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
 import { Button, IconButton } from './Button'
@@ -18,6 +18,18 @@ export function useIsDesktop() {
 }
 
 type Kind = 'sheet' | 'dialog'
+
+let openModals = 0
+/** Radix marks the page behind a modal aria-hidden but leaves its buttons focusable (axe aria-hidden-focus). `inert` makes it true for keyboard and screen readers too. */
+function useInertApp(open: boolean) {
+  useEffect(() => {
+    if (!open) return
+    const app = document.querySelector('.lb-app')
+    openModals++
+    app?.setAttribute('inert', '')
+    return () => { if (--openModals === 0) app?.removeAttribute('inert') }
+  }, [open])
+}
 
 /** Radix returns focus to its own Trigger, which screens don't use (dialogs open from state). Remember the opener instead. */
 function useReturnFocus() {
@@ -114,6 +126,7 @@ export interface DialogProps {
 function DialogImpl({ open, onOpenChange, title, dismissible = true, children, kind, wide, dragToDismiss = true }: DialogProps & { kind: Kind; wide?: boolean; dragToDismiss?: boolean }) {
   const block = (e: Event) => { if (!dismissible) e.preventDefault() }
   const focus = useReturnFocus()
+  useInertApp(open)
   return (
     <RDialog.Root open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
@@ -167,6 +180,7 @@ export function AlertDialog({ open, title, body, confirmLabel, cancelLabel, dang
   const input = useRef<HTMLInputElement>(null)
   const locked = !!typedConfirm && typed.trim().toLowerCase() !== typedConfirm.toLowerCase()
   const focus = useReturnFocus()
+  useInertApp(open)
   return (
     <RAlert.Root open={open} onOpenChange={(o) => { if (!o) onCancel() }}>
       <AnimatePresence onExitComplete={() => setTyped('')}>

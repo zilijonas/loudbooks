@@ -250,7 +250,7 @@ try {
               await page.waitForTimeout(800)
               const r = diffText(d, await page.evaluate(COLLECT))
               console.log(`${r.bad.length ? 'DIFF' : 'ok  '} ${name}-${width} matched=${r.matched} only-ours=${r.unmatchedOurs} only-design=${r.unmatchedDesign} medianDy=${r.med.toFixed(1)}${r.bad.length ? `\n   ${r.bad.slice(0, 8).map((p) => `"${p.t.slice(0, 40)}" dx=${p.dx.toFixed(1)} dy=${p.dy.toFixed(1)} dw=${p.dw.toFixed(1)} dh=${p.dh.toFixed(1)}`).join('\n   ')}${r.bad.length > 8 ? `\n   ... +${r.bad.length - 8} more` : ''}` : ''}`)
-            } finally { await page.close() }
+            } finally { await page.close(); await ctx.setOffline(false) }
             continue
           }
           if (a.axe) {
@@ -265,7 +265,7 @@ try {
               await page.addScriptTag({ path: createRequire(import.meta.url).resolve('axe-core/axe.min.js') })
               const v = await page.evaluate(async () => (await window.axe.run({ exclude: ['.lb-cover'] }, { resultTypes: ['violations'], runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'], rules: { 'label-content-name-mismatch': { enabled: false } } })).violations.map((x) => `${x.impact} ${x.id}: ${x.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | ')}`))
               console.log(`${v.length ? 'VIOLATIONS' : 'ok'} ${name}-${width}-${theme}${v.length ? `\n  ${v.join('\n  ')}` : ''}`)
-            } finally { await page.close() }
+            } finally { await page.close(); await ctx.setOffline(false) }
             continue
           }
           const right = await shot(ctx, `${app}${hash}`, async (page) => {

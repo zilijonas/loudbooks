@@ -121,6 +121,7 @@
   --lb-focus:#2A1E17;
   --lb-success:#2C774B; /* design #2F7D4F is 4.3:1 on success-bg; darkened for AA (LB-7) */
   --lb-success-bg:#DDF3E4;
+  --lb-on-success:#FFFFFF;
   --lb-warning:#8A5A00;
   --lb-warning-bg:#FFF3CF;
   --lb-danger:#B42318;
@@ -157,6 +158,7 @@
     --lb-focus:#FFC93C;
     --lb-success:#6FD39A;
     --lb-success-bg:#1E3327;
+    --lb-on-success:#1C1512; /* white on the dark theme's light green is 1.9:1 (LB-11) */
     --lb-warning:#FFC93C;
     --lb-warning-bg:#3A2E12;
     --lb-danger:#FF8A80;
@@ -193,6 +195,7 @@
   --lb-focus:#FFC93C;
   --lb-success:#6FD39A;
   --lb-success-bg:#1E3327;
+    --lb-on-success:#1C1512; /* white on the dark theme's light green is 1.9:1 (LB-11) */
   --lb-warning:#FFC93C;
   --lb-warning-bg:#3A2E12;
   --lb-danger:#FF8A80;
