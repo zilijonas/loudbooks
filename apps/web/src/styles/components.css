@@ -199,6 +199,7 @@
   .lb-ov-slide { position: relative; width: 100%; max-width: 440px; max-height: 88%; display: flex; flex-direction: column; }
   .lb-ov[data-wide] .lb-ov-slide { max-width: 520px; }
   .lb-ov[data-kind="sheet"] .lb-ov-slide { max-width: 100%; }
+  .lb-ov-panel:focus-visible { outline: none; } /* the panel is only a focus anchor for the dialog; WebKit showed a ring on it after programmatic focus */
   .lb-ov-panel { position: relative; min-height: 0; max-height: 100%; display: flex; flex-direction: column; background: var(--lb-surface-raised); color: var(--lb-text); border-radius: var(--lb-radius-xl); box-shadow: var(--lb-shadow-sheet); padding-bottom: 8px; overflow: hidden; outline: none; }
   .lb-ov[data-kind="sheet"] .lb-ov-panel { border-radius: var(--lb-radius-xl) var(--lb-radius-xl) 0 0; padding-bottom: max(34px, var(--lb-safe-bottom)); }
   .lb-ov-head { flex: none; touch-action: none; padding: 8px 12px 4px 20px; }

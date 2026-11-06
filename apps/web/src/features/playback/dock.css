@@ -5,5 +5,7 @@
 @layer components {
   /* While the phone mini-player shows, pages and the toast lift by its height (72 px) plus 4. */
   :root[data-dock] { --lb-dock: 76px; }
+  /* The desktop player bar is in the page flow (88 px), so only the toast lifts above it. */
+  :root[data-bar] { --lb-bar: 88px; }
   .lb-dock-mini { position: fixed; left: 12px; right: 12px; bottom: calc(12px + var(--lb-safe-bottom)); z-index: 30; max-width: 480px; margin: 0 auto; }
 }

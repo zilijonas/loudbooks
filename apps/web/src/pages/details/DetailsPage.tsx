@@ -104,6 +104,7 @@ function Details({ view }: { view: BookView }) {
                     status={done || i < ci ? 'done' : current ? 'current' : 'upcoming'}
                     playing={false}
                     positionInChapterSec={current ? pos - c.globalStart : undefined}
+                    next={i === ci && !current && !done}
                     onPlay={() => play(c.id)}
                   />
                 )

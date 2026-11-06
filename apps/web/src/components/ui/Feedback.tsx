@@ -58,10 +58,10 @@ export function ActionList({ items }: { items: MenuAction[] }) {
 }
 
 /** One toast at a time. The live region stays mounted so screen readers hear each new message. */
-export function Toast({ toast, bottom }: { toast: { id: string | number; text: string } | null; bottom?: string }) {
+export function Toast({ toast, bottom, left }: { toast: { id: string | number; text: string } | null; bottom?: string; left?: string }) {
   const p = usePreset()
   return (
-    <div role="status" aria-live="polite" className="lb-toast-region" style={bottom ? { bottom } : undefined}>
+    <div role="status" aria-live="polite" className="lb-toast-region" style={bottom || left ? { bottom, left } : undefined}>
       <AnimatePresence mode="popLayout">
         {toast && <motion.div key={toast.id} className="lb-toast" {...p.toast}>{toast.text}</motion.div>}
       </AnimatePresence>

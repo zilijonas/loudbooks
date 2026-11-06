@@ -69,7 +69,7 @@ function Paste() {
   }
   return (
     <>
-      <p className="lb-receive-lead">{emph(t('receive.pasteHelp'), t('send.copyLink'))}</p>
+      <p className="lb-receive-lead" style={{ textWrap: 'wrap' }}>{emph(t('receive.pasteHelp'), t('send.copyLink'))}</p>
       <form className="lb-receive-paste" onSubmit={(e) => { e.preventDefault(); connect() }}>
         <TextField label={t('receive.pasteLabel')} value={value} inputMode="url" placeholder={t('receive.pastePlaceholder')} onChange={(v) => { setValue(v); setError(false) }} error={error ? t('receive.pasteError') : undefined} />
       </form>

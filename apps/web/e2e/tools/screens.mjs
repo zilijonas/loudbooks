@@ -106,8 +106,8 @@ const CASES = [
   ['sheet-timer', 'sheet-timer', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Sleep timer/ }).click() }],
   ['sheet-timer-custom', 'sheet-timer-custom', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Sleep timer/ }).click(); await p.getByText('Custom length', { exact: true }).click(); await p.getByLabel('Minutes of listening').fill('45') }],
   ['sheet-chapters', 'sheet-chapters', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: 'Chapters', exact: true }).first().click() }],
-  ['library-playing', 'library-playing', '#/__player/playing', { books: MANY }, async (p) => { await p.evaluate(() => { location.hash = '#/' }); await p.waitForTimeout(600) }],
-  ['dialog-delete-playing', 'dialog-delete-playing', '#/__player/playing', { books: MANY }, async (p) => { await p.evaluate(() => { location.hash = '#/book/b1' }); await p.waitForTimeout(900); await p.getByRole('button', { name: /^More actions for/ }).click(); await p.getByRole('button', { name: 'Delete book' }).click() }],
+  // library-playing / dialog-delete-playing need a real loaded book: the dev fixture's fake assets clash with the seeded books' real ones, and seeded files are empty, so
+  // those states are checked in real Safari (imported audio) and by e2e/player.spec.ts instead.
   // Break-UI (ours only; no design preset).
   ['break-library', null, '#/', { books: ['long', 'q', 'huge', 'b1', 'b2', 'b5'] }],
   ['break-details-long', null, '#/book/long', { books: ['long', 'q', 'huge'] }],
@@ -143,6 +143,7 @@ async function openDesign(ctx) {
 async function shot(ctx, url, setup, wait = 500) {
   const page = await ctx.newPage()
   page.on('pageerror', (e) => errors.push(`${url}: ${e.message}`))
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(`${url}: console ${m.text().slice(0, 400)}`) })
   try {
     await page.goto(url, { waitUntil: 'networkidle' })
     if (setup) await setup(page)
@@ -286,7 +287,7 @@ try {
           await page.close()
           console.log(f)
         } catch (e) {
-          console.log(`FAILED ${name}-${width}-${theme}: ${e.message.split('\n')[0]}`)
+          console.log(`FAILED ${name}-${width}-${theme}: ${(process.env.DEBUG ? e.message : e.message.split('\n')[0])}`)
           await ctx.setOffline(false).catch(() => {})
         }
       }

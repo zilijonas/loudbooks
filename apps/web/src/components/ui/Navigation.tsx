@@ -88,9 +88,9 @@ export function InstallGuide({ onDone }: { onDone: () => void }) {
     <>
       <p className="lb-speed-summary">{t('install.body')}</p>
       <ol className="lb-steps">
-        <li><span><Ic name="share" size={22} className="lb-share-blue" /></span>{emph(t('install.step1'), t('install.share'))}</li>
-        <li><span><Ic name="addHome" size={22} /></span>{emph(t('install.step2'), t('install.addHome'), t('install.add'))}</li>
-        <li><img src={`${import.meta.env.BASE_URL}icons/apple-touch-icon-180.png`} alt="" />{emph(t('install.step3'), t('install.appName'))}</li>
+        <li><span><Ic name="share" size={22} className="lb-share-blue" /></span><span>{emph(t('install.step1'), t('install.share'))}</span></li>
+        <li><span><Ic name="addHome" size={22} /></span><span>{emph(t('install.step2'), t('install.addHome'), t('install.add'))}</span></li>
+        <li><img src={`${import.meta.env.BASE_URL}icons/apple-touch-icon-180.png`} alt="" /><span>{emph(t('install.step3'), t('install.appName'))}</span></li>
       </ol>
       <p className="lb-hint" style={{ lineHeight: 1.5 }}>{t('install.other')}</p>
       <Button variant="strong" size="dialog" onClick={onDone}>{t('install.done')}</Button>

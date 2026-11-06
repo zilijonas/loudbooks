@@ -21,10 +21,12 @@ export function PlayerDock() {
   const mini = show && !desktop
   // The library grid card and the details cover share `cover-{id}` with this dock; two live members of one id hide each other.
   const coverLayoutId = pathname === '/' || (!!view && pathname === `/book/${view.summary.id}`) ? null : undefined
+  const bar = show && desktop
   useLayoutEffect(() => {
     document.documentElement.toggleAttribute('data-dock', mini)
-    return () => document.documentElement.removeAttribute('data-dock')
-  }, [mini])
+    document.documentElement.toggleAttribute('data-bar', bar)
+    return () => { document.documentElement.removeAttribute('data-dock'); document.documentElement.removeAttribute('data-bar') }
+  }, [mini, bar])
   return (
     <>
       <AnimatePresence>

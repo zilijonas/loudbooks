@@ -16,16 +16,18 @@ export interface ChapterRowProps {
   status: 'upcoming' | 'current' | 'done'
   playing?: boolean
   positionInChapterSec?: number
+  /** The chapter Play would start (nothing heard yet): its number is accented like the current row's glyph. */
+  next?: boolean
   onPlay: () => void
 }
 
 /** One chapter in a ChapterList: check when done, play/pause glyph when current, otherwise its number. */
-export function ChapterRow({ index, title, durationSec, status, playing, positionInChapterSec, onPlay }: ChapterRowProps) {
+export function ChapterRow({ index, title, durationSec, status, playing, positionInChapterSec, next, onPlay }: ChapterRowProps) {
   const current = status === 'current'
   return (
     <li>
       <button type="button" className="lb-chapter" aria-current={current || undefined} onClick={onPlay}>
-        <span className="lb-chapter-lead" data-tone={status === 'done' ? 'done' : current ? 'current' : undefined}>
+        <span className="lb-chapter-lead" data-tone={status === 'done' ? 'done' : current || next ? 'current' : undefined}>
           {status === 'done' ? <Ic name="check" size={22} /> : current ? <Ic name={playing ? 'pause' : 'play'} size={22} /> : index + 1}
         </span>
         <span className="lb-chapter-text">

@@ -76,7 +76,7 @@ export function Shell() {
         {dock && <PlayerDock />}
         <SendHost />
       </div>
-      <Toast toast={toast} bottom={`calc(${desktop ? 28 : 24}px + var(--lb-safe-bottom) + var(--lb-dock, 0px))`} />
+      <Toast toast={toast} left={desktop && !welcome ? 'calc(50% + 124px)' : undefined} bottom={`calc(${desktop ? 28 : 24}px + var(--lb-safe-bottom) + var(--lb-dock, 0px) + var(--lb-bar, 0px))`} />
       <BottomSheet open={installOpen} onOpenChange={(o) => useUi.setState({ installOpen: o })} title={t('install.title')}>
         <InstallGuide onDone={() => useUi.setState({ installOpen: false })} />
       </BottomSheet>
