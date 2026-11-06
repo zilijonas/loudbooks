@@ -4,6 +4,7 @@ import { ImportCoordinator } from '../src/features/import/ImportCoordinator'
 import { db } from '../src/services/db/database'
 import { MediaStorage } from '../src/services/opfs/MediaStorage'
 import { openPlayer, startListening } from '../src/features/playback/api'
+import { markWelcomeDone } from '../src/features/settings/settings'
 
 export default function ImportHarness() {
   const [files, setFiles] = useState<File[]>([])
@@ -15,6 +16,7 @@ export default function ImportHarness() {
     const coordinator = new ImportCoordinator()
     try {
       const book = await coordinator.importBook({ title: 'Browser test', files })
+      await markWelcomeDone() // the harness bypasses Welcome; without this `#/` redirects there and hides the dock
       const assets = await db.assets.where('bookId').equals(book.id).toArray()
       const hashes: Record<string, string> = {}
       for (const asset of assets) {
