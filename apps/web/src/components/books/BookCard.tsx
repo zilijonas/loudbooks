@@ -17,8 +17,8 @@ export function bookMeta(book: BookSummary) {
 }
 
 export function playLabel(book: BookSummary, playing: boolean) {
-  const verb = playing ? t('common.pause') : book.status === 'completed' ? t('details.again') : book.positionSec > 0 ? t('common.resume') : t('common.play')
-  return `${verb}: ${book.title}`
+  const key = playing ? 'library.pauseTitle' : book.status === 'completed' ? 'library.againTitle' : book.positionSec > 0 ? 'library.resumeTitle' : 'library.playTitle'
+  return t(key, { title: book.title })
 }
 
 export function NewBadge({ floating }: { floating?: boolean }) {
@@ -53,7 +53,16 @@ export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, 
   const pct = book.status === 'completed' ? 1 : book.durationSec ? book.positionSec / book.durationSec : 0
   const lift = { transform: `translateY(-5px) scale(1.035) rotate(${index % 2 ? 1 : -1}deg)` }
   return (
-    <div role="listitem" className="lb-card" data-missing={missing || undefined}>
+    // A new book pops in (success preset, never from 0); a deleted one fades out inside the grid's AnimatePresence.
+    <motion.div
+      role="listitem"
+      className="lb-card"
+      data-missing={missing || undefined}
+      initial={isNew ? p.success.initial : false}
+      animate={p.success.animate}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      transition={p.success.transition}
+    >
       <motion.div
         className="lb-card-lift"
         data-hover={hover || undefined}
@@ -63,7 +72,7 @@ export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, 
         animate={hover && 'transform' in p.hoverLift.whileHover ? lift : { transform: 'translateY(0px) scale(1) rotate(0deg)' }}
         transition={p.hoverLift.transition}
       >
-        <motion.button type="button" className="lb-card-open" aria-label={book.title} onClick={onOpen} whileTap={p.press.whileTap} transition={p.press.transition}>
+        <motion.button type="button" className="lb-card-open" aria-label={t('library.openTitle', { title: book.title })} onClick={onOpen} whileTap={p.press.whileTap} transition={p.press.transition}>
           <BookCover book={book} layoutId={`cover-${book.id}`} art={art} />
         </motion.button>
         {!missing && (
@@ -82,9 +91,9 @@ export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, 
             {meta.text}
           </span>
         </div>
-        <IconButton className="lb-iconbtn lb-card-menu" label={`${t('common.more')}: ${book.title}`} icon="more" size={44} tone="muted" onClick={onMenu} />
+        <IconButton className="lb-iconbtn lb-card-menu" label={t('library.moreTitle', { title: book.title })} icon="more" size={44} tone="muted" onClick={onMenu} />
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -112,7 +121,7 @@ export function ContinueCard({ book, chapterLine, isPlaying, onOpen, onToggle, a
           <Progress value={book.durationSec ? book.positionSec / book.durationSec : 0} label={chapterLine} height={6} tone="accent" decorative />
         </span>
       </button>
-      <motion.button type="button" className="lb-roundplay" aria-label={isPlaying ? `${t('common.pause')}: ${book.title}` : `${t('common.resume')}: ${book.title}`} onClick={onToggle} whileTap={p.press.playButton.whileTap} transition={p.press.transition}>
+      <motion.button type="button" className="lb-roundplay" aria-label={t(isPlaying ? 'library.pauseTitle' : 'library.resumeTitle', { title: book.title })} onClick={onToggle} whileTap={p.press.playButton.whileTap} transition={p.press.transition}>
         <Ic name={isPlaying ? 'pause' : 'play'} size={22} />
       </motion.button>
     </section>

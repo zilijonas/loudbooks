@@ -114,12 +114,12 @@
   --lb-action-hover:#FF7A5C;
   --lb-action-pressed:#E8522F;
   --lb-on-action:#2A1E17;
-  --lb-accent-text:#C23E22;
+  --lb-accent-text:#B9391F; /* design #C23E22 is 4.25:1 on surface-sunken; darkened for AA (LB-7) */
   --lb-strong:#2A1E17;
   --lb-on-strong:#FBF4EA;
   --lb-highlight:#FFC93C;
   --lb-focus:#2A1E17;
-  --lb-success:#2F7D4F;
+  --lb-success:#2C774B; /* design #2F7D4F is 4.3:1 on success-bg; darkened for AA (LB-7) */
   --lb-success-bg:#DDF3E4;
   --lb-warning:#8A5A00;
   --lb-warning-bg:#FFF3CF;

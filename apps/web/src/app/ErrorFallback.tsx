@@ -1,13 +1,18 @@
+import { Ic } from '../components/icons'
+import { Button } from '../components/ui/Button'
 import { t } from '../i18n'
 
+/** A8: storage could not be opened (private window, cleared site data). Outside the Shell, so plain links. */
 export function ErrorFallback() {
   return (
-    <main role="alert" className="mx-auto max-w-[520px] p-6">
-      <h1 className="font-display text-title-l">{t('dataError.title')}</h1>
-      <p className="mt-2 text-body-m text-text-muted">{t('dataError.body')}</p>
-      <button type="button" className="mt-4 min-h-11 rounded-pill bg-action px-6 text-label-l text-on-action" onClick={() => location.reload()}>
-        {t('common.tryAgain')}
-      </button>
+    <main role="alert" className="lb-dataerror">
+      <div><Ic name="drive" size={30} /></div>
+      <h1>{t('dataError.title')}</h1>
+      <p>{t('dataError.body')}</p>
+      <div>
+        <Button size="dialog" onClick={() => location.reload()}>{t('common.tryAgain')}</Button>
+        <Button size="dialog" variant="secondary" onClick={() => { location.hash = '#/settings'; location.reload() }}>{t('dataError.openSettings')}</Button>
+      </div>
     </main>
   )
 }

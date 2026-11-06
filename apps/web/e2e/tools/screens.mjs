@@ -1,0 +1,170 @@
+#!/usr/bin/env node
+// Screen parity: each case renders a design preset (design/Loud Books App.dc.html, props set via its __dcSetProps) next to our
+// route seeded with the same fixture books, stitched into .qa/screens/<case>-<width>-<theme>-<browser>.png.
+// Judge by looking at the images. Servers must run (with-servers.sh); run through the memory queue.
+//   node e2e/tools/screens.mjs [--only a,b] [--widths 390,1440] [--themes light,dark] [--browser chromium] [--ours-only]
+import { chromium, firefox, webkit } from '@playwright/test'
+import { mkdir, readdir, writeFile } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
+import { parseArgs } from 'node:util'
+
+const { values: a } = parseArgs({
+  options: {
+    only: { type: 'string' }, widths: { type: 'string', default: '390,320,768,1440' }, themes: { type: 'string', default: 'light,dark' },
+    browser: { type: 'string', default: 'chromium' }, out: { type: 'string', default: '.qa/screens' }, 'ours-only': { type: 'boolean', default: false },
+  },
+})
+const DESIGN = 'http://127.0.0.1:8123/'
+const APP = 'http://127.0.0.1:5173/loudbooks/'
+const root = resolve(process.cwd(), '../..')
+const zeland = resolve(root, 'fixtures/downloads/zeland')
+const zFiles = (await readdir(zeland).catch(() => [])).filter((n) => n.endsWith('.mp3')).sort().map((n) => resolve(zeland, n))
+const MANY = ['b1', 'b2', 'b5', 'b4', 'b6', 'b3']
+const store = (page, patch) => page.evaluate(async (p) => (await import('/loudbooks/src/app/store.ts')).useUi.setState(p), patch)
+const toast = (page, text) => page.evaluate(async (s) => (await import('/loudbooks/src/app/store.ts')).showToast(s), text)
+const pwaReady = (page, needRefresh = false) => page.evaluate(async (n) => (await import('/loudbooks/src/app/store.ts')).useUi.setState({ pwa: { needRefresh: n, offlineReady: true, apply() {} } }), needRefresh)
+const file = async (path, name) => ({ name, mimeType: 'audio/mpeg', buffer: await import('node:fs/promises').then((f) => f.readFile(path)) })
+const demoFiles = async () => [await file(zFiles[1], 'Quiet Rooms 10 - The Attic.mp3'), await file(zFiles[2], 'Quiet Rooms 2 - The Reading Room.mp3'), await file(zFiles[0], 'Quiet Rooms 1 - The Front Door.mp3')]
+const pick = async (page, files) => { await page.locator('.lb-dropzone input[type=file]').setInputFiles(files); await page.waitForFunction(() => !document.querySelector('.lb-edit-sub .lb-spin'), null, { timeout: 30_000 }) }
+
+// [name, design preset, app hash, seed, setup(page), init flags]
+const CASES = [
+  ['welcome', 'welcome', '#/welcome', { welcome: true }],
+  ['sheet-install', 'sheet-install', '#/welcome', { welcome: true }, async (p) => store(p, { installOpen: true })],
+  ['library-empty', 'library-empty', '#/', {}],
+  ['library-empty-safari', 'library-empty-safari', '#/', {}, null, { safari: true }],
+  ['library-one', 'library-one', '#/', { books: ['b1'] }],
+  ['library-many', 'library-many', '#/', { books: MANY }],
+  ['library-no-results', 'library-no-results', '#/', { books: MANY }, async (p) => p.getByRole('searchbox').fill('zebra')],
+  ['library-missing', 'library-missing', '#/', { books: MANY, missing: ['b6'] }],
+  ['library-new', 'library-new', '#/', { books: ['b4', 'b1', 'b2', 'b5', 'b6', 'b3'] }, async (p) => { await store(p, { newBookId: 'b4' }); await toast(p, 'Book added. Ready to listen offline.') }],
+  ['library-offline', 'library-offline', '#/', { books: MANY }, async (p, ctx) => ctx.setOffline(true)],
+  ['library-update', 'library-update', '#/', { books: MANY }, async (p) => pwaReady(p, true)],
+  ['data-unavailable', 'data-unavailable', '#/', null, null, { noIdb: true }],
+  ['add-empty', 'add-empty', '#/add', {}],
+  ['add-multi', 'add-multi', '#/add', {}, async (p) => { await p.getByLabel('Title').fill('A Field Guide to Quiet Rooms'); await pick(p, await demoFiles()) }],
+  ['add-reorder', 'add-reorder', '#/add', {}, async (p) => {
+    await p.getByLabel('Title').fill('A Field Guide to Quiet Rooms'); await pick(p, await demoFiles())
+    const box = await p.locator('.lb-grip').first().boundingBox()
+    await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await p.mouse.down(); await p.mouse.move(box.x + box.width / 2, box.y + 40, { steps: 4 }); await p.mouse.move(box.x + box.width / 2, box.y + 70, { steps: 4 })
+  }],
+  ['add-single', 'add-single', '#/add', {}, async (p) => { await p.getByLabel('Title').fill('The Orchard at the End of the Line'); await pick(p, [await file(zFiles[1], 'orchard-unabridged.m4b')]); await p.getByRole('switch').click() }],
+  ['add-errors', 'add-errors', '#/add', {}, async (p) => {
+    const [, b, c] = await demoFiles(); await pick(p, [b, c, { name: 'Quiet Rooms extras.flac', mimeType: 'audio/flac', buffer: Buffer.from('fLaC not really') }])
+    await p.getByRole('button', { name: 'Save', exact: true }).click()
+  }],
+  ['add-discard', 'add-discard', '#/add', {}, async (p) => { await p.getByLabel('Title').fill('A Field Guide to Quiet Rooms'); await pick(p, await demoFiles()); await p.getByRole('button', { name: 'Cancel' }).first().click() }],
+  ['edit', 'edit', '#/book/b1/edit', { books: MANY }],
+  ['details', 'details', '#/book/b1', { books: MANY }],
+  ['details-long', 'details-long', '#/book/b2', { books: MANY }],
+  ['details-single', 'details-single', '#/book/b6', { books: MANY }],
+  ['details-completed', 'details-completed', '#/book/b3', { books: MANY }],
+  ['details-new', 'details-new', '#/book/b4', { books: ['b4', 'b1', 'b2', 'b5', 'b6', 'b3'] }, async (p) => { await store(p, { newBookId: 'b4' }); await toast(p, 'Book added. Ready to listen offline.') }],
+  ['sheet-menu', 'sheet-menu', '#/book/b1', { books: MANY }, async (p) => p.getByRole('button', { name: 'More actions for Salt & Static' }).click()],
+  ['dialog-delete', 'dialog-delete', '#/book/b2', { books: MANY }, async (p) => { await p.getByRole('button', { name: /^More actions for/ }).click(); await p.getByRole('button', { name: 'Delete book' }).click() }],
+  ['settings', 'settings', '#/settings', { books: MANY, sessionBytes: 2e6 }, null, { persisted: true, standalone: true }],
+  ['settings-standard', 'settings-standard', '#/settings', { books: MANY, sessionBytes: 2e6 }],
+  ['settings-update', 'settings-update', '#/settings', { books: MANY, sessionBytes: 2e6 }, async (p) => pwaReady(p, true), { persisted: true, standalone: true }],
+  ['dialog-clear', 'dialog-clear', '#/settings', { books: MANY, sessionBytes: 2e6 }, async (p) => { await p.getByRole('button', { name: 'Clear temporary files' }).click() }, { persisted: true, standalone: true }],
+  ['dialog-delete-library', 'dialog-delete-library', '#/settings', { books: MANY }, async (p) => { await p.getByRole('button', { name: 'Delete library…' }).click(); await p.getByLabel('Type delete to confirm').fill('del') }, { persisted: true, standalone: true }],
+  // Break-UI (ours only; no design preset).
+  ['break-library', null, '#/', { books: ['long', 'q', 'huge', 'b1', 'b2', 'b5'] }],
+  ['break-details-long', null, '#/book/long', { books: ['long', 'q', 'huge'] }],
+  ['break-details-q', null, '#/book/q', { books: ['long', 'q', 'huge'] }],
+  ['break-details-huge', null, '#/book/huge', { books: ['long', 'q', 'huge'] }],
+  ['break-edit-long', null, '#/book/long/edit', { books: ['long', 'q', 'huge'] }],
+]
+const HEIGHT = { 320: 1500, 390: 1700, 768: 1300, 1440: 1000 }
+const only = a.only ? new Set(a.only.split(',')) : null
+const widths = a.widths.split(',').map(Number)
+const themes = a.themes.split(',')
+const engines = { chromium, webkit, firefox }
+const browser = await engines[a.browser].launch()
+const out = resolve(a.out)
+await mkdir(out, { recursive: true })
+const errors = []
+
+async function shot(ctx, url, setup, wait = 700) {
+  const page = await ctx.newPage()
+  page.on('pageerror', (e) => errors.push(`${url}: ${e.message}`))
+  try {
+    await page.goto(url, { waitUntil: 'networkidle' })
+    if (setup) await setup(page)
+    await page.evaluate(() => document.fonts.ready)
+    await page.waitForTimeout(wait)
+    return await page.screenshot({ animations: 'disabled' })
+  } finally {
+    await page.close()
+  }
+}
+
+const SAFARI_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+async function newCtx(width, theme, safari) {
+  const ctx = await browser.newContext({ viewport: { width, height: HEIGHT[width] ?? 1000 }, colorScheme: theme, reducedMotion: 'reduce', ...(safari ? { userAgent: SAFARI_UA } : {}) })
+  // Per-case flags travel in the app URL's query (?f=a,b) so one context (and its module cache) serves every case.
+  await ctx.addInitScript((theme) => {
+    try { localStorage.setItem('loudbooks:theme', theme) } catch { /* ignore */ }
+    if (location.port !== '5173') return
+    const flags = new URLSearchParams(location.search).get('f')?.split(',') ?? []
+    if (flags.includes('noIdb')) indexedDB.open = () => { throw new DOMException('The user denied permission to access the database.', 'SecurityError') }
+    if (flags.includes('persisted') && navigator.storage) navigator.storage.persisted = async () => true
+    if (flags.includes('standalone')) { const mm = window.matchMedia.bind(window); window.matchMedia = (q) => (q.includes('display-mode') ? { ...mm(q), matches: true } : mm(q)) }
+  }, theme)
+  return ctx
+}
+
+try {
+  for (const width of widths) for (const theme of themes) {
+    const ctxs = {}
+    try {
+      for (const [name, preset, hash, seed, setup, flags = {}] of CASES) {
+        if (only && !only.has(name)) continue
+        const kind = flags.safari ? 'safari' : 'plain'
+        const ctx = (ctxs[kind] ??= await newCtx(width, theme, flags.safari))
+        const q = Object.keys(flags).filter((k) => flags[k] && k !== 'safari').join(',')
+        const app = `${APP}${q ? `?f=${q}` : ''}`
+        try {
+          let left = null
+          if (preset && !a['ours-only']) {
+            left = await shot(ctx, `${DESIGN}${encodeURI('Loud Books App.dc.html')}`, async (page) => {
+              await page.waitForFunction(() => typeof window.__dcSetProps === 'function' && window.__dcRootName?.())
+              await page.evaluate((props) => window.__dcSetProps(window.__dcRootName(), props), { preset, theme, statusBar: false, live: false })
+            }, 900)
+          }
+          // Our side: seed through the dev server's own modules, then open the route.
+          if (seed) {
+            const page = await ctx.newPage()
+            await page.goto(`${APP}#/__seed`, { waitUntil: 'networkidle' })
+            await page.evaluate(async (s) => (await import('/loudbooks/e2e/tools/seed.ts')).seed(s), seed)
+            await page.close()
+          }
+          const right = await shot(ctx, `${app}${hash}`, async (page) => {
+            await page.waitForTimeout(300)
+            if (!seed?.welcome && seed) await pwaReady(page)
+            if (setup) await setup(page, ctx)
+          })
+          await ctx.setOffline(false)
+          const page = await ctx.newPage()
+          const b64 = (buf) => `data:image/png;base64,${buf.toString('base64')}`
+          await page.setViewportSize({ width: (left ? width * 2 + 48 : width + 32), height: 400 })
+          await page.setContent(`<body style="margin:0;background:${theme === 'dark' ? '#000' : '#fff'};font:600 13px system-ui;color:#888"><div style="display:flex;gap:16px;padding:16px;align-items:flex-start">
+            ${left ? `<figure style="margin:0"><figcaption>design · ${preset}</figcaption><img src="${b64(left)}" style="width:${width}px;display:block;outline:1px solid #f0f"></figure>` : ''}
+            <figure style="margin:0"><figcaption>ours · ${name} · ${a.browser}</figcaption><img src="${b64(right)}" style="width:${width}px;display:block;outline:1px solid #0af"></figure></div></body>`)
+          await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode())))
+          const f = join(out, `${name}-${width}-${theme}-${a.browser}.png`)
+          await writeFile(f, await page.screenshot({ fullPage: true }))
+          await page.close()
+          console.log(f)
+        } catch (e) {
+          console.log(`FAILED ${name}-${width}-${theme}: ${e.message.split('\n')[0]}`)
+          await ctx.setOffline(false).catch(() => {})
+        }
+      }
+    } finally {
+      for (const c of Object.values(ctxs)) await c.close()
+    }
+  }
+} finally {
+  await browser.close()
+}
+if (errors.length) console.log(`page errors:\n${[...new Set(errors)].join('\n')}`)

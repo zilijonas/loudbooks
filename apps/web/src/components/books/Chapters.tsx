@@ -62,7 +62,8 @@ interface RowProps extends EditableChapter {
   onRename: (title: string) => void
   onMoveUp?: () => void
   onMoveDown?: () => void
-  onRemove: () => void
+  /** Omitted when files can't be removed (editing a saved book). */
+  onRemove?: () => void
   handle?: ReactNode
 }
 
@@ -83,7 +84,7 @@ function RowBody({ index, count, title, filename, durationSec, bytes, status, er
       <span className="lb-edit-actions">
         <button type="button" disabled={index === 0 || !onMoveUp} onClick={onMoveUp} aria-label={t('form.moveUp', { title })}><Ic name="up" size={18} /></button>
         <button type="button" disabled={index === count - 1 || !onMoveDown} onClick={onMoveDown} aria-label={t('form.moveDown', { title })}><Ic name="dn" size={18} /></button>
-        <button type="button" data-remove="" onClick={onRemove} aria-label={t('form.removeFile', { title })}><Ic name="x" size={18} /></button>
+        {onRemove && <button type="button" data-remove="" onClick={onRemove} aria-label={t('form.removeFile', { title })}><Ic name="x" size={18} /></button>}
       </span>
     </div>
   )
@@ -126,7 +127,7 @@ export interface EditableChapterListProps {
   items: EditableChapter[]
   onReorder: (from: number, to: number) => void
   onRename: (id: string, title: string) => void
-  onRemove: (id: string) => void
+  onRemove?: (id: string) => void
 }
 
 /** Reorderable chapter files (dnd-kit): lifted row scales 1.03 with the lift shadow over a dashed placeholder. */
@@ -149,7 +150,7 @@ export function EditableChapterList({ items, onReorder, onRename, onRemove }: Ed
     index: i,
     count: items.length,
     onRename: (v: string) => onRename(c.id, v),
-    onRemove: () => onRemove(c.id),
+    onRemove: onRemove && (() => onRemove(c.id)),
     onMoveUp: () => onReorder(i, i - 1),
     onMoveDown: () => onReorder(i, i + 1),
   })

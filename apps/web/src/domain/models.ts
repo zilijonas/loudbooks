@@ -34,4 +34,6 @@ export interface TransferJob {
 export interface Settings {
   id: "settings"; theme: "system" | "light" | "dark"; locale: string;
   defaultSpeed: number; generatedPartsPreference: boolean; schemaVersion: number;
+  /** Set once "Open my library" is pressed on Welcome. */
+  welcomeDone?: boolean;
 }

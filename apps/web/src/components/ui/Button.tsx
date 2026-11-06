@@ -13,13 +13,15 @@ export interface ButtonProps extends MotionButtonProps {
   icon?: IconName
   loading?: boolean
   fullWidth?: boolean
+  /** `tile`: 48 px, 16 px radius (Edit / Send / More on Book details). */
+  shape?: 'pill' | 'tile'
   children: ReactNode
 }
 
 const ICON = { sm: 16, md: 20, dialog: 20, lg: 22 } as const
 
 /** Pill button. Press compresses with a spring (motion preset); loading swaps the icon for a spinner and keeps the label. */
-export function Button({ variant = 'primary', size = 'md', icon, loading, fullWidth, disabled, children, type = 'button', ...rest }: ButtonProps) {
+export function Button({ variant = 'primary', size = 'md', icon, loading, fullWidth, shape, disabled, children, type = 'button', ...rest }: ButtonProps) {
   const p = usePreset()
   const glyph = loading ? 'spin' : icon
   return (
@@ -29,6 +31,7 @@ export function Button({ variant = 'primary', size = 'md', icon, loading, fullWi
       data-variant={variant}
       data-size={size}
       data-full={fullWidth || undefined}
+      data-shape={shape === 'tile' ? 'tile' : undefined}
       data-icon={glyph ? '' : undefined}
       disabled={disabled}
       aria-busy={loading || undefined}
@@ -36,7 +39,7 @@ export function Button({ variant = 'primary', size = 'md', icon, loading, fullWi
       transition={p.press.transition}
       {...rest}
     >
-      {glyph && <Ic name={glyph} size={loading ? 18 : ICON[size]} />}
+      {glyph && <Ic name={glyph} size={loading || shape === 'tile' ? 18 : ICON[size]} />}
       {children}
     </motion.button>
   )
