@@ -1,6 +1,7 @@
 import { createHashRouter } from 'react-router'
 import { lazy, Suspense } from 'react'
 import { Placeholder } from '../pages/Placeholder'
+import { PlayerPage } from '../pages/player/PlayerPage'
 import { ErrorFallback } from './ErrorFallback'
 import { Shell } from './Shell'
 
@@ -22,14 +23,21 @@ const devRoutes = import.meta.env.DEV
   ? [{ path: '__gallery', lazy: async () => ({ Component: (await import('../pages/dev-gallery/Gallery')).Gallery }) }]
   : []
 
+// Dev-only player presets for side-by-side parity screenshots (e2e/tools/compare.mjs).
+const devPlayer = import.meta.env.DEV
+  ? [{ path: '/__player/:preset', lazy: async () => ({ Component: (await import('../pages/player/DevPlayerFixture')).DevPlayerFixture }) }]
+  : []
+
 export const router = createHashRouter([
   ...(Harness ? [{ path: '/__harness/import', element: <Suspense><Harness /></Suspense> }] : []),
+  ...devPlayer,
   {
     path: '/',
     element: <Shell />,
     errorElement: <ErrorFallback />,
     children: [
-      ...routes.map((r) =>
+      { path: 'player', element: <PlayerPage /> },
+      ...routes.filter((r) => r.route !== 'player').map((r) =>
         'index' in r
           ? { index: true, element: <Placeholder route={r.route} title={r.title} /> }
           : { path: r.path, element: <Placeholder route={r.route} title={r.title} /> },
