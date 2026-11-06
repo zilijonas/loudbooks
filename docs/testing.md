@@ -127,6 +127,24 @@ this pass (22 s, 29 s). The measurements are in the Session compiler section bel
   fires when the worker swap counts as an update, which it does not for a page that saw the very first install.
   Restart now also reloads on the controller change. Found by R3.
 
+## Live deployment smoke (LB-13)
+
+Run after every deploy: `pnpm --filter web exec playwright test -c playwright.live.config.ts --project=<engine>` (one engine per run, through the memory queue). It needs no local servers: it opens https://zilijonas.github.io/loudbooks/ and uses the production signaling Worker https://loudbooks-signaling.lijonas-it.workers.dev.
+
+Steps, real UI only (the production build has no test harness), committed `fixtures/small/chapter-{1,2,3}.mp3` (24 KB each, MP3):
+1. Welcome, Open my library, Add book, three files, Save book; details page shows the title.
+2. Play from the start; the audio element's `currentTime` passes 0.5 s; pause.
+3. Wait until the service worker controls the page, go offline, open a new tab on the live URL: the library lists the book.
+4. A second device (always Google Chrome, see the firewall note in `playwright.transfer.config.ts`) adds a book and sends it; the device under test pastes the pairing link, shows the 6-digit code, the sender types it, the book arrives verified, opens and plays.
+
+| Date | Commit | Device | Engine | Result | Time |
+|---|---|---|---|---|---|
+| 2026-11-07 | 8e81c06 (deployed) | Mac mini M4, macOS 26.6.2 | Google Chrome (Playwright 1.65.0 `channel: chrome`) | passed | 14.0 s |
+| 2026-11-07 | 8e81c06 (deployed) | Mac mini M4, macOS 26.6.2 | Playwright WebKit | passed | 10.8 s |
+| 2026-11-07 | 8e81c06 (deployed) | Mac mini M4, macOS 26.6.2 | Playwright Firefox (receiver; Chrome sender) | passed | 13.3 s |
+
+Real Safari 26.6.2 on the same Mac, own window via AppleScript: the live page renders the Welcome screen with "Ready for offline use", the service worker controls the page after a reload, and the precache holds all 27 unique manifest URLs (the manifest lists 32 entries, 5 of them duplicates of icons and the web manifest). GitHub Actions for the deployed commit: Deploy Pages passed (build 41 s, deploy 19 s), Checks passed (1 min 23 s).
+
 ## Physical iPhone (pending, owner gate LB-14)
 
 Not run. None of these has a record yet and none may be read as passed. Desktop WebKit is not Safari on iOS.
