@@ -1,0 +1,6 @@
+{
+  "name": "loudbooks-signaling",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01"
+  // PairRoom Durable Object binding and migration are added in LB-6.
+}
