@@ -7,6 +7,7 @@ import { Button, IconButton } from '../../components/ui/Button'
 import { EmptyState, UpdateBanner } from '../../components/ui/Feedback'
 import { SearchField } from '../../components/ui/Fields'
 import { PageHeader } from '../../components/ui/Navigation'
+import { useUpdateBusy } from '../../pwa/usePwaUpdate'
 import { useIsDesktop } from '../../components/ui/Overlays'
 import { Reveal } from '../../components/ui/Reveal'
 import { isBookActive, startListening } from '../../features/playback/api'
@@ -29,7 +30,7 @@ export function LibraryPage() {
   const p = usePreset()
   const pwa = useUi((s) => s.pwa)
   const updateDismissed = useUi((s) => s.updateDismissed)
-  const importing = useUi((s) => s.importing)
+  const busy = useUpdateBusy()
   const newBookId = useUi((s) => s.newBookId)
   const [query, setQuery] = useState('')
   const [menu, setMenu] = useState<BookView | null>(null)
@@ -47,7 +48,6 @@ export function LibraryPage() {
   const hero = q ? undefined : views.find((v) => isBookActive(v.book.id) && playable(v)) ?? views.filter(playable).sort((a, b) => (b.progress?.updatedAt ?? 0) - (a.progress?.updatedAt ?? 0))[0]
   // The design hides the grid for a single book because its Continue card shows it; without progress there is no card, so show the grid.
   const showGrid = shown.length > 0 && (n >= 2 || !hero)
-  const busy = importing || views.some((v) => isBookActive(v.book.id))
   const subtitle = n === 0 ? t('library.nothing') : t(!online ? 'library.subtitleOffline' : pwa.offlineReady ? 'library.subtitle' : 'library.subtitlePreparing', { count: n })
   const openInstall = () => useUi.setState({ installOpen: true })
 

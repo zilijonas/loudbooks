@@ -15,6 +15,7 @@ import { isStandalone } from '../../app/env'
 import { showToast, useUi } from '../../app/store'
 import symbol from '../../components/brand/symbol.svg'
 import symbolDark from '../../components/brand/symbol-on-dark.svg'
+import { useUpdateBusy } from '../../pwa/usePwaUpdate'
 import { useBackup } from '../shared/Backup'
 import { maintenance, useLibrary } from '../shared/data'
 
@@ -38,6 +39,7 @@ export function SettingsPage() {
   const views = useLibrary()
   const pwa = useUi((s) => s.pwa)
   const importing = useUi((s) => s.importing)
+  const busy = useUpdateBusy()
   const [usage, setUsage] = useState<Usage>()
   const [dialog, setDialog] = useState<'clear' | 'library' | null>(null)
   const [tick, setTick] = useState(0)
@@ -45,7 +47,6 @@ export function SettingsPage() {
   const picker = useRef<HTMLInputElement>(null)
   const books = views ?? []
   const playing = books.some((v) => isBookActive(v.book.id))
-  const busy = playing || importing
 
   useEffect(() => {
     let live = true
