@@ -6,6 +6,8 @@ import { formatBytes } from '../../components/format'
 import { ActionList, type MenuAction } from '../../components/ui/Feedback'
 import { AlertDialog, BottomSheet } from '../../components/ui/Overlays'
 import { isBookActive, pause } from '../../features/playback/api'
+import { SendDialog } from '../../features/transfer/SendDialog'
+import { startSend } from '../../features/transfer/TransferCoordinator'
 import { t } from '../../i18n'
 import { showToast } from '../../app/store'
 import { commands, useSummary, type BookView } from './data'
@@ -22,8 +24,8 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
 
   const items: MenuAction[] = shown ? [
     { label: t('menu.edit'), icon: 'pencil', onClick: () => { onClose(); navigate(`/book/${shown.book.id}/edit`) } },
-    // Send (LB-9), Export (LB-10) and Re-import attach their flows here.
-    { label: t('menu.send'), icon: 'send', onClick: onClose },
+    // Export (LB-10) and Re-import attach their flows here.
+    { label: t('menu.send'), icon: 'send', onClick: () => { onClose(); startSend(shown.book.id) } },
     { label: t('menu.export'), icon: 'archive', onClick: onClose },
     ...(shown.book.status === 'missing' ? [{ label: t('menu.reimport'), icon: 'refresh' as const, onClick: onClose }] : []),
     { label: t('menu.delete'), icon: 'trash', danger: true, onClick: () => { setDel(shown); onClose() } },
@@ -52,6 +54,7 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
         {shown && <SheetBook view={shown} />}
         <ActionList items={items} />
       </BottomSheet>
+      {shown && <SendFor view={shown} />}
       <AlertDialog
         open={!!del}
         danger
@@ -78,4 +81,9 @@ function SheetBook({ view }: { view: BookView }) {
       </span>
     </div>
   )
+}
+
+function SendFor({ view }: { view: BookView }) {
+  const book = useSummary(view)
+  return <SendDialog book={book} bytes={view.bytes} files={view.assets.length} />
 }

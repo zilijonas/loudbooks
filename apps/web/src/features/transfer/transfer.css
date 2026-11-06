@@ -1,0 +1,47 @@
+/* Send dialog and Receive screen, ported from the send/receive markup in design/Loud Books App.dc.html. */
+/* Imported from modules that load before globals.css: declare Tailwind's layer order first (see dock.css). */
+@layer theme, base, components, utilities;
+@layer components {
+  .lb-send-book { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 18px; background: var(--lb-surface-sunken); }
+  .lb-send-book > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .lb-send-book strong { font: 700 15px/1.25 var(--lb-font-ui); overflow-wrap: anywhere; }
+  .lb-send-book span > span { font: 500 13px/1.2 var(--lb-font-ui); color: var(--lb-text-muted); font-variant-numeric: tabular-nums; }
+  .lb-send-step { display: flex; flex-direction: column; gap: 16px; }
+  .lb-send-qr { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+  .lb-send-qr > .lb-qr { margin: 0 auto; }
+  .lb-qr-wait { display: flex; align-items: center; justify-content: center; color: var(--lb-text-muted); }
+  .lb-send-qr ol { flex: 1; min-width: 220px; margin: 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 10px; font: 500 15px/1.45 var(--lb-font-ui); }
+  .lb-send-wait { display: flex; align-items: center; gap: 8px; font: 600 14px/1.3 var(--lb-font-ui); color: var(--lb-text-muted); font-variant-numeric: tabular-nums; }
+  .lb-send-copy { align-self: flex-start; }
+  .lb-send-panel { padding: 8px 0 4px; }
+
+  .lb-receive { max-width: 560px; }
+  @media (min-width: 768px) { .lb-receive { max-width: 560px; } }
+  .lb-receive-head { display: flex; align-items: center; gap: 4px; margin: 0 -12px; }
+  .lb-receive-head h1 { margin: 0; font: 800 26px/1.15 var(--lb-font-display); letter-spacing: -.02em; }
+  .lb-receive-step { display: flex; flex-direction: column; gap: 20px; }
+  .lb-receive-lead { margin: 0; font: 400 16px/1.55 var(--lb-font-ui); color: var(--lb-text-muted); text-wrap: pretty; }
+  .lb-receive-lead strong { color: var(--lb-text); }
+  .lb-receive-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; counter-reset: step; }
+  .lb-receive-steps li { display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; counter-increment: step; }
+  .lb-receive-steps li::before { content: counter(step); width: 32px; height: 32px; border-radius: 50%; background: var(--lb-surface-sunken); display: flex; align-items: center; justify-content: center; font: 800 15px/1 var(--lb-font-display); }
+  .lb-receive-steps li > span { font: 500 16px/1.45 var(--lb-font-ui); padding-top: 4px; }
+  .lb-receive-actions { display: flex; flex-direction: column; gap: 10px; }
+  .lb-receive-note { margin: 0; font: 500 13px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); }
+  .lb-receive .lb-safari { max-width: none; }
+  .lb-receive-ask { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 24px 4px; }
+  .lb-receive-ask > .lb-receive-badge { width: 64px; height: 64px; border-radius: 50%; background: var(--lb-surface-sunken); color: var(--lb-accent-text); display: flex; align-items: center; justify-content: center; }
+  .lb-receive-ask h2 { margin: 0; font: 700 22px/1.2 var(--lb-font-display); }
+  .lb-receive-ask p { margin: 0; font: 400 16px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); max-width: 340px; }
+  .lb-receive-ask > .lb-receive-actions { width: 100%; max-width: 360px; margin-top: 6px; }
+  .lb-receive-code { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 20px 0; }
+  .lb-receive-code > .lb-eyebrow { font: 700 12px/1 var(--lb-font-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--lb-accent-text); }
+  .lb-receive-code h2 { margin: 0; font: 700 22px/1.25 var(--lb-font-display); max-width: 320px; }
+  .lb-receive-code > p { margin: 0; font: 400 14px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); max-width: 320px; }
+  .lb-receive-code .lb-send-wait { justify-content: center; }
+  .lb-receive-card { padding: 28px 20px; border-radius: 28px; background: var(--lb-surface); border: 1.5px solid var(--lb-border); }
+  .lb-receive-paste { display: flex; flex-direction: column; gap: 8px; }
+  .lb-receive-paste label { font: 700 15px/1.2 var(--lb-font-ui); }
+  .lb-receive-paste .lb-error { display: flex; gap: 6px; font: 600 14px/1.4 var(--lb-font-ui); color: var(--lb-danger); }
+  .lb-viewfinder > video { pointer-events: none; }
+}

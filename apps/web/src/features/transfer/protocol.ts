@@ -99,7 +99,8 @@ const hex = (buf: ArrayBuffer) => Array.from(new Uint8Array(buf), (b) => b.toStr
 
 /** Identity of the book content for resume: the validated manifest without the one-time listening position. */
 export async function manifestDigest(manifest: TransferManifest) {
-  const { includePosition: _, ...content } = manifestSchema.parse(manifest)
+  const content = manifestSchema.parse(manifest)
+  delete content.includePosition
   return hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(content))))
 }
 

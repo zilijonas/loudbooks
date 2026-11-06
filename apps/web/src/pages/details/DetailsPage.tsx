@@ -9,6 +9,8 @@ import { Badge, Progress } from '../../components/ui/Controls'
 import { BackButton } from '../../components/ui/Navigation'
 import { Reveal } from '../../components/ui/Reveal'
 import { openPlayer, startListening } from '../../features/playback/api'
+import { SendDialog } from '../../features/transfer/SendDialog'
+import { startSend } from '../../features/transfer/TransferCoordinator'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
 import { useUi } from '../../app/store'
@@ -82,8 +84,7 @@ function Details({ view }: { view: BookView }) {
           </Button>
           <div className="lb-tiles">
             <Button variant="secondary" shape="tile" icon="pencil" onClick={() => navigate(`/book/${view.book.id}/edit`)}>{t('common.edit')}</Button>
-            {/* Send opens the LB-9 transfer overlay. */}
-            <Button variant="secondary" shape="tile" icon="send">{t('common.send')}</Button>
+            <Button variant="secondary" shape="tile" icon="send" onClick={() => startSend(view.book.id)}>{t('common.send')}</Button>
             <Button variant="secondary" shape="tile" icon="more" onClick={() => setMenu(true)}>{t('common.more')}</Button>
           </div>
           <section className="lb-chsec">
@@ -113,6 +114,7 @@ function Details({ view }: { view: BookView }) {
         </div>
       </div>
       <BookActions view={menu ? view : null} onClose={() => setMenu(false)} />
+      <SendDialog book={book} bytes={view.bytes} files={view.assets.length} />
     </div>
   )
 }

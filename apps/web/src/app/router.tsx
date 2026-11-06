@@ -3,8 +3,8 @@ import { lazy, Suspense } from 'react'
 import { BookFormPage } from '../pages/book-form/BookFormPage'
 import { DetailsPage } from '../pages/details/DetailsPage'
 import { LibraryPage } from '../pages/library/LibraryPage'
-import { Placeholder } from '../pages/Placeholder'
 import { PlayerPage } from '../pages/player/PlayerPage'
+import { ReceiveLink, ReceivePage } from '../pages/receive/ReceivePage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
 import { WelcomePage } from '../pages/welcome/WelcomePage'
 import { ErrorFallback } from './ErrorFallback'
@@ -36,9 +36,10 @@ export const router = createHashRouter([
       { path: 'book/:id/edit', element: <BookFormPage mode="edit" /> },
       { path: 'book/:id', element: <DetailsPage /> },
       { path: 'settings', element: <SettingsPage /> },
-      // LB-9 registers Receive.
       { path: 'player', element: <PlayerPage /> },
-      { path: 'receive', element: <Placeholder route="receive" title="receive.title" /> },
+      { path: 'receive', element: <ReceivePage /> },
+      // Pairing link (token in the fragment only); hands off to Receive and leaves the URL.
+      { path: 'receive/r/:pairing', element: <ReceiveLink /> },
       ...devRoutes,
     ],
   },
