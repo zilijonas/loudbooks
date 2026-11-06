@@ -1,0 +1,24 @@
+{
+  "name": "loudbooks",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "license": "MIT",
+  "packageManager": "pnpm@11.9.0",
+  "engines": { "node": ">=24.15.0", "pnpm": ">=11.9.0" },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "build": "pnpm --filter web build",
+    "e2e": "pnpm --filter web e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.14.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.14.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1"
+  }
+}

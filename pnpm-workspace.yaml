@@ -1,0 +1,16 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  esbuild: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - '@cloudflare/workers-types@5.20261106.1'
+  - '@playwright/test@1.65.0'
+  - framer-motion@14.10.0
+  - lucide-react@1.70.0
+  - motion-dom@14.10.0
+  - motion@14.10.0
+  - playwright-core@1.65.0
+  - playwright@1.65.0
+  - zustand@5.1.0
