@@ -6,6 +6,7 @@ import { formatBytes } from '../../components/format'
 import { ActionList, type MenuAction } from '../../components/ui/Feedback'
 import { AlertDialog, BottomSheet } from '../../components/ui/Overlays'
 import { isBookActive, stopListening } from '../../features/playback/api'
+import { startSend } from '../../features/transfer/TransferCoordinator'
 import { t } from '../../i18n'
 import { showToast } from '../../app/store'
 import { useBackup } from './Backup'
@@ -24,8 +25,8 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
 
   const items: MenuAction[] = shown ? [
     { label: t('menu.edit'), icon: 'pencil', onClick: () => { onClose(); navigate(`/book/${shown.book.id}/edit`) } },
-    // Send (LB-9) and Re-import attach their flows here.
-    { label: t('menu.send'), icon: 'send', onClick: onClose },
+    // Re-import attaches its flow here.
+    { label: t('menu.send'), icon: 'send', onClick: () => { onClose(); startSend(shown.book.id) } },
     { label: t('menu.export'), icon: 'archive', onClick: () => { onClose(); void backup.exportBook(shown.book) } },
     ...(shown.book.status === 'missing' ? [{ label: t('menu.reimport'), icon: 'refresh' as const, onClick: onClose }] : []),
     { label: t('menu.delete'), icon: 'trash', danger: true, onClick: () => { setDel(shown); onClose() } },
@@ -82,3 +83,4 @@ function SheetBook({ view }: { view: BookView }) {
     </div>
   )
 }
+

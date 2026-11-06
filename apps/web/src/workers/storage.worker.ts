@@ -5,7 +5,49 @@ import { probe } from "../features/import/probe";
 
 const storage = new MediaStorage();
 const cancelled = new Set<string>();
+type Stream = { sync: FileSystemSyncAccessHandle | null; writable: FileSystemWritableFileStream | null; hash: Awaited<ReturnType<typeof createSHA256>>; offset: number };
+/** Open sequential writes (received transfer files), keyed by their local staging path. */
+const streams = new Map<string, Stream>();
 const api = {
+  /** Starts (or restarts from byte 0) a sequentially written file; hashes as it writes. */
+  async streamOpen(path: string) {
+    await api.streamAbort(path);
+    const handle = await storage.handle(path, true);
+    let sync: FileSystemSyncAccessHandle | null = null;
+    if ("createSyncAccessHandle" in handle) {
+      try { sync = await handle.createSyncAccessHandle(); sync.truncate(0); }
+      catch (error) { if (!(error instanceof DOMException && error.name === "NotSupportedError")) throw error; }
+    }
+    streams.set(path, { sync, writable: sync ? null : await handle.createWritable(), hash: await createSHA256(), offset: 0 });
+  },
+  async streamWrite(path: string, offset: number, bytes: Uint8Array<ArrayBuffer>) {
+    const s = streams.get(path);
+    if (!s || offset !== s.offset) throw new Error("Out-of-order staging write");
+    if (s.sync) {
+      let written = 0;
+      while (written < bytes.length) {
+        const n = s.sync.write(bytes.subarray(written), { at: offset + written });
+        if (!n) throw new Error("OPFS write made no progress");
+        written += n;
+      }
+    } else await s.writable!.write(bytes);
+    s.hash.update(bytes);
+    s.offset += bytes.length;
+  },
+  /** Flushes and closes; returns what was written so the caller can compare it with the manifest. */
+  async streamClose(path: string) {
+    const s = streams.get(path);
+    if (!s) throw new Error("No open staging file");
+    streams.delete(path);
+    if (s.sync) { s.sync.flush(); s.sync.close(); } else await s.writable!.close();
+    return { bytes: s.offset, sha256: s.hash.digest("hex") };
+  },
+  async streamAbort(path: string) {
+    const s = streams.get(path);
+    streams.delete(path);
+    s?.sync?.close();
+    await s?.writable?.abort().catch(() => {});
+  },
   cancel(id: string) { cancelled.add(id); },
   finish(id: string) { cancelled.delete(id); },
   async probe(file: File) {

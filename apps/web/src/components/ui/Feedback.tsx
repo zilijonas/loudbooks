@@ -93,7 +93,8 @@ export function StatusPanel({ tone = 'neutral', icon, title, body, progress, ind
         <Ic name={icon} size={26} />
       </motion.div>
       <h3>{title}</h3>
-      {body && <p className="lb-status-body">{body}</p>}
+      {/* An empty body still takes its row, as in the design's progress panels. */}
+      {body !== undefined && <p className="lb-status-body">{body}</p>}
       {progress && (
         <div className="lb-status-prog">
           <div className="lb-status-progrow"><span>{progress.label}</span><span>{Math.round(progress.value * 100)}%</span></div>
