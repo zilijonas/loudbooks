@@ -33,7 +33,7 @@ pnpm workspace exactly as plan §1: `apps/web`, `apps/signaling`, `packages/cont
 - Strings only via the i18n layer from `ui-strings.en.json`. No hard-coded copy.
 
 ## Skills to load (both Claude and Codex have them in `~/.agents/skills` / `~/.claude/skills`; project extras in `.claude/skills` + `.agents/skills`)
-- UI/motion work: `emil-design-eng`, `impeccable`, `design-taste-frontend`, `unslop` (all four on every UI pass), plus `animate`, `review-animations`, `apple-design`, `break-ui`, `animation-performance` as needed.
+- UI/motion work: `emil-design-eng`, `impeccable`, `design-taste-frontend`, `unslop` (all four on every UI pass; if a skill is not offered by your skill tool, read its SKILL.md directly from `~/.agents/skills/<name>/SKILL.md`), plus `animate`, `review-animations`, `apple-design`, `break-ui`, `animation-performance` as needed.
 - PWA/offline: `pwa-development`. Browser tests: `playwright-best-practices`. Cloudflare: `durable-objects`, `wrangler`, `workers-best-practices`.
 - Coding style: `ponytail` (smallest complete change). Delivery: `session-delivery`.
 
