@@ -26,8 +26,9 @@ const useOnline = () => useSyncExternalStore(subscribeOnline, () => navigator.on
 /** Full player (#/player): cover, session badge, preparation status, transport, outcome panels, sheets. */
 export function PlayerPage() {
   const view = usePlayerView()
-  const restored = usePlayerStore((s) => s.restored)
-  if (!view) return restored ? <Navigate to="/" replace /> : null
+  // No book once restore finished and nothing is being opened: the player has nothing to show.
+  const empty = usePlayerStore((s) => s.restored && !s.state.bookId)
+  if (!view) return empty ? <Navigate to="/" replace /> : null
   return <Player view={view} />
 }
 
