@@ -7,12 +7,16 @@ import { existsSync } from 'node:fs'
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
-import { expect, test, type BrowserContext, type Page } from '@playwright/test'
+import { expect, test, type BrowserContext, type Locator, type Page } from '@playwright/test'
 
 const root = resolve(process.cwd(), '../..')
 const long = resolve(root, 'audio_samples/book-long.mp3')
 const zeland = resolve(root, 'fixtures/downloads/zeland')
 const app = 'http://localhost:4173/loudbooks/'
+/** Headless WebKit here hit-tests the html element instead of the control under the pointer (the DOM's own
+ *  elementFromPoint finds the button), so B activates controls with a DOM click; Chrome uses real pointer clicks. */
+const webkitPages = new WeakSet<Page>()
+const tap = (l: Locator) => (webkitPages.has(l.page()) ? l.dispatchEvent('click') : l.click())
 const sha = async (path: string) => createHash('sha256').update(await readFile(path)).digest('hex')
 
 async function importBook(page: Page, files: string[]) {
@@ -65,16 +69,16 @@ async function pair(a: Page, b: Page, bookUrl: string, again = false) {
   if (again) {
     // After a lost connection: Pair again goes to the camera. This browser has none, so it lands on the
     // camera-off state, whose primary action is the paste route.
-    await b.getByRole('button', { name: 'Pair again' }).click()
-    await b.getByRole('button', { name: 'Continue' }).click()
+    await tap(b.getByRole('button', { name: 'Pair again' }))
+    await tap(b.getByRole('button', { name: 'Continue' }))
     await expect(b.getByRole('heading', { name: 'Camera access is off' })).toBeVisible()
   } else {
     await b.goto(`${app}#/`)
-    await b.getByRole('button', { name: /^Receive/ }).first().click()
+    await tap(b.getByRole('button', { name: /^Receive/ }).first())
   }
-  await b.getByRole('button', { name: 'Paste pairing link instead' }).click()
+  await tap(b.getByRole('button', { name: 'Paste pairing link instead' }))
   await b.getByRole('textbox', { name: 'Pairing link' }).fill(link)
-  await b.getByRole('button', { name: 'Connect' }).click()
+  await tap(b.getByRole('button', { name: 'Connect' }))
   const code = b.getByRole('img', { name: /^Pairing code/ })
   await expect(code).toBeVisible({ timeout: 20_000 })
   await expect(dialog.getByRole('textbox', { name: 'Type the code shown on your phone' })).toBeVisible()
@@ -88,17 +92,20 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
   const dirs = [await mkdtemp(resolve(tmpdir(), 'loudbooks-tx-a-')), await mkdtemp(resolve(tmpdir(), 'loudbooks-tx-b-'))]
   const contexts: BrowserContext[] = []
   try {
-    const open = async (dir: string, width: number, name: string) => {
-      const ctx = await playwright[browserName].launchPersistentContext(dir, { headless: true, viewport: { width, height: 900 }, channel: test.info().project.use.channel })
+    // A (computer) is always Chrome; B (phone) is the project's engine, so the webkit project checks a Safari receiver.
+    const open = async (dir: string, width: number, name: string, engine: 'chromium' | typeof browserName) => {
+      const channel = engine === 'chromium' ? 'chrome' : undefined
+      const ctx = await playwright[engine].launchPersistentContext(dir, { headless: true, viewport: { width, height: 900 }, channel })
       contexts.push(ctx)
       const page = ctx.pages()[0] ?? await ctx.newPage()
+      if (engine === 'webkit') webkitPages.add(page)
       page.on('pageerror', (e) => { throw e })
       page.on('console', (m) => { if (m.type() === 'warning' || m.type() === 'error') console.log(`[${name}] ${m.text()}`) })
       return page
     }
-    const a = await open(dirs[0]!, 1280, 'A')
-    const b = await open(dirs[1]!, 390, 'B')
-    if (browserName === 'chromium') await contexts[0]!.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost:4173' })
+    const a = await open(dirs[0]!, 1280, 'A', 'chromium')
+    const b = await open(dirs[1]!, 390, 'B', browserName)
+    await contexts[0]!.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost:4173' })
     // Test-only "slow disk" on the sender so a 30 MB transfer lasts long enough to cancel in the middle.
     await a.addInitScript(() => {
       const read = Blob.prototype.arrayBuffer
@@ -108,7 +115,7 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       }
     })
     await b.goto(app)
-    await b.getByRole('button', { name: 'Open my library' }).click()
+    await tap(b.getByRole('button', { name: 'Open my library' }))
 
     await importBook(a, three)
     const zelandUrl = `${app}#/book/${await newestBook(a)}`
@@ -141,17 +148,17 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       const want = await Promise.all(three.map(sha))
       const got = (await opfs(b)).map((f) => f.sha)
       for (const h of want) expect(got).toContain(h)
-      await b.getByRole('button', { name: 'Open book' }).click()
+      await tap(b.getByRole('button', { name: 'Open book' }))
       await expect(b.getByRole('heading', { level: 1, name: 'Browser test' })).toBeVisible()
       await expect(b.getByRole('list', { name: 'Chapters' }).getByRole('button')).toHaveCount(3)
-      await b.getByRole('button', { name: /^Play from the start|^Listen/ }).first().click()
+      await tap(b.getByRole('button', { name: /^Play from the start|^Listen/ }).first())
       await expect(b).toHaveURL(/#\/player$/)
       const ready = b.getByRole('button', { name: 'Ready — play' })
       const pause = b.getByRole('button', { name: 'Pause', exact: true })
       await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
-      if (await ready.isVisible()) await ready.click()
+      if (await ready.isVisible()) await tap(ready)
       await expect.poll(() => b.evaluate(() => document.querySelector('audio')!.currentTime), { timeout: 20_000 }).toBeGreaterThan(0.5)
-      await pause.click()
+      await tap(pause)
     })
 
     await test.step('cancel mid-transfer, pair again, duplicate prompt, 30 MB arrives verified', async () => {
@@ -161,7 +168,7 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       await dialog.getByRole('button', { name: 'Pair and send' }).click()
       // Same title as the first book: B asks first.
       await expect(b.getByRole('heading', { name: 'You already have this book' })).toBeVisible({ timeout: 60_000 })
-      await b.getByRole('button', { name: 'Keep both' }).click()
+      await tap(b.getByRole('button', { name: 'Keep both' }))
       await expect(b.getByRole('heading', { name: 'Receiving Browser test' })).toBeVisible()
       await expect.poll(async () => Number(await b.getByRole('progressbar').getAttribute('aria-valuenow')), { timeout: 60_000 }).toBeGreaterThan(5)
       await dialog.getByRole('button', { name: 'Cancel' }).click()
@@ -175,16 +182,20 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       ({ dialog, code } = await pair(a, b, longUrl, true))
       await dialog.getByRole('textbox', { name: 'Type the code shown on your phone' }).fill(code)
       await dialog.getByRole('button', { name: 'Pair and send' }).click()
-      await b.getByRole('button', { name: 'Keep both' }).click()
+      await tap(b.getByRole('button', { name: 'Keep both' }))
       await expect(b.getByRole('heading', { name: 'Your book is ready to listen offline' })).toBeVisible({ timeout: 180_000 })
       await expect(dialog.getByRole('heading', { name: 'Sent' })).toBeVisible()
       const files = await opfs(b)
       expect(files.map((f) => f.sha)).toContain(await sha(long))
       // Transfer staging is gone once the book is committed.
       expect(files.filter((f) => f.path.startsWith('staging/') && /^staging\/[^/]+\/\d+$/.test(f.path))).toEqual([])
-      await b.getByRole('status').getByRole('button', { name: 'Back to library' }).click()
+      await tap(b.getByRole('status').getByRole('button', { name: 'Back to library' }))
       await expect(b.getByRole('listitem').filter({ hasText: 'Browser test' })).toHaveCount(2)
     })
+  } catch (e) {
+    // Both "devices" as images for the report (error-context only snapshots one page).
+    for (const [i, c] of contexts.entries()) await c.pages().at(-1)?.screenshot({ path: test.info().outputPath(`device-${'AB'[i]}.png`) }).catch(() => {})
+    throw e
   } finally {
     for (const c of contexts) await c.close().catch(() => {})
     for (const d of dirs) await rm(d, { recursive: true, force: true })

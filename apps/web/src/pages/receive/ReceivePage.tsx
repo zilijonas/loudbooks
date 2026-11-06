@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Navigate, useLocation, useNavigate } from 'react-router'
 import { isSafariTab } from '../../app/env'
 import { useUi } from '../../app/store'
 import { formatBytes } from '../../components/format'
@@ -85,11 +85,13 @@ export function ReceivePage() {
   const p = usePreset()
   const r = useTransfer((s) => s.receive)
   const [stop, setStop] = useState(false)
-  // A finished or abandoned flow starts over; a lost connection stays so "Pair again" keeps verified files.
+  // A finished or abandoned flow starts over on each visit (keyed by location: a quick back-and-forth can bring
+  // back the exiting page instance instead of mounting a new one). A lost connection stays for "Pair again".
+  const { key } = useLocation()
   useEffect(() => {
     const { step } = useTransfer.getState().receive
     if (!receiveActive() && !['disconnected', 'intro'].includes(step)) showReceive('intro')
-  }, [])
+  }, [key])
   const busy = r.step === 'receiving' || r.step === 'verifying'
   const back = () => (busy ? setStop(true) : navigate('/'))
   const library = { label: t('player.backToLibrary'), onClick: () => navigate('/') }
