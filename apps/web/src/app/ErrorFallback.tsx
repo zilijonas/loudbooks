@@ -1,7 +1,6 @@
 import { Ic } from '../components/icons'
 import { Button } from '../components/ui/Button'
 import { t } from '../i18n'
-import '../pages/screens.css'
 
 /** A8: storage could not be opened (private window, cleared site data). Outside the Shell, so plain links. */
 export function ErrorFallback() {

@@ -118,7 +118,7 @@ export function FileDropzone({ accept, multiple = true, onFiles, label, note = t
     >
       <Ic name="music" size={28} />
       <Button onClick={() => input.current?.click()}>{label}</Button>
-      {note && <span className="lb-dropzone-note">{note}</span>}
+      <span className="lb-dropzone-note">{note}</span>
       <input
         ref={input}
         type="file"

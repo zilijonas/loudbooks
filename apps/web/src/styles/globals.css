@@ -3,6 +3,7 @@
 @import "./tokens.css";
 @import "./tailwind.theme.css";
 @import "./components.css";
+@import "../pages/screens.css";
 
 @layer base {
   html { background: var(--lb-bg); color: var(--lb-text); font-family: var(--lb-font-ui); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }

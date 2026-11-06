@@ -12,7 +12,6 @@ import { usePreset } from '../motion/presets'
 import { usePwaUpdate } from '../pwa/usePwaUpdate'
 import { useOnline } from './env'
 import { useUi } from './store'
-import '../pages/screens.css'
 
 // Startup recovery runs once per app start, before any import or maintenance (they share the same lock).
 let recovered = false

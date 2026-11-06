@@ -66,8 +66,8 @@ export function chapterTitle(v: BookView, c: Chapter, i: number) {
 /** "Chapter 3 of 14 · 6 h 45 min left" (Continue card, mini-player). */
 export function chapterLine(v: BookView) {
   const { durationSec, positionSec } = v.summary
-  const left = formatDuration(durationSec - positionSec)
-  if (v.chapters.length < 2) return t('library.left', { duration: left })
+  const left = t('library.left', { duration: formatDuration(durationSec - positionSec) })
+  if (v.chapters.length < 2) return left
   const n = chapterIndexAt(v.chapters, positionSec) + 1
   return t(v.parts ? 'library.partLine' : 'library.chapterLine', { n, total: v.chapters.length, left })
 }
