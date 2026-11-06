@@ -1,7 +1,10 @@
 /* Full player and dock placement, values from the Player markup in design/Loud Books App.dc.html. */
+/* Imported from modules that load before globals.css: declare Tailwind's layer order first, or this file would
+   create `components` as the lowest layer and preflight would override every component style. */
+@layer theme, base, components, utilities;
 @layer components {
-  .lb-player { min-height: 100%; max-width: 100%; margin: 0 auto; padding: 6px 20px 40px; display: flex; flex-direction: column; gap: 10px; }
-  .lb-player[data-wide] { max-width: 1120px; padding: 36px 48px 40px; }
+  .lb-player { min-height: 100dvh; max-width: 100%; margin: 0 auto; padding: calc(6px + var(--lb-safe-top)) 20px 40px; display: flex; flex-direction: column; gap: 10px; }
+  .lb-player[data-wide] { max-width: 1120px; padding: calc(36px + var(--lb-safe-top)) 48px 40px; }
   .lb-player-top { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; margin: 0 -12px; }
   .lb-player-kicker { text-align: center; font: 600 13px/1.2 var(--lb-font-ui); color: var(--lb-text-muted); }
   .lb-player-grid { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px 48px; align-items: center; }
