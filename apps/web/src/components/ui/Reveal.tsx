@@ -12,3 +12,13 @@ export function Reveal({ show, children, className, as = 'div', id, role }: { sh
     </AnimatePresence>
   )
 }
+
+/** One slot whose content changes with state (`id` is the state): the old content fades out fast, the new one rises in. */
+export function Swap({ id, children, className }: { id: string; children: ReactNode; className?: string }) {
+  const p = usePreset()
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div key={id} className={className} {...p.reveal}>{children}</motion.div>
+    </AnimatePresence>
+  )
+}

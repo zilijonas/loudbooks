@@ -38,6 +38,7 @@ export function PlayerSheets({ view, sheet, onClose }: { view: PlayerView; sheet
           singleFile={chapters.length <= 1}
           speed={rate}
           currentChapterLeftSec={view.chapter.globalEnd - position}
+          chapterLeftSec={[0, 1, 2].map((k) => (chapters[Math.min(chapters.length - 1, ci + k)]?.globalEnd ?? view.chapter.globalEnd) - position)}
           onApply={(next) => { onClose(); setTimer(next) }}
         />
       </BottomSheet>

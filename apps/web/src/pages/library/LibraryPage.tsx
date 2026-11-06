@@ -67,40 +67,36 @@ export function LibraryPage() {
         )}
       </AnimatePresence>
 
-      {n > 0 && !desktop && (
-        <div className="lb-lib-actions">
-          <Button icon="plus" onClick={() => navigate('/add')}>{t('common.addBook')}</Button>
-          <Button variant="secondary" icon="download" onClick={() => navigate('/receive')}>{t('common.receive')}</Button>
-        </div>
-      )}
+      <Reveal show={n > 0 && !desktop} className="lb-lib-actions">
+        <Button icon="plus" onClick={() => navigate('/add')}>{t('common.addBook')}</Button>
+        <Button variant="secondary" icon="download" onClick={() => navigate('/receive')}>{t('common.receive')}</Button>
+      </Reveal>
 
-      {n >= 2 && <SearchField value={query} onChange={setQuery} />}
+      <Reveal show={n >= 2}><SearchField value={query} onChange={setQuery} /></Reveal>
 
       <Reveal show={!!hero}>{hero && <Hero view={hero} onOpen={() => navigate(`/book/${hero.book.id}`)} />}</Reveal>
 
-      {showGrid && (
-        <>
-          <div className="lb-grid-head">
-            <h2>{t('library.all')}</h2>
-            <span>{q ? t('library.count', { shown: shown.length, total: n }) : n}</span>
-          </div>
-          <div role="list" className="lb-grid">
-            <AnimatePresence initial={false}>
-              {shown.map((v, i) => (
-                <Card key={v.book.id} view={v} index={i} isNew={v.book.id === newBookId} onOpen={() => navigate(`/book/${v.book.id}`)} onMenu={() => setMenu(v)} />
-              ))}
-            </AnimatePresence>
-          </div>
-        </>
-      )}
+      <Reveal show={showGrid} className="lb-grid-wrap">
+        <div className="lb-grid-head">
+          <h2>{t('library.all')}</h2>
+          <span>{q ? t('library.count', { shown: shown.length, total: n }) : n}</span>
+        </div>
+        <div role="list" className="lb-grid">
+          <AnimatePresence initial={false} mode="popLayout">
+            {shown.map((v, i) => (
+              <Card key={v.book.id} view={v} index={i} isNew={v.book.id === newBookId} onOpen={() => navigate(`/book/${v.book.id}`)} onMenu={() => setMenu(v)} />
+            ))}
+          </AnimatePresence>
+        </div>
+      </Reveal>
 
       <Reveal show={!!q && shown.length === 0} className="lb-noresults" role="status">
         <EmptyState icon="search" title={t('library.noResults', { query: query.trim() })} body={t('library.noResultsBody')} action={{ label: t('library.clearSearch'), onClick: () => setQuery('') }} />
       </Reveal>
 
-      {n === 1 && <p className="lb-single">{t('library.single')}</p>}
+      <Reveal show={n === 1}><p className="lb-single">{t('library.single')}</p></Reveal>
 
-      {n === 0 && (
+      <Reveal show={n === 0}>
         <EmptyState variant="hero" title={t('library.emptyTitle')} body={t('library.emptyBody')} art={<EmptyArt />}>
           <div className="lb-empty-actions">
             <Button size="dialog" icon="plus" fullWidth onClick={() => navigate('/add')}>{t('common.addBook')}</Button>
@@ -116,7 +112,7 @@ export function LibraryPage() {
             </div>
           )}
         </EmptyState>
-      )}
+      </Reveal>
 
       <BookActions view={menu} onClose={() => setMenu(null)} />
     </div>

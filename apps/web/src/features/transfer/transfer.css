@@ -15,8 +15,8 @@
   .lb-send-copy { align-self: flex-start; }
   .lb-send-panel { padding: 8px 0 4px; }
 
-  .lb-receive { max-width: 560px; }
-  @media (min-width: 768px) { .lb-receive { max-width: 560px; } }
+  /* .lb-screen sets its own max-width (later in the cascade), so the narrow column needs the extra class. */
+  .lb-screen.lb-receive { max-width: 560px; }
   .lb-receive-head { display: flex; align-items: center; gap: 4px; margin: 0 -12px; }
   .lb-receive-head h1 { margin: 0; font: 800 26px/1.15 var(--lb-font-display); letter-spacing: -.02em; }
   .lb-receive-step { display: flex; flex-direction: column; gap: 20px; }

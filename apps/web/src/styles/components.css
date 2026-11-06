@@ -170,6 +170,7 @@
   .lb-chapter-now { font: 600 12px/1.2 var(--lb-font-ui); color: var(--lb-accent-text); font-variant-numeric: tabular-nums; }
   .lb-chapter-dur { font: 500 13px/1 var(--lb-font-ui); color: var(--lb-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
+  .lb-edit-list:empty { display: none; } /* an empty list must not add a flex gap */
   .lb-edit-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
   .lb-edit-row { position: relative; height: 76px; display: grid; grid-template-columns: 36px 22px minmax(0, 1fr) auto; align-items: center; gap: 6px; padding: 0 6px 0 2px; border-radius: 18px; background: var(--lb-surface); border: 1.5px solid var(--lb-border); }
   .lb-edit-row[data-error] { background: var(--lb-danger-bg); }

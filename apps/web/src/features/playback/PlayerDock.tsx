@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'motion/react'
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import { MiniPlayer, PlayerBar } from '../../components/player/Bars'
 import { useIsDesktop } from '../../components/ui/Overlays'
@@ -18,10 +18,15 @@ export function PlayerDock() {
   const { pathname } = useLocation()
   const [sheet, setSheet] = useState<SheetName | null>(null)
   const show = !!view && !HIDDEN.some((r) => r.test(pathname))
+  const mini = show && !desktop
+  useLayoutEffect(() => {
+    document.documentElement.toggleAttribute('data-dock', mini)
+    return () => document.documentElement.removeAttribute('data-dock')
+  }, [mini])
   return (
     <>
       <AnimatePresence>
-        {show && !desktop && (
+        {mini && (
           <div key="mini" className="lb-dock-mini">
             <MiniPlayer book={view.summary} status={view.status} subtitle={view.subtitle} onOpen={openPlayer} onToggle={togglePlay} />
           </div>

@@ -56,6 +56,7 @@ export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, 
     // A new book pops in (success preset, never from 0); a deleted one fades out inside the grid's AnimatePresence.
     <motion.div
       role="listitem"
+      layout="position"
       className="lb-card"
       data-missing={missing || undefined}
       initial={isNew ? p.success.initial : false}

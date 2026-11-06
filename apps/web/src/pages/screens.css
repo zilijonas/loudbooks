@@ -13,7 +13,8 @@
   .lb-grid-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 4px; }
   .lb-grid-head h2, .lb-sec-head h2 { margin: 0; font: 700 20px/1.25 var(--lb-font-display); }
   .lb-grid-head span, .lb-sec-head span { font: 600 13px/1 var(--lb-font-ui); color: var(--lb-text-muted); font-variant-numeric: tabular-nums; }
-  .lb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 24px 16px; }
+  .lb-grid-wrap { display: flex; flex-direction: column; gap: 20px; }
+  .lb-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 24px 16px; }
   @media (min-width: 768px) { .lb-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); } }
   .lb-noresults { padding: 36px 16px; }
   .lb-single { margin: 4px 0 0; font: 400 15px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); text-align: center; text-wrap: pretty; }

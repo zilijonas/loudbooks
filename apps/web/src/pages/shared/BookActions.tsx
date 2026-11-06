@@ -5,7 +5,7 @@ import { BookCover } from '../../components/books/BookCover'
 import { formatBytes } from '../../components/format'
 import { ActionList, type MenuAction } from '../../components/ui/Feedback'
 import { AlertDialog, BottomSheet } from '../../components/ui/Overlays'
-import { isBookActive, stopListening } from '../../features/playback/api'
+import { isBookActive, isBookPlaying, stopListening } from '../../features/playback/api'
 import { startSend } from '../../features/transfer/TransferCoordinator'
 import { t } from '../../i18n'
 import { showToast } from '../../app/store'
@@ -61,7 +61,7 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
         danger
         title={t('dialogs.deleteTitle', { title: del?.book.title ?? '' })}
         body={t('dialogs.deleteBody', { size: formatBytes(del?.bytes ?? 0) })}
-        note={del && isBookActive(del.book.id) ? t('dialogs.deletePlaying') : undefined}
+        note={del && isBookPlaying(del.book.id) ? t('dialogs.deletePlaying') : undefined}
         confirmLabel={t('dialogs.deleteBook')}
         cancelLabel={t('common.cancel')}
         onConfirm={confirm}

@@ -5,6 +5,7 @@ import { usePreset } from '../../motion/presets'
 import { useTheme } from '../../theme/ThemeProvider'
 import symbolDark from '../brand/symbol-on-dark.svg'
 import symbol from '../brand/symbol.svg'
+import { emph } from '../emph'
 import { Ic, type IconName } from '../icons'
 import { Button, IconButton } from './Button'
 
@@ -87,9 +88,9 @@ export function InstallGuide({ onDone }: { onDone: () => void }) {
     <>
       <p className="lb-speed-summary">{t('install.body')}</p>
       <ol className="lb-steps">
-        <li><span><Ic name="share" size={22} className="lb-share-blue" /></span>{t('install.step1')}</li>
-        <li><span><Ic name="addHome" size={22} /></span>{t('install.step2')}</li>
-        <li><img src={`${import.meta.env.BASE_URL}icons/apple-touch-icon-180.png`} alt="" />{t('install.step3')}</li>
+        <li><span><Ic name="share" size={22} className="lb-share-blue" /></span>{emph(t('install.step1'), t('install.share'))}</li>
+        <li><span><Ic name="addHome" size={22} /></span>{emph(t('install.step2'), t('install.addHome'), t('install.add'))}</li>
+        <li><img src={`${import.meta.env.BASE_URL}icons/apple-touch-icon-180.png`} alt="" />{emph(t('install.step3'), t('install.appName'))}</li>
       </ol>
       <p className="lb-hint" style={{ lineHeight: 1.5 }}>{t('install.other')}</p>
       <Button variant="strong" size="dialog" onClick={onDone}>{t('install.done')}</Button>

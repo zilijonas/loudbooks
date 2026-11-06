@@ -1,3 +1,4 @@
+import { Reveal } from './Reveal'
 import { t } from '../../i18n'
 import { formatBytes } from '../format'
 
@@ -24,7 +25,7 @@ export function StorageBar({ segments, availableEstimateBytes }: StorageBarProps
           </li>
         ))}
       </ul>
-      {availableEstimateBytes !== undefined && <p className="lb-fineprint">{t('settings.estimate', { free: formatBytes(availableEstimateBytes) })}</p>}
+      <Reveal show={availableEstimateBytes !== undefined}><p className="lb-fineprint">{t('settings.estimate', { free: formatBytes(availableEstimateBytes ?? 0) })}</p></Reveal>
     </>
   )
 }

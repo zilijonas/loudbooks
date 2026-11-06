@@ -7,11 +7,12 @@ import { chromium, firefox, webkit } from '@playwright/test'
 import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { createRequire } from 'node:module'
 
 const { values: a } = parseArgs({
   options: {
-    only: { type: 'string' }, widths: { type: 'string', default: '390,320,768,1440' }, themes: { type: 'string', default: 'light,dark' },
-    browser: { type: 'string', default: 'chromium' }, out: { type: 'string', default: '.qa/screens' }, 'ours-only': { type: 'boolean', default: false },
+    only: { type: 'string' }, widths: { type: 'string', default: '390,320,430,768,1440' }, themes: { type: 'string', default: 'light,dark' },
+    browser: { type: 'string', default: 'chromium' }, axe: { type: 'boolean', default: false }, textdiff: { type: 'boolean', default: false }, out: { type: 'string', default: '.qa/screens' }, 'ours-only': { type: 'boolean', default: false },
   },
 })
 const DESIGN = 'http://127.0.0.1:8123/'
@@ -27,6 +28,7 @@ const file = async (path, name) => ({ name, mimeType: 'audio/mpeg', buffer: awai
 const demoFiles = async () => [await file(zFiles[1], 'Quiet Rooms 10 - The Attic.mp3'), await file(zFiles[2], 'Quiet Rooms 2 - The Reading Room.mp3'), await file(zFiles[0], 'Quiet Rooms 1 - The Front Door.mp3')]
 const pick = async (page, files) => { await page.locator('.lb-dropzone input[type=file]').setInputFiles(files); await page.waitForFunction(() => !document.querySelector('.lb-edit-sub .lb-spin'), null, { timeout: 30_000 }) }
 
+const toPlayer = async (p) => { await p.evaluate(() => { location.hash = '#/player' }); await p.waitForTimeout(700) }
 const transferStore = (page, slice, patch) => page.evaluate(async ([slice, patch]) => {
   const { useTransfer } = await import('/loudbooks/src/features/transfer/store.ts')
   useTransfer.setState((s) => ({ [slice]: { ...s[slice], ...patch } }))
@@ -96,6 +98,16 @@ const CASES = [
   ...['qr', 'code', 'wrong', 'connecting', 'sending', 'verifying', 'done', 'failed', 'signaling'].map((k) => [`send-${k}`, `send-${k}`, '#/book/b5', { books: MANY }, (p) => sendState(p, k)]),
   ...['intro', 'permission', 'denied', 'scanning', 'expired', 'paste', 'paste-error', 'code', 'connecting', 'receiving', 'verifying', 'success', 'disconnected', 'storage', 'duplicate', 'signaling'].map((k) => [`receive-${k}`, `receive-${k}`, '#/receive', { books: MANY }, (p) => receiveState(p, k)]),
   ['receive-safari', 'receive-safari', '#/receive', {}, null, { safari: true }],
+  // Player (LB-8) and its sheets: the dev fixture route puts the player store into the design preset.
+  // The fixture route sits outside the Shell; it only fills the player store, then we open the real /player route so the sidebar/dock are the real ones.
+  ...['preparing', 'gesture', 'playing', 'paused', 'speed', 'chapter-timer', 'no-timer', 'rebuilding', 'ended-timer', 'ended-chapter', 'completed', 'interrupted', 'error'].map((k) => [`player-${k}`, `player-${k}`, `#/__player/${k}`, {}, toPlayer]),
+  ['sheet-speed', 'sheet-speed', '#/__player/playing', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Playback speed/ }).click() }],
+  ['sheet-speed-custom', 'sheet-speed-custom', '#/__player/playing', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Playback speed/ }).click(); await p.getByText('Custom', { exact: true }).click(); await p.getByLabel('Custom speed').fill('4'); await p.getByRole('button', { name: 'Set', exact: true }).click() }],
+  ['sheet-timer', 'sheet-timer', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Sleep timer/ }).click() }],
+  ['sheet-timer-custom', 'sheet-timer-custom', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Sleep timer/ }).click(); await p.getByText('Custom length', { exact: true }).click(); await p.getByLabel('Minutes of listening').fill('45') }],
+  ['sheet-chapters', 'sheet-chapters', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: 'Chapters', exact: true }).first().click() }],
+  ['library-playing', 'library-playing', '#/__player/playing', { books: MANY }, async (p) => { await p.evaluate(() => { location.hash = '#/' }); await p.waitForTimeout(600) }],
+  ['dialog-delete-playing', 'dialog-delete-playing', '#/__player/playing', { books: MANY }, async (p) => { await p.evaluate(() => { location.hash = '#/book/b1' }); await p.waitForTimeout(500); await p.getByRole('button', { name: /^More actions for/ }).click(); await p.getByRole('button', { name: 'Delete book' }).click() }],
   // Break-UI (ours only; no design preset).
   ['break-library', null, '#/', { books: ['long', 'q', 'huge', 'b1', 'b2', 'b5'] }],
   ['break-details-long', null, '#/book/long', { books: ['long', 'q', 'huge'] }],
@@ -103,7 +115,7 @@ const CASES = [
   ['break-details-huge', null, '#/book/huge', { books: ['long', 'q', 'huge'] }],
   ['break-edit-long', null, '#/book/long/edit', { books: ['long', 'q', 'huge'] }],
 ]
-const HEIGHT = { 320: 1500, 390: 1700, 768: 1300, 1440: 1000 }
+const HEIGHT = { 320: 1500, 390: 1700, 430: 1700, 768: 1300, 1440: 1000 }
 const only = a.only ? new Set(a.only.split(',')) : null
 const widths = a.widths.split(',').map(Number)
 const themes = a.themes.split(',')
@@ -112,8 +124,16 @@ const browser = await engines[a.browser].launch()
 const out = resolve(a.out)
 await mkdir(out, { recursive: true })
 const errors = []
+const designPages = {}
+const lastSeed = {}
+async function openDesign(ctx) {
+  const page = await ctx.newPage()
+  await page.goto(`${DESIGN}${encodeURI('Loud Books App.dc.html')}`, { waitUntil: 'networkidle' })
+  await page.waitForFunction(() => typeof window.__dcSetProps === 'function' && window.__dcRootName?.())
+  return page
+}
 
-async function shot(ctx, url, setup, wait = 700) {
+async function shot(ctx, url, setup, wait = 500) {
   const page = await ctx.newPage()
   page.on('pageerror', (e) => errors.push(`${url}: ${e.message}`))
   try {
@@ -125,6 +145,41 @@ async function shot(ctx, url, setup, wait = 700) {
   } finally {
     await page.close()
   }
+}
+
+
+// Text geometry: every visible text run's box, so design and ours can be matched by text and measured (px), not just eyeballed.
+const COLLECT = `(() => {
+  const out = []
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+  for (let n = w.nextNode(); n; n = w.nextNode()) {
+    const t = n.textContent.replace(/\\s+/g, ' ').trim()
+    if (!t) continue
+    const el = n.parentElement
+    if (!el || el.closest('script,style,[hidden],svg,[aria-hidden="true"]')) continue
+    const cs = getComputedStyle(el)
+    if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) === 0) continue
+    const r = document.createRange(); r.selectNodeContents(n)
+    const b = r.getBoundingClientRect()
+    if (b.width < 1 || b.height < 1) continue
+    out.push({ t, x: Math.round(b.x * 10) / 10, y: Math.round(b.y * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 })
+  }
+  return out
+})()`
+function diffText(d, o) {
+  const byText = new Map()
+  for (const r of d) (byText.get(r.t) ?? byText.set(r.t, []).get(r.t)).push(r)
+  const seen = new Map(); const pairs = []; let un = 0
+  for (const r of o) {
+    const k = seen.get(r.t) ?? 0; seen.set(r.t, k + 1)
+    const m = byText.get(r.t)?.[k]
+    if (m) pairs.push({ t: r.t, dx: r.x - m.x, dy: r.y - m.y, dw: r.w - m.w, dh: r.h - m.h }); else un++
+  }
+  const dys = pairs.map((p) => p.dy).sort((x, y) => x - y)
+  const med = dys.length ? dys[Math.floor(dys.length / 2)] : 0
+  // Offenders are measured against the median vertical shift, so one early offset does not flag every later line.
+  const bad = pairs.filter((p) => Math.abs(p.dx) > 2 || Math.abs(p.dy - med) > 2 || Math.abs(p.dw) > 3 || Math.abs(p.dh) > 3)
+  return { matched: pairs.length, unmatchedOurs: un, unmatchedDesign: d.length - pairs.length, med, bad }
 }
 
 const SAFARI_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
@@ -145,6 +200,8 @@ async function newCtx(width, theme, safari) {
 try {
   for (const width of widths) for (const theme of themes) {
     const ctxs = {}
+    Object.keys(designPages).forEach((k) => delete designPages[k])
+    Object.keys(lastSeed).forEach((k) => delete lastSeed[k])
     try {
       for (const [name, preset, hash, seed, setup, flags = {}] of CASES) {
         if (only && !only.has(name)) continue
@@ -154,18 +211,55 @@ try {
         const app = `${APP}${q ? `?f=${q}` : ''}`
         try {
           let left = null
-          if (preset && !a['ours-only']) {
-            left = await shot(ctx, `${DESIGN}${encodeURI('Loud Books App.dc.html')}`, async (page) => {
-              await page.waitForFunction(() => typeof window.__dcSetProps === 'function' && window.__dcRootName?.())
-              await page.evaluate((props) => window.__dcSetProps(window.__dcRootName(), props), { preset, theme, statusBar: false, live: false })
-            }, 900)
+          if (preset && !a['ours-only'] && !a.textdiff) {
+            // One design page per context; presets are switched through its own prop hook.
+            const dp = (designPages[kind] ??= await openDesign(ctx))
+            await dp.evaluate((props) => window.__dcSetProps(window.__dcRootName(), props), { preset, theme, statusBar: false, live: false })
+            await dp.waitForTimeout(650)
+            left = await dp.screenshot({ animations: 'disabled' })
           }
-          // Our side: seed through the dev server's own modules, then open the route.
-          if (seed) {
+          // Our side: seed through the dev server's own modules (once per distinct seed), then open the route.
+          const seedKey = JSON.stringify(seed)
+          if (seed && (seed.sessionBytes || lastSeed[kind] !== seedKey)) { // startup cleanup clears seeded sessions, so those seeds always re-run
             const page = await ctx.newPage()
             await page.goto(`${APP}#/__seed`, { waitUntil: 'networkidle' })
             await page.evaluate(async (s) => (await import('/loudbooks/e2e/tools/seed.ts')).seed(s), seed)
             await page.close()
+            lastSeed[kind] = seedKey
+          }
+          if (a.textdiff) {
+            if (!preset) continue
+            // Layout parity in numbers: match text runs between design and ours and report position/size deltas.
+            const dp = (designPages[kind] ??= await openDesign(ctx))
+            await dp.evaluate((props) => window.__dcSetProps(window.__dcRootName(), props), { preset, theme, statusBar: false, live: false })
+            await dp.waitForTimeout(650)
+            const d = await dp.evaluate(COLLECT)
+            const page = await ctx.newPage()
+            try {
+              await page.goto(`${app}${hash}`, { waitUntil: 'networkidle' })
+              await page.waitForTimeout(300)
+              if (!seed?.welcome && seed) await pwaReady(page)
+              if (setup) await setup(page, ctx)
+              await page.waitForTimeout(800)
+              const r = diffText(d, await page.evaluate(COLLECT))
+              console.log(`${r.bad.length ? 'DIFF' : 'ok  '} ${name}-${width} matched=${r.matched} only-ours=${r.unmatchedOurs} only-design=${r.unmatchedDesign} medianDy=${r.med.toFixed(1)}${r.bad.length ? `\n   ${r.bad.slice(0, 8).map((p) => `"${p.t.slice(0, 40)}" dx=${p.dx.toFixed(1)} dy=${p.dy.toFixed(1)} dw=${p.dw.toFixed(1)} dh=${p.dh.toFixed(1)}`).join('\n   ')}${r.bad.length > 8 ? `\n   ... +${r.bad.length - 8} more` : ''}` : ''}`)
+            } finally { await page.close() }
+            continue
+          }
+          if (a.axe) {
+            // Accessibility mode: same states, but run axe (WCAG 2.x A/AA) on our page instead of taking pictures.
+            const page = await ctx.newPage()
+            try {
+              await page.goto(`${app}${hash}`, { waitUntil: 'networkidle' })
+              await page.waitForTimeout(300)
+              if (!seed?.welcome && seed) await pwaReady(page)
+              if (setup) await setup(page, ctx)
+              await page.waitForTimeout(900)
+              await page.addScriptTag({ path: createRequire(import.meta.url).resolve('axe-core/axe.min.js') })
+              const v = await page.evaluate(async () => (await window.axe.run({ exclude: ['.lb-cover'] }, { resultTypes: ['violations'], runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'], rules: { 'label-content-name-mismatch': { enabled: false } } })).violations.map((x) => `${x.impact} ${x.id}: ${x.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | ')}`))
+              console.log(`${v.length ? 'VIOLATIONS' : 'ok'} ${name}-${width}-${theme}${v.length ? `\n  ${v.join('\n  ')}` : ''}`)
+            } finally { await page.close() }
+            continue
           }
           const right = await shot(ctx, `${app}${hash}`, async (page) => {
             await page.waitForTimeout(300)

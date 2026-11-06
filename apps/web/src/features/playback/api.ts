@@ -3,6 +3,7 @@ export {
   startListening,
   openPlayer,
   isBookActive,
+  isBookPlaying,
   isActivePath,
   pause,
   stopListening,

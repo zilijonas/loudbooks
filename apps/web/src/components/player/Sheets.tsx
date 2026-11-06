@@ -53,7 +53,7 @@ export function SpeedSelector({ value, presets, min = 0.5, max = 3, onChange, re
           </div>
           <Button variant="strong" size="dialog" style={{ padding: '0 20px', fontSize: 15 }} onClick={apply}>{t('speed.set')}</Button>
         </div>
-        <span id={`${id}-help`} className="lb-hint">{t('speed.range')}</span>
+        <span id={`${id}-help`} className="lb-hint">{t('speed.range')} {t('speed.current', { speed: formatSpeed(value) })}</span>
         <Reveal show={!!err} as="span" className="lb-error" role="alert"><Ic name="alert" size={16} />{err}</Reveal>
       </Reveal>
       <Reveal show={!!rebuildNotice}><p className="lb-note">{t('speed.rebuild')}</p></Reveal>
@@ -74,13 +74,15 @@ export interface TimerSheetProps {
   singleFile?: boolean
   speed: number
   currentChapterLeftSec: number
+  /** Seconds of the book left until the end of chapter 1, 2 and 3 from here (for the summary line); defaults to the current chapter only. */
+  chapterLeftSec?: readonly number[]
   onApply: (t: TimerSetting) => void
 }
 
 const keyOf = (v: TimerSetting): Key => (v.mode === 'off' ? 'off' : v.mode === 'chapters' ? (`c${v.count}` as Key) : [5, 15, 30].includes(v.minutes) ? (`m${v.minutes}` as Key) : 'custom')
 
 /** Sleep timer sheet content. The highlight slides between options; the check pops in. */
-export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile, speed, currentChapterLeftSec, onApply }: TimerSheetProps) {
+export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile, speed, currentChapterLeftSec, chapterLeftSec = [currentChapterLeftSec], onApply }: TimerSheetProps) {
   const p = usePreset()
   const name = useId()
   const [key, setKey] = useState<Key>(keyOf(value))
@@ -91,7 +93,7 @@ export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile,
     { key: 'm5', label: t('timer.m5'), sub: '' },
     { key: 'm15', label: t('timer.m15'), sub: '' },
     { key: 'm30', label: t('timer.m30'), sub: '' },
-    { key: 'custom', label: t('timer.custom'), sub: key === 'custom' && customMin ? t('timer.summaryMinutes', { minutes: customMin }) : t('timer.customSub') },
+    { key: 'custom', label: t('timer.custom'), sub: key === 'custom' && customMin ? t('timer.minutesSub', { minutes: customMin }) : t('timer.customSub') },
     { div: t('timer.byChapter') },
     { key: 'c1', label: t('timer.c1'), sub: singleFile ? t('timer.noChapters') : t('timer.c1Sub', { n: chapterIndex + 1, duration: formatDuration(currentChapterLeftSec / speed) }), off: singleFile },
     { key: 'c2', label: t('timer.c2'), sub: singleFile ? t('timer.noChapters') : chaptersRemaining < 1 ? t('timer.lastChapter') : t('timer.chapterN', { n: chapterIndex + 2 }), off: singleFile || chaptersRemaining < 1 },
@@ -112,8 +114,8 @@ export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile,
   const k = key[0] === 'c' && key !== 'custom' ? Number(key.slice(1)) as 1 | 2 | 3 : 0
   const n = chapterIndex + k
   const [summary, sub] = key === 'off' ? [t('timer.summaryOff'), t('timer.offSub')]
-    : k ? [t('timer.summaryChapter', { n }), k === 1 ? t('timer.summaryChapterSub', { duration: formatDuration(currentChapterLeftSec / speed), next: n + 1 }) : '']
-      : minutes >= 1 ? [t('timer.summaryMinutes', { minutes }), t('speed.summarySession', { speed: formatSpeed(speed), minutes, duration: formatDuration(minutes * 60 * speed) })]
+    : k ? [t('timer.summaryChapter', { n }), t('timer.summaryChapterSub', { duration: formatDuration((chapterLeftSec[k - 1] ?? currentChapterLeftSec) / speed), next: n + 1 })]
+      : minutes >= 1 ? [t('timer.summaryMinutes', { minutes }), speed === 1 ? t('timer.coversPlain', { duration: formatDuration(minutes * 60) }) : t('timer.coversSpeed', { speed: formatSpeed(speed), duration: formatDuration(minutes * 60 * speed) })]
         : [t('timer.custom'), t('timer.customSub')]
   const applyLabel = key === 'off' ? t('timer.turnOff') : k ? t('timer.applyChapter', { n }) : minutes >= 1 ? t('timer.start', { minutes }) : t('timer.custom')
 

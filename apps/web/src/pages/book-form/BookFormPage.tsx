@@ -9,11 +9,11 @@ import { StatusPanel } from '../../components/ui/Feedback'
 import { FileDropzone, TextArea, TextField } from '../../components/ui/Fields'
 import { TopBar } from '../../components/ui/Navigation'
 import { AlertDialog, Dialog, useIsDesktop } from '../../components/ui/Overlays'
-import { Reveal } from '../../components/ui/Reveal'
+import { Reveal, Swap } from '../../components/ui/Reveal'
 import { Ic } from '../../components/icons'
 import { ImportError, naturalSort } from '../../features/import/probe'
 import { coverPath } from '../../features/library/LibraryCommands'
-import { isBookActive, releaseBook } from '../../features/playback/api'
+import { isBookActive, isBookPlaying, releaseBook } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { db } from '../../services/db/database'
 import { MediaStorage } from '../../services/opfs/MediaStorage'
@@ -79,7 +79,7 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
   const done = useRef(false)
   const abort = useRef<AbortController | null>(null)
   const free = useFreeSpace(rows.length)
-  const playing = !!view && isBookActive(view.book.id)
+  const playing = !!view && isBookPlaying(view.book.id)
 
   // Existing cover image (edit): shown in the picker until replaced or removed.
   useEffect(() => {
@@ -233,12 +233,10 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
           <div className="lb-files-head"><strong>{t('form.files')}</strong><span>{t('form.filesHelp')}</span></div>
           <FileDropzone accept={ACCEPT} onFiles={(f) => void addFiles(f)} label={t(rows.length ? 'form.addMore' : 'form.choose')} note={desktop ? undefined : ''} />
           <Reveal show={!!filesErr} as="span" className="lb-error" role="alert"><Ic name="alert" size={16} />{filesErr}</Reveal>
-          {display.length > 0 && (
-            <div className="lb-files-sum">
-              <span>{ok.length === 0 ? t('form.noFiles') : ok.length === 1 ? t('form.oneFile', { duration: formatDuration(seconds) }) : t('form.chapters', { count: ok.length, duration: formatDuration(seconds) })}</span>
-              <span>{formatBytes(bytes)}</span>
-            </div>
-          )}
+          <Reveal show={display.length > 0} className="lb-files-sum">
+            <span>{ok.length === 0 ? t('form.noFiles') : ok.length === 1 ? t('form.oneFile', { duration: formatDuration(seconds) }) : t('form.chapters', { count: ok.length, duration: formatDuration(seconds) })}</span>
+            <span>{formatBytes(bytes)}</span>
+          </Reveal>
           <EditableChapterList
             items={display}
             onReorder={move}
@@ -254,7 +252,7 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
       </form>
 
       <Dialog open={!!imp} onOpenChange={() => {}} dismissible={false} title={t(imp?.kind === 'quota' ? 'importing.stoppedTitle' : 'importing.dialogTitle')}>
-        <div className="lb-import">
+        <Swap id={imp?.kind === 'quota' ? 'quota' : 'run'} className="lb-import">
           {imp?.kind === 'quota' ? (
             <StatusPanel
               tone="danger" icon="drive" title={t('importing.quotaTitle')}
@@ -270,7 +268,7 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
               secondary={{ label: t('common.cancel'), onClick: () => setAskStop(true) }}
             />
           )}
-        </div>
+        </Swap>
       </Dialog>
       <AlertDialog
         open={askStop && imp?.kind === 'running'} danger

@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { showToast } from '../../app/store'
 import { BookCover, type BookSummary } from '../../components/books/BookCover'
+import { emph } from '../../components/emph'
 import { formatBytes } from '../../components/format'
 import { Ic } from '../../components/icons'
 import { PairingCode, QR } from '../../components/transfer/Transfer'
@@ -14,12 +15,6 @@ import { usePreset } from '../../motion/presets'
 import { useTransfer, type Progress } from './store'
 import { closeSend, setIncludePosition, startSend, submitCode } from './TransferCoordinator'
 import './transfer.css'
-
-/** Wraps the first occurrence of `word` in <strong> (design steps bold the button names). */
-export function emph(text: string, word: string): ReactNode {
-  const i = text.indexOf(word)
-  return i < 0 ? text : <>{text.slice(0, i)}<strong>{word}</strong>{text.slice(i + word.length)}</>
-}
 
 /** "138 of 270 MB" as in the design; whole MB below 1 GB. */
 export function progressFor(title: string, s: Progress): StatusPanelProps['progress'] {
@@ -134,9 +129,9 @@ function CodeEntry() {
     else submitCode(code)
   }
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <PairingCode role="enter" digits={code} error={error} disabled={locked} onChange={(v) => { setCode(v); setIncomplete(false) }} onSubmit={pair} />
       <Button size="lg" fullWidth disabled={locked} loading={s.checking} onClick={pair}>{t('send.pair')}</Button>
-    </>
+    </div>
   )
 }

@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
+import { ErrorFallback } from './ErrorFallback'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutlet } from 'react-router'
 import { InstallGuide, Sidebar } from '../components/ui/Navigation'
@@ -47,10 +48,9 @@ export function Shell() {
   useEffect(() => useUi.setState({ pwa: { needRefresh, offlineReady: ready, apply } }), [needRefresh, ready]) // eslint-disable-line react-hooks/exhaustive-deps
   useLayoutEffect(() => { main.current?.scrollTo({ top: 0 }) }, [location.pathname])
 
-  if (dbError) throw dbError
   const path = location.pathname
   const welcome = path === '/welcome'
-  const dock = !welcome && path !== '/add' && path !== '/player' && !path.endsWith('/edit')
+  const dock = !dbError && !welcome && path !== '/add' && path !== '/player' && !path.endsWith('/edit')
   const section = path.startsWith('/settings') ? 'settings' : path.startsWith('/receive') ? 'receive' : 'library'
 
   return (
@@ -70,7 +70,7 @@ export function Shell() {
       <div className="lb-app-col">
         <main ref={main} className="lb-main">
           <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div key={path} className="lb-page" {...p.page}>{outlet}</motion.div>
+            <motion.div key={path} className="lb-page" {...p.page}>{dbError ? <ErrorFallback embedded /> : outlet}</motion.div>
           </AnimatePresence>
         </main>
         {dock && <PlayerDock />}

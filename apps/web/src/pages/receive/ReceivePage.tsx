@@ -11,7 +11,8 @@ import { StatusPanel, type StatusPanelProps } from '../../components/ui/Feedback
 import { TextField } from '../../components/ui/Fields'
 import { AlertDialog } from '../../components/ui/Overlays'
 import { parsePairingLink, type Pairing } from '../../features/transfer/protocol'
-import { emph, progressFor } from '../../features/transfer/SendDialog'
+import { emph } from '../../components/emph'
+import { progressFor } from '../../features/transfer/SendDialog'
 import { useTransfer } from '../../features/transfer/store'
 import { answerReceive, discardReceive, receiveActive, showReceive, startReceive, stopReceive } from '../../features/transfer/TransferCoordinator'
 import { t } from '../../i18n'
@@ -70,7 +71,7 @@ function Paste() {
     <>
       <p className="lb-receive-lead">{emph(t('receive.pasteHelp'), t('send.copyLink'))}</p>
       <form className="lb-receive-paste" onSubmit={(e) => { e.preventDefault(); connect() }}>
-        <TextField label={t('receive.pasteLabel')} value={value} inputMode="url" onChange={(v) => { setValue(v); setError(false) }} error={error ? t('receive.pasteError') : undefined} />
+        <TextField label={t('receive.pasteLabel')} value={value} inputMode="url" placeholder={t('receive.pastePlaceholder')} onChange={(v) => { setValue(v); setError(false) }} error={error ? t('receive.pasteError') : undefined} />
       </form>
       <div className="lb-receive-actions">
         <Button size="dialog" onClick={connect}>{t('receive.connect')}</Button>

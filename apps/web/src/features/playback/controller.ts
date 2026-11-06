@@ -466,6 +466,9 @@ export function openPlayer() {
 
 export const isBookActive = (bookId: string) => get().book?.id === bookId
 
+/** The book is loaded and audio is (or is about to be) coming out: what the "playing now" warnings mean. */
+export const isBookPlaying = (bookId: string) => isBookActive(bookId) && ['playing', 'preparing', 'rebuilding'].includes(get().state.status)
+
 // ---- startup
 
 /** Restores the last confirmed place: the paused session file if it still covers it, else just the position. */

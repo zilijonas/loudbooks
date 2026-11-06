@@ -52,7 +52,7 @@ function Player({ view }: { view: PlayerView }) {
   const reveal = p.reveal
 
   return (
-    <motion.div className="lb-player" data-wide={wide || undefined} {...p.page}>
+    <div className="lb-player" data-wide={wide || undefined}>
       <div className="lb-player-top">
         <IconButton label={t('player.close')} icon="down" iconSize={26} onClick={() => navigate(`/book/${book.id}`)} />
         <span className="lb-player-kicker">{online ? t('player.nowPlaying') : t('player.offline')}</span>
@@ -132,7 +132,7 @@ function Player({ view }: { view: PlayerView }) {
       </div>
       <PlayerSheets view={view} sheet={sheet} onClose={() => setSheet(null)} />
       <Toast toast={s.toast} />
-    </motion.div>
+    </div>
   )
 }
 

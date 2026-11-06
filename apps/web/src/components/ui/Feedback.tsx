@@ -104,6 +104,8 @@ export function StatusPanel({ tone = 'neutral', icon, title, body, progress, ind
       )}
       {indeterminate && <div style={{ width: '100%', maxWidth: 280 }}><Progress label={title} height={6} /></div>}
       {note && <p className="lb-status-note">{note}</p>}
+      {/* Progress panels without buttons keep the (empty) actions row's 18 px, as in the design. */}
+      {!primary && !secondary && !tertiary && (progress || indeterminate) && <div className="lb-status-actions" aria-hidden="true" />}
       {(primary || secondary || tertiary) && (
         <div className="lb-status-actions">
           {primary && <Button size="dialog" variant={primary.danger ? 'danger' : 'primary'} onClick={primary.onClick}>{primary.label}</Button>}
@@ -131,14 +133,16 @@ export function EmptyState({ icon, title, body, action, art, headingLevel = 2, v
 }
 
 /** Settings-style status line: icon, title, explanation, optional action. `card` is the boxed variant (storage protection). */
-export function StatusRow({ icon, tone, title, body, action, actionStrong, actionDisabled, variant = 'row' }: {
+export function StatusRow({ icon, tone, title, body, action, actionStrong, actionDisabled, variant = 'row', gap }: {
   icon: IconName; tone?: 'neutral' | 'success' | 'warning' | 'action'; title: string; body?: string
   action?: Action; actionStrong?: boolean; actionDisabled?: boolean; variant?: 'row' | 'card'
+  /** Title/body/action spacing in px; the design uses 3, 6 or 8 depending on the row. Default: card 3 (8 with an action), row 6. */
+  gap?: number
 }) {
   return (
     <div className="lb-statusrow" data-tone={tone} data-variant={variant}>
       <Ic name={icon} size={22} />
-      <span className="lb-statusrow-text" style={variant === 'card' && !action ? { gap: 3 } : undefined}>
+      <span className="lb-statusrow-text" style={{ gap: gap ?? (variant === 'card' ? (action ? 8 : 3) : 6) }}>
         <strong>{title}</strong>
         {body && <span>{body}</span>}
         {action && <Button size="sm" variant={actionStrong ? 'strong' : 'secondary'} style={{ fontWeight: 600 }} disabled={actionDisabled} onClick={action.onClick}>{action.label}</Button>}

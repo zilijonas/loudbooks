@@ -5,10 +5,11 @@ import { formatBytes } from '../../components/format'
 import { Button, IconButton } from '../../components/ui/Button'
 import { SegmentedControl } from '../../components/ui/Controls'
 import { StatusRow } from '../../components/ui/Feedback'
+import { Reveal, Swap } from '../../components/ui/Reveal'
 import { useTheme, type ThemePreference } from '../../theme/ThemeProvider'
 import { AlertDialog, useIsDesktop } from '../../components/ui/Overlays'
 import { StorageBar } from '../../components/ui/StorageBar'
-import { isBookActive, stopListening } from '../../features/playback/api'
+import { isBookActive, isBookPlaying, stopListening } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { isStandalone } from '../../app/env'
 import { showToast, useUi } from '../../app/store'
@@ -106,11 +107,13 @@ export function SettingsPage() {
       <section aria-labelledby="st-sto" className="lb-sec" data-gap="14">
         <div className="lb-sec-head"><h2 id="st-sto">{t('settings.storage')}</h2><b>{formatBytes(bookBytes + temp + appBytes)}</b></div>
         <StorageBar segments={segments} availableEstimateBytes={usage?.free} />
-        {usage?.persisted ? (
-          <StatusRow variant="card" icon="shield" tone="success" title={t('settings.protected')} body={t('settings.protectedBody')} />
-        ) : (
-          <StatusRow variant="card" icon="drive" tone="warning" title={t('settings.standard')} body={t('settings.standardBody')} action={{ label: t('settings.requestPersist'), onClick: () => void persist() }} />
-        )}
+        <Swap id={usage?.persisted ? 'protected' : 'standard'}>
+          {usage?.persisted ? (
+            <StatusRow variant="card" icon="shield" tone="success" title={t('settings.protected')} body={t('settings.protectedBody')} />
+          ) : (
+            <StatusRow variant="card" icon="drive" tone="warning" title={t('settings.standard')} body={t('settings.standardBody')} action={{ label: t('settings.requestPersist'), onClick: () => void persist() }} />
+          )}
+        </Swap>
         <div className="lb-clear">
           <Button variant="secondary" disabled={temp === 0} onClick={() => setDialog('clear')}>{t('settings.clearTemp')}</Button>
           <span>{t('settings.clearTempSub')}</span>
@@ -138,18 +141,21 @@ export function SettingsPage() {
           body={t(installed ? 'settings.installedSub' : 'settings.browserSub')}
           action={installed ? undefined : { label: t('library.howToInstall'), onClick: () => useUi.setState({ installOpen: true }) }}
         />
-        <StatusRow
-          icon="check"
-          tone="success"
-          title={t(pwa.offlineReady ? 'settings.offlineReady' : 'settings.preparing')}
-          body={t(pwa.offlineReady ? 'settings.offlineReadySub' : 'settings.preparingSub')}
-        />
-        {pwa.needRefresh && (
+        <Swap id={pwa.offlineReady ? 'ready' : 'preparing'}>
           <StatusRow
-            icon="refresh" tone="action" title={t('settings.update')} body={t(busy ? 'settings.updateBusy' : 'settings.updateIdle')}
+            icon="check"
+            tone="success"
+            gap={3}
+            title={t(pwa.offlineReady ? 'settings.offlineReady' : 'settings.preparing')}
+            body={t(pwa.offlineReady ? 'settings.offlineReadySub' : 'settings.preparingSub')}
+          />
+        </Swap>
+        <Reveal show={pwa.needRefresh}>
+          <StatusRow
+            icon="refresh" tone="action" gap={8} title={t('settings.update')} body={t(busy ? 'settings.updateBusy' : 'settings.updateIdle')}
             action={{ label: t('settings.restart'), onClick: () => !busy && pwa.apply() }} actionStrong actionDisabled={busy}
           />
-        )}
+        </Reveal>
       </section>
 
       <section aria-labelledby="st-ab" className="lb-sec">
@@ -179,7 +185,7 @@ export function SettingsPage() {
       <AlertDialog
         open={dialog === 'library'} danger typedConfirm={t('dialogs.confirmWord')}
         title={t('dialogs.deleteLibraryTitle')} body={t('dialogs.deleteLibraryBody', { count: books.length, size: formatBytes(bookBytes) })}
-        note={playing ? t('dialogs.deletePlaying') : undefined}
+        note={books.some((v) => isBookPlaying(v.book.id)) ? t('dialogs.deletePlaying') : undefined}
         confirmLabel={t('settings.deleteLibrary')} cancelLabel={t('common.cancel')} onConfirm={() => void deleteLibrary()} onCancel={() => setDialog(null)}
       />
     </div>
