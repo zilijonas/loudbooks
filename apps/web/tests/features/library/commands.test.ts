@@ -30,6 +30,41 @@ async function seed() {
   }
 }
 describe("library persistence", () => {
+  it("removes a chapter, remaps progress, and deletes its unreferenced audio", async () => {
+    await seed();
+    await db.progress.put({ bookId: "b", bookRevision: 1, sourceAssetId: "b", sourceOffset: 20, globalOffset: 80, updatedAt: 1, stopReason: null, rewindPending: false });
+    await new LibraryCommands(() => false, repo, storage).removeChapter("b", "a");
+    expect((await db.books.get("b"))?.revision).toBe(2);
+    expect(await db.progress.get("b")).toMatchObject({ bookRevision: 2, sourceAssetId: "b", sourceOffset: 20, globalOffset: 20 });
+    expect(await db.assets.get("a")).toBeUndefined();
+    expect(storage.files.has("staging/j/a")).toBe(false);
+  });
+  it("moves progress from removed audio to a remaining chapter and retains cleanup on failure", async () => {
+    await seed();
+    await db.progress.put({ bookId: "b", bookRevision: 1, sourceAssetId: "a", sourceOffset: 20, globalOffset: 20, updatedAt: 1, stopReason: null, rewindPending: false });
+    storage.fail = true;
+    await expect(new LibraryCommands(() => false, repo, storage).removeChapter("b", "a")).rejects.toThrow("storage unavailable");
+    expect(await db.progress.get("b")).toMatchObject({ bookRevision: 2, sourceAssetId: "b", sourceOffset: 0, globalOffset: 0 });
+    expect(await db.imports.count()).toBe(1);
+    storage.fail = false;
+    await new ImportCoordinator({ repository: repo, storage, exclusive: work => work() }).recover(() => false);
+    expect(storage.files.has("staging/j/a")).toBe(false);
+  });
+  it("toggles logical parts without changing the source position or copying audio", async () => {
+    await seed();
+    await db.chapters.delete("b");
+    await db.assets.delete("b");
+    await db.assets.update("a", { duration: 3700 });
+    await db.chapters.update("a", { globalEnd: 3700, sourceRanges: [{ assetId: "a", sourceStart: 0, sourceEnd: 3700 }] });
+    await db.progress.put({ bookId: "b", bookRevision: 1, sourceAssetId: "a", sourceOffset: 1850, globalOffset: 1850, updatedAt: 1, stopReason: null, rewindPending: false });
+    const commands = new LibraryCommands(() => false, repo, storage);
+    await commands.setGeneratedParts("b", true);
+    expect(await db.chapters.where("bookId").equals("b").count()).toBe(3);
+    expect(await db.progress.get("b")).toMatchObject({ bookRevision: 2, sourceOffset: 1850, globalOffset: 1850 });
+    await commands.setGeneratedParts("b", false);
+    expect(await db.chapters.where("bookId").equals("b").count()).toBe(1);
+    expect(await db.progress.get("b")).toMatchObject({ bookRevision: 3, sourceOffset: 1850, globalOffset: 1850 });
+  });
   it("reorders with new revision and remaps the current source position", async () => {
     await seed();
     await db.progress.put({ bookId: "b", bookRevision: 1, sourceAssetId: "a", sourceOffset: 20, globalOffset: 20, updatedAt: 1, stopReason: null, rewindPending: false });

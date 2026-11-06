@@ -14,6 +14,7 @@ Construct `new LibraryCommands(isActivePath, repository?, storage?)`. `isActiveP
 
 - `renameBook(id, title)`, `updateDescription(id, description)`, and `renameChapter(id, title)` update metadata.
 - `reorderChapters(bookId, orderedChapterIds)` validates the complete permutation, increments book revision and remaps progress by source asset and source offset where possible. Consumers must discard session outputs whose revision differs from the book revision.
+- `removeChapter(bookId, chapterId)` removes an imported chapter, remaps progress and journals unreferenced audio for cleanup; the last chapter cannot be removed. `setGeneratedParts(bookId, on)` switches a single audio asset between whole-book and logical half-hour chapters without copying it. Both increment revision when the chapter layout changes.
 - `setCover(bookId, blobOrNull)` journals and writes a new WebP before switching metadata. The previous cover stays journaled until inactive; null returns to the generated-cover fallback.
 - `deleteBook(id)` rejects if any related file is active. It removes metadata transactionally, then deletes associated audio, cover and session files. A cleanup failure can leave orphan files but cannot leave a ready book pointing at deleted audio.
 

@@ -52,6 +52,39 @@ export class LibraryRepository {
       if (progress && remapped !== undefined) await this.database.progress.update(bookId, { bookRevision: revision, globalOffset: remapped });
     });
   }
+  async replaceChapters(bookId: string, chapters: Chapter[], removedAssetIds: string[] = [], cleanup?: ImportJob, fallbackIndex = 0) {
+    await this.database.transaction("rw", [this.database.books, this.database.chapters, this.database.assets, this.database.progress, this.database.imports], async () => {
+      const book = await this.database.books.get(bookId);
+      if (!book || !chapters.length) throw new Error("Book must have audio");
+      const progress = await this.database.progress.get(bookId);
+      const revision = book.revision + 1;
+      if (cleanup) await this.database.imports.add(cleanup);
+      await this.database.chapters.where("bookId").equals(bookId).delete();
+      await this.database.chapters.bulkAdd(chapters);
+      await this.database.assets.bulkDelete(removedAssetIds);
+      await this.database.books.update(bookId, { revision, updatedAt: Date.now() });
+      if (progress) {
+        let mapped: { sourceAssetId: string; sourceOffset: number; globalOffset: number } | undefined;
+        for (const chapter of chapters) {
+          let start = chapter.globalStart;
+          for (const range of chapter.sourceRanges) {
+            if (range.assetId === progress.sourceAssetId && progress.sourceOffset >= range.sourceStart && progress.sourceOffset <= range.sourceEnd) {
+              mapped = { sourceAssetId: range.assetId, sourceOffset: progress.sourceOffset, globalOffset: start + progress.sourceOffset - range.sourceStart };
+              break;
+            }
+            start += range.sourceEnd - range.sourceStart;
+          }
+          if (mapped) break;
+        }
+        if (!mapped) {
+          const chapter = chapters[Math.min(fallbackIndex, chapters.length - 1)]!;
+          const range = chapter.sourceRanges[0]!;
+          mapped = { sourceAssetId: range.assetId, sourceOffset: range.sourceStart, globalOffset: chapter.globalStart };
+        }
+        await this.database.progress.update(bookId, { ...mapped, bookRevision: revision });
+      }
+    });
+  }
   async renameChapter(id: string, title: string) { await this.database.chapters.update(id, { title }); }
   async deleteBookMetadata(id: string, cleanup: ImportJob) {
     await this.database.transaction("rw", [this.database.books, this.database.assets, this.database.chapters, this.database.progress, this.database.sessions, this.database.imports], async () => {
