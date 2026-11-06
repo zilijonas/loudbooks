@@ -11,15 +11,15 @@ async function sha256(path: string): Promise<string> {
   return hash.digest("hex");
 }
 
-test("imports source files and reads identical OPFS bytes", async ({ playwright, browserName }) => {
-  test.setTimeout(180_000);
+test("imports the 12 Zeland chapters and book-long.mp3 and reads identical OPFS bytes", async ({ playwright, browserName }) => {
+  test.setTimeout(300_000);
   const root = resolve(process.cwd(), "../..");
   const zeland = resolve(root, "fixtures/downloads/zeland");
-  const sample = resolve(root, "audio_samples/book-short.mp3");
-  test.skip(!existsSync(zeland) || !existsSync(sample), "External audio fixtures are not installed");
-  const chapters = (await readdir(zeland)).filter(name => name.endsWith(".mp3")).sort().slice(0, 3).map(name => resolve(zeland, name));
-  expect(chapters).toHaveLength(3);
-  const groups = [chapters, [sample]];
+  const long = resolve(root, "audio_samples/book-long.mp3");
+  test.skip(!existsSync(zeland) || !existsSync(long), "External audio fixtures are not installed");
+  const chapters = (await readdir(zeland)).filter(name => name.endsWith(".mp3")).sort().map(name => resolve(zeland, name));
+  expect(chapters).toHaveLength(12);
+  const groups = [chapters, [long]];
   const profile = await mkdtemp(resolve(tmpdir(), 'loudbooks-opfs-'));
   let context: BrowserContext | undefined;
   try {
