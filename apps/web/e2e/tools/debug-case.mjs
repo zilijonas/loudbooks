@@ -9,5 +9,6 @@ try {
   await page.goto('http://127.0.0.1:5173/loudbooks/#/__seed', { waitUntil: 'networkidle' })
   await page.evaluate(async () => (await import('/loudbooks/e2e/tools/seed.ts')).seed({ books: ['b1', 'b2', 'b5', 'b4', 'b6', 'b3'] }))
   for (const h of steps) { if (h.startsWith('goto:')) { await page.goto('http://127.0.0.1:5173/loudbooks/' + h.slice(5), { waitUntil: 'networkidle' }); continue } await page.evaluate((x) => { location.hash = x }, h); await page.waitForTimeout(Number(process.env.WAIT ?? 1200)) }
+  if (process.env.EVAL) console.log('EVAL', JSON.stringify(await page.evaluate(process.env.EVAL)))
   console.log('BODY', (await page.locator('body').innerText()).replace(/\s+/g, ' ').slice(0, 300))
 } finally { await browser.close() }

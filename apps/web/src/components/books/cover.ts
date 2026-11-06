@@ -31,7 +31,13 @@ const fnv = (s: string) => {
   return x >>> 0
 }
 
-export const titleSize = (n: number) => (n <= 12 ? '21cqw' : n <= 24 ? '16cqw' : n <= 40 ? '12.5cqw' : '10cqw')
+const steps = (n: number) => (n <= 12 ? 21 : n <= 24 ? 16 : n <= 40 ? 12.5 : 10)
+
+/** The design's size steps by title length, shrunk just enough that the longest word fits the cover (the title breaks anywhere, so a 7-letter word at 21cqw would split mid-word). */
+export const titleSize = (title: string) => {
+  const longest = Math.max(1, ...title.split(/\s+/).map((w) => [...w].length))
+  return `${Math.max(8, Math.min(steps([...title].length), 76 / (longest * 0.56)))}cqw`
+}
 
 export function artOf(title: string): Art {
   const t = title.trim() || 'Untitled'
@@ -45,5 +51,5 @@ export function artOf(title: string): Art {
     .slice(0, 2)
     .map((w) => w.match(/[\p{L}\p{N}]/u)![0]!.toUpperCase())
   const mono = li === 2 && ini.length > 0
-  return { ...p, justify: LAY[li]!, display: mono ? `${ini.join('.')}.` : t, fs: mono ? '30cqw' : titleSize(t.length), author: mono ? t : '' }
+  return { ...p, justify: LAY[li]!, display: mono ? `${ini.join('.')}.` : t, fs: mono ? '30cqw' : titleSize(t), author: mono ? t : '' }
 }

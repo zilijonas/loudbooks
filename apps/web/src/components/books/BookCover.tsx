@@ -33,7 +33,7 @@ export function BookCover({ book, size = 'fluid', layoutId, art: override, class
   const [w, r] = SIZE[size]
   // Like the prototype's artOf: fixed art always shows the full title, never initials.
   const t = book.title.trim() || 'Untitled'
-  const art = override ? { ...artOf(t), display: t, fs: titleSize(t.length), author: '', ...override } : artOf(t)
+  const art = override ? { ...artOf(t), display: t, fs: titleSize(t), author: '', ...override } : artOf(t)
   const image = book.cover?.kind === 'image' ? book.cover.url : null
   return (
     <motion.div

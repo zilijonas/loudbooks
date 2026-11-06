@@ -19,6 +19,8 @@ export function PlayerDock() {
   const [sheet, setSheet] = useState<SheetName | null>(null)
   const show = !!view && !HIDDEN.some((r) => r.test(pathname))
   const mini = show && !desktop
+  // The library grid card and the details cover share `cover-{id}` with this dock; two live members of one id hide each other.
+  const coverLayoutId = pathname === '/' || (!!view && pathname === `/book/${view.summary.id}`) ? null : undefined
   useLayoutEffect(() => {
     document.documentElement.toggleAttribute('data-dock', mini)
     return () => document.documentElement.removeAttribute('data-dock')
@@ -28,12 +30,13 @@ export function PlayerDock() {
       <AnimatePresence>
         {mini && (
           <div key="mini" className="lb-dock-mini">
-            <MiniPlayer book={view.summary} status={view.status} subtitle={view.subtitle} onOpen={openPlayer} onToggle={togglePlay} />
+            <MiniPlayer coverLayoutId={coverLayoutId} book={view.summary} status={view.status} subtitle={view.subtitle} onOpen={openPlayer} onToggle={togglePlay} />
           </div>
         )}
         {show && desktop && (
           <PlayerBar
             key="bar"
+            coverLayoutId={coverLayoutId}
             book={view.summary}
             status={view.status}
             subtitle={view.subtitle}

@@ -14,6 +14,8 @@ export interface MiniPlayerProps {
   onOpen: () => void
   onToggle: () => void
   art?: Partial<Art>
+  /** Shared-cover id; `null` when another cover of this book is on screen (two members of one layoutId hide each other). Default `cover-{id}`. */
+  coverLayoutId?: string | null
 }
 
 const isPlaying = (s: PlayerStatus) => s === 'playing'
@@ -22,7 +24,7 @@ const isPlaying = (s: PlayerStatus) => s === 'playing'
  * Phone mini-player. Render inside `<AnimatePresence>`: it rises in with a small overshoot and drops out faster.
  * The cover carries `layoutId="cover-{id}"` so it morphs into the full player.
  */
-export function MiniPlayer({ book, status, subtitle, onOpen, onToggle, art }: MiniPlayerProps) {
+export function MiniPlayer({ book, status, subtitle, onOpen, onToggle, art, coverLayoutId }: MiniPlayerProps) {
   const p = usePreset()
   const reduce = !('transform' in p.page.initial)
   return (
@@ -34,7 +36,7 @@ export function MiniPlayer({ book, status, subtitle, onOpen, onToggle, art }: Mi
       transition={reduce ? p.springSoft : { type: 'spring', duration: 0.46, bounce: 0.25 }}
     >
       <button type="button" className="lb-reset lb-mini-open" aria-label={`${t('player.nowPlaying')}: ${book.title}`} onClick={onOpen}>
-        <span style={{ borderRadius: 7, overflow: 'hidden', marginLeft: 6, flex: 'none' }}><BookCover book={book} size="xs" layoutId={`cover-${book.id}`} art={art} style={{ marginLeft: 0 }} /></span>
+        <span style={{ borderRadius: 7, overflow: 'hidden', marginLeft: 6, flex: 'none' }}><BookCover book={book} size="xs" layoutId={coverLayoutId === null ? undefined : (coverLayoutId ?? `cover-${book.id}`)} art={art} style={{ marginLeft: 0 }} /></span>
         <span className="lb-mini-text">
           <span className="lb-ellipsis">{book.title}</span>
           <span className="lb-ellipsis">{subtitle}</span>
@@ -58,12 +60,12 @@ export interface PlayerBarProps extends MiniPlayerProps {
 }
 
 /** Desktop player bar (≥ 768 px) under the content. Render inside `<AnimatePresence>`. */
-export function PlayerBar({ book, status, subtitle, onOpen, onToggle, art, speedLabel, timerLabel, timerActive, onBack, onForward, onSpeed, onTimer }: PlayerBarProps) {
+export function PlayerBar({ book, status, subtitle, onOpen, onToggle, art, coverLayoutId, speedLabel, timerLabel, timerActive, onBack, onForward, onSpeed, onTimer }: PlayerBarProps) {
   const p = usePreset()
   return (
     <motion.div className="lb-playerbar" {...p.page}>
       <button type="button" className="lb-reset lb-playerbar-open" aria-label={`${t('player.nowPlaying')}: ${book.title}`} onClick={onOpen}>
-        <BookCover book={book} size="sm" layoutId={`cover-${book.id}`} art={art} />
+        <BookCover book={book} size="sm" layoutId={coverLayoutId === null ? undefined : (coverLayoutId ?? `cover-${book.id}`)} art={art} />
         <span className="lb-mini-text">
           <span className="lb-ellipsis">{book.title}</span>
           <span className="lb-ellipsis">{subtitle}</span>
