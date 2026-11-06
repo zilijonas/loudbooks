@@ -48,6 +48,7 @@ function deferred<T>(signal: AbortSignal) {
     resolve = res
     signal.addEventListener('abort', () => rej(signal.reason), { once: true })
   })
+  promise.catch(() => {}) // nobody may be waiting when the session ends
   return { promise, resolve }
 }
 
@@ -66,14 +67,14 @@ abstract class Session {
     busy(true)
     const pc = this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS })
     pc.onicecandidate = (e) => { if (e.candidate?.candidate) this.signal?.send(iceMessage(e.candidate)) }
-    pc.onconnectionstatechange = () => { if (pc.connectionState === 'failed') this.lost() }
-    this.later(() => { if (this.dc?.readyState !== 'open') this.lost() }, CONNECT_TIMEOUT)
+    pc.onconnectionstatechange = () => { if (pc.connectionState === 'failed') this.lost('ice failed') }
+    this.later(() => { if (this.dc?.readyState !== 'open') this.lost('connect timeout') }, CONNECT_TIMEOUT)
     return pc
   }
   protected channel(dc: RTCDataChannel) {
     this.dc = dc
     dc.binaryType = 'arraybuffer'
-    dc.onclose = () => this.lost()
+    dc.onclose = () => this.lost('channel closed')
     dc.onmessage = (e) => this.onData(e.data)
   }
   protected onSignalMessage(m: ServerMessage) {
@@ -85,7 +86,7 @@ abstract class Session {
   }
   protected abstract onData(data: unknown): void
   /** Connection or protocol failure: show the connectivity state and tear down. */
-  abstract lost(): void
+  abstract lost(reason: unknown): void
   stop() {
     if (this.aborted) return
     this.ctrl.abort(new DOMException('Transfer stopped', 'AbortError'))
@@ -133,7 +134,7 @@ class SendSession extends Session {
     if (m.type === 'join' && useTransfer.getState().send.step === 'qr') this.set({ step: 'code' })
     else if (m.type === 'wrong-code') this.set({ checking: false, triesLeft: m.attemptsRemaining, codeError: 'wrong' })
     else if (m.type === 'approved') void this.connect()
-    else if (m.type === 'answer') void this.pc?.setRemoteDescription({ type: 'answer', sdp: m.sdp }).catch(() => this.lost())
+    else if (m.type === 'answer') void this.pc?.setRemoteDescription({ type: 'answer', sdp: m.sdp }).catch((e) => this.lost(e))
     else if (m.type === 'reject' || m.type === 'close') { if (!this.dc) this.renew() }
     else this.onSignalMessage(m)
   }
@@ -143,7 +144,7 @@ class SendSession extends Session {
     // The third wrong code closes the room without another message.
     if (s.checking && s.triesLeft <= 1) { this.set({ checking: false, triesLeft: 0, codeError: 'locked' }); return this.stop() }
     if (s.step === 'qr' || s.step === 'code') return this.renew()
-    this.lost()
+    this.lost('room closed')
   }
   private async connect() {
     this.set({ step: 'connecting', checking: false, codeError: null })
@@ -155,20 +156,20 @@ class SendSession extends Session {
       // Pairing is done: close the room so the service holds nothing further.
       this.signal?.send({ type: 'close' })
       this.signal?.close()
-      this.run().catch(() => this.lost())
+      this.run().catch((e) => this.lost(e))
     }
     try {
       await pc.setLocalDescription(await pc.createOffer())
       this.signal?.send({ type: 'offer', sdp: pc.localDescription!.sdp })
-    } catch { this.lost() }
+    } catch (e) { this.lost(e) }
   }
   protected onData(data: unknown) {
     const m = this.parse(data)
-    if (!m) return this.lost()
+    if (!m) return this.lost('bad message')
     if (m.type === 'credit') this.credit.grant(m.bytes)
     else if (m.type === 'resume') this.resume.resolve(m)
     else if (m.type === 'done') this.received.resolve()
-    else if (m.type === 'cancel' || m.type === 'error') this.lost()
+    else if (m.type === 'cancel' || m.type === 'error') this.lost(`peer ${m.type}`)
   }
   private async run() {
     const dc = this.dc!
@@ -212,8 +213,9 @@ class SendSession extends Session {
     this.set({ step: 'done' })
     this.stop()
   }
-  lost() {
+  lost(reason: unknown) {
     if (this.aborted) return
+    console.warn('Send ended:', reason)
     this.set({ step: 'failed' })
     this.stop()
   }
@@ -292,12 +294,12 @@ class ReceiveSession extends Session {
       await this.pc!.setRemoteDescription({ type: 'offer', sdp })
       await this.pc!.setLocalDescription(await this.pc!.createAnswer())
       this.signal?.send({ type: 'answer', sdp: this.pc!.localDescription!.sdp })
-    } catch { this.lost() }
+    } catch (e) { this.lost(e) }
   }
   private onSignalClosed() {
     // After the channel exists the sender closes the room on purpose.
     if (!this.live || this.dc) return
-    if (this.approved) return this.lost()
+    if (this.approved) return this.lost('room closed')
     this.set({ step: 'expired' })
     this.stop()
   }
@@ -308,7 +310,7 @@ class ReceiveSession extends Session {
     if (!m) return this.fail('message')
     if (m.type === 'manifest') this.onManifest(m.manifest).catch((e) => this.fail(e))
     else if (m.type === 'done') this.finish().catch((e) => this.fail(e))
-    else if (m.type === 'cancel' || m.type === 'error') this.lost()
+    else if (m.type === 'cancel' || m.type === 'error') this.lost(`peer ${m.type}`)
   }
   private ask(step: ReceiveStep, patch: Parameters<typeof setReceive>[0] = {}) {
     const d = deferred<Choice>(this.ctrl.signal)
@@ -454,12 +456,12 @@ class ReceiveSession extends Session {
   }
   private fail(error: unknown) {
     if (this.aborted) return
-    if (import.meta.env.DEV) console.warn('Transfer failed', error)
     this.sendJson({ type: 'error', code: error instanceof ProtocolError ? error.code : 'receive' })
-    this.lost()
+    this.lost(error)
   }
-  lost() {
+  lost(reason: unknown) {
     if (this.aborted) return
+    console.warn('Receive ended:', reason)
     this.set({ step: 'disconnected' })
     this.stop()
   }

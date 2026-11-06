@@ -7,6 +7,7 @@ import { BottomSheet, useIsDesktop } from '../components/ui/Overlays'
 import { ImportCoordinator } from '../features/import/ImportCoordinator'
 import { isActivePath } from '../features/playback/api'
 import { PlayerDock } from '../features/playback/PlayerDock'
+import { SendHost } from '../pages/shared/SendHost'
 import { t } from '../i18n'
 import { usePreset } from '../motion/presets'
 import { usePwaUpdate } from '../pwa/usePwaUpdate'
@@ -73,6 +74,7 @@ export function Shell() {
           </AnimatePresence>
         </main>
         {dock && <PlayerDock />}
+        <SendHost />
       </div>
       <Toast toast={toast} bottom={`calc(${desktop ? 28 : 24}px + var(--lb-safe-bottom) + var(--lb-dock, 0px))`} />
       <BottomSheet open={installOpen} onOpenChange={(o) => useUi.setState({ installOpen: o })} title={t('install.title')}>

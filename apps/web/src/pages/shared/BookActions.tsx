@@ -6,7 +6,6 @@ import { formatBytes } from '../../components/format'
 import { ActionList, type MenuAction } from '../../components/ui/Feedback'
 import { AlertDialog, BottomSheet } from '../../components/ui/Overlays'
 import { isBookActive, pause } from '../../features/playback/api'
-import { SendDialog } from '../../features/transfer/SendDialog'
 import { startSend } from '../../features/transfer/TransferCoordinator'
 import { t } from '../../i18n'
 import { showToast } from '../../app/store'
@@ -54,7 +53,6 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
         {shown && <SheetBook view={shown} />}
         <ActionList items={items} />
       </BottomSheet>
-      {shown && <SendFor view={shown} />}
       <AlertDialog
         open={!!del}
         danger
@@ -83,7 +81,3 @@ function SheetBook({ view }: { view: BookView }) {
   )
 }
 
-function SendFor({ view }: { view: BookView }) {
-  const book = useSummary(view)
-  return <SendDialog book={book} bytes={view.bytes} files={view.assets.length} />
-}

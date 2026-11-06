@@ -27,6 +27,27 @@ const file = async (path, name) => ({ name, mimeType: 'audio/mpeg', buffer: awai
 const demoFiles = async () => [await file(zFiles[1], 'Quiet Rooms 10 - The Attic.mp3'), await file(zFiles[2], 'Quiet Rooms 2 - The Reading Room.mp3'), await file(zFiles[0], 'Quiet Rooms 1 - The Front Door.mp3')]
 const pick = async (page, files) => { await page.locator('.lb-dropzone input[type=file]').setInputFiles(files); await page.waitForFunction(() => !document.querySelector('.lb-edit-sub .lb-spin'), null, { timeout: 30_000 }) }
 
+const transferStore = (page, slice, patch) => page.evaluate(async ([slice, patch]) => {
+  const { useTransfer } = await import('/loudbooks/src/features/transfer/store.ts')
+  useTransfer.setState((s) => ({ [slice]: { ...s[slice], ...patch } }))
+}, [slice, patch])
+async function sendState(page, k) {
+  await page.getByRole('button', { name: 'Send', exact: true }).click()
+  // The live session tries the real pairing service first; wait for it to settle, then show the preset state.
+  await page.waitForFunction(async () => { const s = (await import('/loudbooks/src/features/transfer/store.ts')).useTransfer.getState().send; return s.step !== 'qr' || s.link })
+  const bytes = await page.evaluate(async () => (await (await import('/loudbooks/src/services/db/database.ts')).db.assets.where('bookId').equals('b5').toArray()).reduce((n, a) => n + a.bytes, 0))
+  const step = k === 'wrong' ? 'code' : k
+  await transferStore(page, 'send', { step, link: 'https://zilijonas.github.io/loudbooks/#/receive/r/0f8fad5b-d9cb-469f-a165-70867728950e.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.mhwq1f3k', expiresAt: Date.now() + 272_000, bytesTotal: bytes, bytesDone: bytes * 0.51, fileIndex: 5, fileCount: 8, codeError: k === 'wrong' ? 'wrong' : null, triesLeft: k === 'wrong' ? 2 : 3 })
+  if (k === 'wrong') await page.getByRole('textbox', { name: 'Type the code shown on your phone' }).fill('481915')
+}
+async function receiveState(page, k) {
+  // No camera in the screenshot browser: hold the request open so the scanner shows its empty viewfinder.
+  if (k === 'scanning') await page.evaluate(() => { navigator.mediaDevices.getUserMedia = () => new Promise(() => {}) })
+  const step = k === 'paste-error' ? 'paste' : k
+  await transferStore(page, 'receive', { step, code: '482915', title: 'Moth Hours', bytesTotal: 270e6, bytesDone: 0.51 * 270e6, fileIndex: 5, fileCount: 8, bookId: 'b5', need: 270e6, free: 180e6 })
+  if (k === 'paste-error') { await page.getByRole('textbox', { name: 'Pairing link' }).fill('https://example.com/book.mp3'); await page.getByRole('button', { name: 'Connect' }).click() }
+}
+
 // [name, design preset, app hash, seed, setup(page), init flags]
 const CASES = [
   ['welcome', 'welcome', '#/welcome', { welcome: true }],
@@ -67,6 +88,10 @@ const CASES = [
   ['settings-update', 'settings-update', '#/settings', { books: MANY, sessionBytes: 2e6 }, async (p) => pwaReady(p, true), { persisted: true, standalone: true }],
   ['dialog-clear', 'dialog-clear', '#/settings', { books: MANY, sessionBytes: 2e6 }, async (p) => { await p.getByRole('button', { name: 'Clear temporary files' }).click() }, { persisted: true, standalone: true }],
   ['dialog-delete-library', 'dialog-delete-library', '#/settings', { books: MANY }, async (p) => { await p.getByRole('button', { name: 'Delete library…' }).click(); await p.getByLabel('Type delete to confirm').fill('del') }, { persisted: true, standalone: true }],
+  // Send / Receive (LB-9): the real dialog/screen, then the transfer store is set to the preset's state.
+  ...['qr', 'code', 'wrong', 'connecting', 'sending', 'verifying', 'done', 'failed', 'signaling'].map((k) => [`send-${k}`, `send-${k}`, '#/book/b5', { books: MANY }, (p) => sendState(p, k)]),
+  ...['intro', 'permission', 'denied', 'scanning', 'expired', 'paste', 'paste-error', 'code', 'connecting', 'receiving', 'verifying', 'success', 'disconnected', 'storage', 'duplicate', 'signaling'].map((k) => [`receive-${k}`, `receive-${k}`, '#/receive', { books: MANY }, (p) => receiveState(p, k)]),
+  ['receive-safari', 'receive-safari', '#/receive', {}, null, { safari: true }],
   // Break-UI (ours only; no design preset).
   ['break-library', null, '#/', { books: ['long', 'q', 'huge', 'b1', 'b2', 'b5'] }],
   ['break-details-long', null, '#/book/long', { books: ['long', 'q', 'huge'] }],
