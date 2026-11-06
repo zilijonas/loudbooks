@@ -62,7 +62,35 @@ export const reorder = {
 
 export const stagger = { step: 0.04, max: 0.24 }; // 40ms per item, cap total; never blocks input
 
-export const presets = { springSoft, springPlayful, press, hoverLift, sheet, sharedCover, page, success, reorder, stagger };
+// Additions from handoff/motion-spec.md and the prototype keyframes (lbDialogIn, lbToast, lbRise).
+export const dialog = {
+  // Centred, so scale from the middle. Exit faster than enter.
+  initial: { opacity: 0, transform: "scale(0.94)" }, animate: { opacity: 1, transform: "scale(1)" },
+  exit: { opacity: 0, transform: "scale(0.98)", transition: { duration: 0.14, ease: ease.out } },
+  transition: { duration: 0.26, ease: ease.out } as Transition,
+};
+
+export const menu = {
+  // Popover: scales from its trigger via the Radix transform-origin variable (set in CSS).
+  initial: { opacity: 0, transform: "scale(0.96)" }, animate: { opacity: 1, transform: "scale(1)" },
+  exit: { opacity: 0, transition: { duration: 0.12, ease: ease.out } },
+  transition: { duration: 0.18, ease: ease.out } as Transition,
+};
+
+export const toast = {
+  initial: { opacity: 0, transform: "translateY(14px) scale(0.96)" }, animate: { opacity: 1, transform: "translateY(0px) scale(1)" },
+  exit: { opacity: 0, transform: "translateY(8px) scale(0.98)", transition: { duration: 0.16, ease: ease.out } },
+  transition: { duration: 0.32, ease: ease.out } as Transition,
+};
+
+export const reveal = {
+  // Inline content that appears inside a component (error lines, custom fields, sub-labels).
+  initial: { opacity: 0, transform: "translateY(6px)" }, animate: { opacity: 1, transform: "translateY(0px)" },
+  exit: { opacity: 0, transition: { duration: 0.12, ease: ease.out } },
+  transition: { duration: 0.26, ease: ease.out } as Transition,
+};
+
+export const presets = { springSoft, springPlayful, press, hoverLift, sheet, sharedCover, page, success, reorder, stagger, dialog, menu, toast, reveal };
 
 // Keyboard-initiated actions (shortcuts, arrow-key seeking) do not animate.
 
@@ -80,5 +108,6 @@ export function usePreset() {
     page: fade, success: { ...fade, check: { pathLength: 1 } },
     reorder: { lifted: { boxShadow: "var(--lb-shadow-lift)", zIndex: 5 }, layoutTransition: { duration: 0 } },
     stagger: { step: 0, max: 0 },
+    dialog: fade, menu: fade, toast: fade, reveal: fade,
   };
 }
