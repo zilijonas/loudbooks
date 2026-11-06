@@ -56,3 +56,12 @@ pnpm workspace exactly as plan §1: `apps/web`, `apps/signaling`, `packages/cont
 
 ## Done means
 Typecheck + lint + relevant tests pass, behaviour verified in a real browser (WebKit included for UI/audio), screenshots compared with the design for UI, evidence attached to the LB task. If blocked, set the LB task `blocked` with the exact question; do not guess around spec rules.
+
+## Known gotchas (from earlier design-parity projects on this machine)
+- Visual parity is proven only by looking at side-by-side screenshots (design | ours) at each width and theme; pixel-diff numbers alone are not evidence. Build a small compare script (Playwright: screenshot design/*.dc.html preset and our route, stitch side by side) and reuse it.
+- Tailwind preflight sets `line-height: 1.5`; the design uses its own line-heights — set base values from tokens, check text metrics.
+- Load the exact font weights the design uses, or the browser synthesises bold and glyph widths differ.
+- Tailwind v4 shadow utilities inline the @theme value, so dark-mode overrides need a CSS-variable indirection.
+- Radix Collapsible/Accordion zero `transition-duration` inline while measuring: animate a child. Radix Tabs focus() on mousedown shows a focus ring in Chromium: pre-focus with `{focusVisible:false}`.
+- Motion exits hang under jsdom without WAAPI; mock `motion` or test exits in Playwright.
+- Playwright WebKit is not Safari. Real Safari checks: `~/ai/bin/with-display-awake`, create a new window via AppleScript `make new document`, remember its `window id`, address only that id, check the tab URL is localhost before injecting JS, capture only that window with `screencapture -l <id>`. Never use `front window`, `current tab` or System Events keystrokes; the owner's own Safari windows must stay untouched.
