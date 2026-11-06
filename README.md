@@ -106,7 +106,14 @@ design/             design system and handoff the UI is built from
 
 ## Tests and current status
 
-Unit tests, the browser suites and the session compiler measurements on Chromium, WebKit and Firefox are recorded in [docs/testing.md](docs/testing.md).
+Last full pass (2026-11-07, Mac mini M4, macOS 26.6.2, Playwright 1.65.0), details in [docs/testing.md](docs/testing.md):
+
+- Unit and integration: web 93 tests, signaling 7, contracts 2, all green. Typecheck and lint are clean.
+- Browser suite on the preview build: Chromium 9 passed, WebKit 8, Firefox 8 (the skips are cases that belong to another config or need Chrome's storage quota override). It covers importing the 12 Zeland chapters and a 46-minute book, listening sessions with timers and resume rules, an offline cold launch with every precache entry present, a service worker update while listening, the out-of-space panel, backup export and restore, and editing books.
+- Session compiler: 13 cases on Chromium and 12 on WebKit, plus the earlier Firefox run.
+- Two-device transfer against a local pairing Worker: passed with Chrome and with WebKit as the receiver.
+
+Playwright's WebKit is not Safari.
 
 **Not done yet: physical-iPhone tests.** Nobody has yet run the installed PWA on a real iPhone through the full flow: airplane mode, locked screen, a 30-minute session at 1x and at 1.5x playing until the file ends. Phone compile times and a 500 MB transfer into the iPhone app are also unmeasured. Desktop WebKit is not Safari on iOS, so treat lock-screen behaviour as unverified until those records exist.
 

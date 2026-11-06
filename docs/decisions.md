@@ -56,7 +56,7 @@ The app lives at `https://zilijonas.github.io/loudbooks/`, a project site on Git
 
 ## 11. Updates wait for the user
 
-The service worker uses `registerType: 'prompt'`. A new version never reloads the page during playback, import or transfer. Every JS chunk, worker, WASM file, font and icon is precached, so the app opens in airplane mode after the first full load.
+The service worker uses `registerType: 'prompt'`. A new version never reloads the page during playback, import or transfer. A book that is loaded but paused does not block the update. Restart always reloads onto the new worker. Every JS chunk, worker, WASM file, font and icon is precached, so the app opens in airplane mode after the first full load.
 
 ## 12. Test policy
 
