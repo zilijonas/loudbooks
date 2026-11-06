@@ -4,13 +4,14 @@ import { MediaStorage } from "../../services/opfs/MediaStorage";
 import { resizeCover } from "./cover";
 import { exclusive } from "../import/exclusive";
 import { generatedParts } from "./chapters";
+import { ImportCoordinator } from "../import/ImportCoordinator";
 
 export type IsActivePath = (path: string) => boolean | Promise<boolean>;
 export const cleanupJob = (paths: string[]): ImportJob => ({ id: crypto.randomUUID(), stagingPaths: [...new Set(paths.filter(Boolean))], expectedFiles: paths.length, receivedFiles: 0, state: "failed", error: "cleanup" });
 export const coverPath = (bookId: string, coverId: string) => `books/${bookId}/covers/${coverId}.webp`;
 
 export class LibraryCommands {
-  constructor(private readonly isActive: IsActivePath, private readonly repository = libraryRepository, private readonly storage = new MediaStorage()) {}
+  constructor(private readonly isActive: IsActivePath, private readonly repository = libraryRepository, private readonly storage = new MediaStorage(), private readonly importer?: ImportCoordinator) {}
 
   private async ensureInactiveBook(id: string) {
     const [assets, sessions] = await Promise.all([this.repository.database.assets.where("bookId").equals(id).toArray(), this.repository.database.sessions.where("bookId").equals(id).toArray()]);
@@ -26,6 +27,11 @@ export class LibraryCommands {
   }
   async updateDescription(id: string, description: string) { await this.ensureInactiveBook(id); await this.repository.updateBook(id, { description }); }
   async reorderChapters(bookId: string, ids: string[]) { await this.ensureInactiveBook(bookId); await this.repository.reorderChapters(bookId, ids); }
+  async addFiles(bookId: string, files: File[]) {
+    const importer = this.importer ?? new ImportCoordinator({ repository: this.repository, storage: this.storage });
+    try { return await importer.addFiles(bookId, files, () => this.ensureInactiveBook(bookId)); }
+    finally { if (!this.importer) importer.dispose(); }
+  }
   async renameChapter(id: string, title: string) {
     const chapter = await this.repository.database.chapters.get(id);
     if (!chapter) throw new Error("Chapter not found");

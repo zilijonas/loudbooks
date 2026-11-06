@@ -30,6 +30,9 @@ const CHECKPOINT_MS = 5000
 
 let assets = new Map<string, MediaAsset>()
 let prepareAbort: AbortController | null = null
+let preparing: Promise<void> | null = null
+let preparationGeneration = 0
+let selectionGeneration = 0
 let rebuildResume = false
 let objectUrl: string | null = null
 let expectPause = false
@@ -217,7 +220,16 @@ async function playAudio() {
   }
 }
 
-async function prepare(plan: SessionPlan, reason: 'start' | RebuildReason, resume: boolean) {
+function prepare(plan: SessionPlan, reason: 'start' | RebuildReason, resume: boolean) {
+  const previous = preparing
+  const generation = ++preparationGeneration
+  const work = (async () => { if (previous) { prepareAbort?.abort(); await previous } if (generation === preparationGeneration) await prepareFile(plan, reason, resume) })()
+  preparing = work
+  void work.then(() => { if (preparing === work) preparing = null }, () => { if (preparing === work) preparing = null })
+  return work
+}
+
+async function prepareFile(plan: SessionPlan, reason: 'start' | RebuildReason, resume: boolean) {
   prepareAbort?.abort()
   const ctrl = new AbortController()
   prepareAbort = ctrl
@@ -294,6 +306,7 @@ export async function startListening(bookId: string, chapterId?: string) {
     if (hasFile(s.state)) return s.state.status === 'playing' ? undefined : playAudio()
     if (s.state.status === 'preparing' || s.state.status === 'rebuilding') return
   }
+  const generation = ++selectionGeneration
   prepareAbort?.abort()
   checkpoint('pause')
   retire(detach()?.session ?? null)
@@ -301,6 +314,7 @@ export async function startListening(bookId: string, chapterId?: string) {
   try {
     await writes
     const { book, timeline, progress } = await loadBook(bookId)
+    if (generation !== selectionGeneration) return
     const chapter = chapterId ? get().chapters.find((c) => c.id === chapterId) : undefined
     const start = startPoint(progress, book.status === 'completed', chapter?.globalStart)
     const position = start.position >= bookDuration(timeline) - END_SLACK ? 0 : start.position
@@ -325,6 +339,21 @@ export function pause() {
   if (a.paused) return
   expectPause = true
   a.pause()
+}
+
+export async function releaseBook(bookId: string) {
+  if (!isBookActive(bookId) && get().state.bookId !== bookId) return
+  selectionGeneration++
+  preparationGeneration++
+  prepareAbort?.abort()
+  await preparing
+  pause()
+  checkpoint('pause')
+  retire(detach()?.session ?? null)
+  set({ pending: null })
+  dispatch({ type: 'select', bookId })
+  setMediaPlaybackState('paused')
+  await writes
 }
 
 export function togglePlay() {

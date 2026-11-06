@@ -14,6 +14,26 @@ export class LibraryRepository {
       await this.database.imports.put({ ...job, state: "ready" });
     });
   }
+  async commitAdditionalImport(job: ImportJob, book: Book, assets: MediaAsset[], oldChapters: Chapter[], chapters: Chapter[], oldAssets: MediaAsset[]) {
+    await this.database.transaction("rw", [this.database.books, this.database.assets, this.database.chapters, this.database.progress, this.database.imports], async () => {
+      const current = await this.database.books.get(book.id);
+      if (!current || current.revision !== book.revision - 1) throw new Error("Book changed during import");
+      const wasGenerated = oldChapters.some(chapter => chapter.kind === "generated");
+      if (wasGenerated) {
+        if (oldAssets.length !== 1) throw new Error("Invalid generated parts");
+        const asset = oldAssets[0]!;
+        await this.database.chapters.where("bookId").equals(book.id).delete();
+        await this.database.chapters.add({ id: oldChapters[0]!.id, bookId: book.id, order: 0, title: asset.originalFilename.replace(/\.[^.]+$/, ""), globalStart: 0, globalEnd: asset.duration, kind: "imported", sourceRanges: [{ assetId: asset.id, sourceStart: 0, sourceEnd: asset.duration }] });
+        chapters = chapters.map((chapter, index) => ({ ...chapter, order: index + 1 }));
+      }
+      await this.database.assets.bulkAdd(assets);
+      await this.database.chapters.bulkAdd(chapters);
+      await this.database.books.update(book.id, { revision: book.revision, updatedAt: book.updatedAt, status: current.status === "completed" ? "ready" : current.status });
+      const progress = await this.database.progress.get(book.id);
+      if (progress) await this.database.progress.update(book.id, { bookRevision: book.revision, ...(wasGenerated && progress.sourceAssetId === oldAssets[0]?.id ? { globalOffset: progress.sourceOffset } : {}) });
+      await this.database.imports.put({ ...job, state: "ready" });
+    });
+  }
   async updateBook(id: string, changes: Partial<Pick<Book, "title" | "description" | "coverAssetId" | "status">>) {
     if (!await this.database.books.update(id, { ...changes, updatedAt: Date.now() })) throw new Error("Book not found");
   }
@@ -80,6 +100,7 @@ export class LibraryRepository {
           const chapter = chapters[Math.min(fallbackIndex, chapters.length - 1)]!;
           const range = chapter.sourceRanges[0]!;
           mapped = { sourceAssetId: range.assetId, sourceOffset: range.sourceStart, globalOffset: chapter.globalStart };
+          await this.database.progress.update(bookId, { stopReason: null, rewindPending: false });
         }
         await this.database.progress.update(bookId, { ...mapped, bookRevision: revision });
       }

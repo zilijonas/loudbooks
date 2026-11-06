@@ -5,6 +5,7 @@ export {
   isBookActive,
   isActivePath,
   pause,
+  releaseBook,
   togglePlay,
   initPlayback,
 } from './controller'

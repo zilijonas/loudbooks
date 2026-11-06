@@ -4,6 +4,7 @@ import { ImportCoordinator } from "../../../src/features/import/ImportCoordinato
 import { LibraryDatabase } from "../../../src/services/db/database";
 import { LibraryRepository } from "../../../src/services/db/LibraryRepository";
 import { MemoryStorage, MemoryWriter } from "./memory-storage";
+import { LibraryCommands } from "../../../src/features/library/LibraryCommands";
 
 const databases: LibraryDatabase[] = [];
 const makeFile = (name: string) => new File([name], name);
@@ -15,7 +16,7 @@ const setup = () => {
   const writer = new MemoryWriter(storage);
   const coordinator = new ImportCoordinator({
     repository, storage, writer,
-    probeFile: async (file: File) => ({ container: file.name.endsWith(".wav") ? "WAVE" : "MP3", codec: file.name.endsWith(".wav") ? "pcm-s16" : "mp3", channels: 1, sampleRate: 44100, duration: 10 }),
+    probeFile: async (file: File) => ({ container: file.name.endsWith(".wav") ? "WAVE" : "MP3", codec: file.name.endsWith(".wav") ? "pcm-s16" : "mp3", channels: file.name === "stereo.mp3" ? 2 : 1, sampleRate: 44100, duration: file.name === "long.mp3" ? 3700 : 10 }),
     exclusive: async <T>(work: () => Promise<T>) => work(),
   });
   return { database, repository, storage, writer, coordinator };
@@ -23,6 +24,44 @@ const setup = () => {
 afterEach(async () => { await Promise.all(databases.splice(0).map(database => database.delete())); });
 
 describe("import coordinator", () => {
+  it("adds files without copying existing audio and preserves progress across the revision", async () => {
+    const { database, repository, storage, coordinator } = setup();
+    const book = await coordinator.importBook({ title: "Test", files: [makeFile("one.mp3")] });
+    const asset = (await database.assets.where("bookId").equals(book.id).first())!;
+    await database.progress.put({ bookId: book.id, bookRevision: 1, sourceAssetId: asset.id, sourceOffset: 5, globalOffset: 5, updatedAt: 1, stopReason: null, rewindPending: false });
+    const original = await storage.read(asset.path);
+    await new LibraryCommands(() => false, repository, undefined, coordinator).addFiles(book.id, [makeFile("two.mp3")]);
+    expect(await database.books.get(book.id)).toMatchObject({ revision: 2 });
+    expect(await database.progress.get(book.id)).toMatchObject({ bookRevision: 2, sourceAssetId: asset.id, sourceOffset: 5, globalOffset: 5 });
+    expect(await storage.read(asset.path)).toBe(original);
+    expect((await database.chapters.where("bookId").equals(book.id).sortBy("order")).map(c => [c.globalStart, c.globalEnd])).toEqual([[0, 10], [10, 20]]);
+    await expect(new LibraryCommands(() => false, repository, undefined, coordinator).addFiles(book.id, [makeFile("bad.wav")])).rejects.toMatchObject({ code: "form.mismatch" });
+    await expect(new LibraryCommands(() => false, repository, undefined, coordinator).addFiles(book.id, [makeFile("stereo.mp3")])).rejects.toMatchObject({ code: "form.mismatch" });
+    await expect(new LibraryCommands(path => path === asset.path, repository, undefined, coordinator).addFiles(book.id, [makeFile("three.mp3")])).rejects.toThrow("File is active");
+    expect((await database.books.get(book.id))?.revision).toBe(2);
+    expect(storage.files.size).toBe(2);
+  });
+  it("turns generated parts into one chapter before appending", async () => {
+    const { database, repository, coordinator } = setup();
+    const book = await coordinator.importBook({ title: "Test", files: [makeFile("long.mp3")], generatedParts: true });
+    const parts = await database.chapters.where("bookId").equals(book.id).sortBy("order");
+    expect(parts).toHaveLength(3);
+    const asset = (await database.assets.where("bookId").equals(book.id).first())!;
+    await database.progress.put({ bookId: book.id, bookRevision: 1, sourceAssetId: asset.id, sourceOffset: 1850, globalOffset: 1850, updatedAt: 1, stopReason: null, rewindPending: false });
+    await repository.reorderChapters(book.id, [parts[1]!.id, parts[0]!.id, parts[2]!.id]);
+    await coordinator.addFiles(book.id, [makeFile("two.mp3")], async () => {});
+    expect((await database.chapters.where("bookId").equals(book.id).sortBy("order")).map(c => [c.kind, c.order, c.globalStart, c.globalEnd])).toEqual([["imported", 0, 0, 3700], ["imported", 1, 3700, 3710]]);
+    expect(await database.progress.get(book.id)).toMatchObject({ bookRevision: 3, sourceOffset: 1850, globalOffset: 1850 });
+  });
+  it("cleans staged additions if playback starts during import", async () => {
+    const { database, repository, storage, writer, coordinator } = setup();
+    const book = await coordinator.importBook({ title: "Test", files: [makeFile("one.mp3")] });
+    let active = false;
+    writer.onWrite = () => { active = true; };
+    await expect(new LibraryCommands(() => active, repository, undefined, coordinator).addFiles(book.id, [makeFile("two.mp3")])).rejects.toThrow("File is active");
+    expect((await database.books.get(book.id))?.revision).toBe(1);
+    expect(storage.files.size).toBe(1);
+  });
   it("commits only complete files with naturally sorted chapter offsets", async () => {
     const { database, storage, coordinator } = setup();
     const book = await coordinator.importBook({ title: "Test", files: [makeFile("chapter 10.mp3"), makeFile("chapter 2.mp3")] });

@@ -10,10 +10,11 @@ Create an `ImportCoordinator` from `features/import/ImportCoordinator.ts`. Call 
 
 ## Editing and deletion
 
-Construct `new LibraryCommands(isActivePath, repository?, storage?)`. `isActivePath(path)` must report every path currently used by playback or an in-flight handover. Coordinate with the player so a file cannot become active between this check and the operation. Pause playback and prepare a replacement session before editing the playing book. The guard is required, not a default false predicate.
+Construct `new LibraryCommands(isActivePath, repository?, storage?)`. `isActivePath(path)` must report every path currently used by playback or an in-flight handover. Coordinate with the player so a file cannot become active between this check and the operation. Call `releaseBook(bookId)` before editing the playing book; it checkpoints, pauses and detaches the current session, which will be prepared again on Play. The guard is required, not a default false predicate.
 
 - `renameBook(id, title)`, `updateDescription(id, description)`, and `renameChapter(id, title)` update metadata.
 - `reorderChapters(bookId, orderedChapterIds)` validates the complete permutation, increments book revision and remaps progress by source asset and source offset where possible. Consumers must discard session outputs whose revision differs from the book revision.
+- `addFiles(bookId, files)` probes, stages, hashes and commits new compatible files through `ImportCoordinator`; existing audio is not copied. Files append in the supplied order, generated parts collapse to the original whole-file chapter, and progress retains its source position at the new revision.
 - `removeChapter(bookId, chapterId)` removes an imported chapter, remaps progress and journals unreferenced audio for cleanup; the last chapter cannot be removed. `setGeneratedParts(bookId, on)` switches a single audio asset between whole-book and logical half-hour chapters without copying it. Both increment revision when the chapter layout changes.
 - `setCover(bookId, blobOrNull)` journals and writes a new WebP before switching metadata. The previous cover stays journaled until inactive; null returns to the generated-cover fallback.
 - `deleteBook(id)` rejects if any related file is active. It removes metadata transactionally, then deletes associated audio, cover and session files. A cleanup failure can leave orphan files but cannot leave a ready book pointing at deleted audio.

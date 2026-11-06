@@ -77,9 +77,18 @@ export class ImportCoordinator {
     if (request.signal?.aborted) throw new ImportError("importing.stopped");
     return this.lock(() => this.runImport({ ...request, title }));
   }
-  private async runImport(request: ImportRequest): Promise<Book> {
+  async addFiles(bookId: string, files: File[], ensureInactive: () => Promise<void>): Promise<Book> {
+    if (!files.length) throw new ImportError("form.filesNone");
+    return this.lock(async () => {
+      await ensureInactive();
+      const book = await this.repository.database.books.get(bookId);
+      if (!book) throw new Error("Book not found");
+      return this.runImport({ title: book.title, files, ordered: true }, book, ensureInactive);
+    });
+  }
+  private async runImport(request: ImportRequest, existing?: Book, ensureInactive?: () => Promise<void>): Promise<Book> {
     const id = crypto.randomUUID();
-    const bookId = crypto.randomUUID();
+    const bookId = existing?.id ?? crypto.randomUUID();
     const files = request.ordered ? [...request.files] : naturalSort(request.files);
     const job: ImportJob = { id, stagingPaths: [], expectedFiles: files.length, receivedFiles: 0, state: "staging", error: null };
     let phase = "creating import journal";
@@ -94,7 +103,10 @@ export class ImportCoordinator {
       const assets: MediaAsset[] = [];
       const chapters: Chapter[] = [];
       let written = 0;
-      let position = 0;
+      const oldAssets = existing ? await this.repository.database.assets.where("bookId").equals(bookId).toArray() : [];
+      const oldChapters = existing ? await this.repository.database.chapters.where("bookId").equals(bookId).sortBy("order") : [];
+      if (existing && (!oldAssets.length || !oldChapters.length)) throw new Error("Book has no audio");
+      let position = oldChapters.at(-1)?.globalEnd ?? 0;
       const total = files.reduce((sum, file) => sum + file.size, 0);
       for (const file of files) {
         checkAbort();
@@ -102,8 +114,8 @@ export class ImportCoordinator {
         const info = await this.analyze(file);
         checkAbort();
         const family = info.codec.startsWith("pcm-") ? "pcm" : info.codec;
-        const prior = assets[0];
-        if (prior && (prior.codec.startsWith("pcm-") ? "pcm" : prior.codec) !== family) throw new ImportError("form.mismatch");
+        const prior = oldAssets[0] ?? assets[0];
+        if (prior && (prior.codec !== info.codec || prior.sampleRate !== info.sampleRate || prior.channels !== info.channels)) throw new ImportError("form.mismatch");
         const assetId = crypto.randomUUID();
         const ext = family === "mp3" ? "mp3" : family === "aac" ? "m4a" : "wav";
         const path = `staging/${id}/${assetId}.${ext}`;
@@ -119,7 +131,7 @@ export class ImportCoordinator {
         written += result.bytes;
         const asset: MediaAsset = { id: assetId, bookId, path, originalFilename: file.name, ...info, ...result };
         assets.push(asset);
-        chapters.push({ id: crypto.randomUUID(), bookId, order: chapters.length, title: file.name.replace(/\.[^.]+$/, ""), globalStart: position, globalEnd: position + info.duration, kind: "imported", sourceRanges: [{ assetId, sourceStart: 0, sourceEnd: info.duration }] });
+        chapters.push({ id: crypto.randomUUID(), bookId, order: oldChapters.length + chapters.length, title: file.name.replace(/\.[^.]+$/, ""), globalStart: position, globalEnd: position + info.duration, kind: "imported", sourceRanges: [{ assetId, sourceStart: 0, sourceEnd: info.duration }] });
         position += info.duration;
         job.receivedFiles++;
         await this.repository.saveImportJob(job);
@@ -138,10 +150,12 @@ export class ImportCoordinator {
         if (result.bytes !== file.size || (await this.storage.read(path)).size !== file.size) throw new Error("Incomplete cover write");
       }
       checkAbort();
+      await ensureInactive?.();
       const now = Date.now();
-      const book: Book = { id: bookId, title: request.title, description: request.description ?? "", coverAssetId, revision: 1, createdAt: now, updatedAt: now, status: "ready" };
+      const book: Book = existing ? { ...existing, status: existing.status === "completed" ? "ready" : existing.status, revision: existing.revision + 1, updatedAt: now } : { id: bookId, title: request.title, description: request.description ?? "", coverAssetId, revision: 1, createdAt: now, updatedAt: now, status: "ready" };
       phase = "committing metadata";
-      await this.repository.commitImport(job, book, assets, request.generatedParts && assets.length === 1 ? generatedParts(assets[0]!) : chapters);
+      if (existing) await this.repository.commitAdditionalImport(job, book, assets, oldChapters, chapters, oldAssets);
+      else await this.repository.commitImport(job, book, assets, request.generatedParts && assets.length === 1 ? generatedParts(assets[0]!) : chapters);
       await this.repository.removeImportJob(id).catch(() => {});
       return book;
     } catch (error) {
