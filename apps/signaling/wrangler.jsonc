@@ -1,6 +1,9 @@
 {
   "name": "loudbooks-signaling",
   "main": "src/index.ts",
-  "compatibility_date": "2026-11-01"
-  // PairRoom Durable Object binding and migration are added in LB-6.
+  "compatibility_date": "2026-11-06",
+  "vars": { "ALLOWED_ORIGINS": "https://zilijonas.github.io,http://localhost:5173,http://localhost:4173,http://127.0.0.1:4173" },
+  "durable_objects": { "bindings": [{ "name": "PAIR_ROOM", "class_name": "PairRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PairRoom"] }],
+  "observability": { "enabled": true, "traces": { "enabled": true } }
 }
