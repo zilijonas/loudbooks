@@ -1,0 +1,32 @@
+/* Dev-only gallery chrome, mirroring design/Component Library.dc.html so sections compare 1:1. */
+.g-page { min-height: 100vh; background: var(--lb-bg); color: var(--lb-text); font-family: var(--lb-font-ui); }
+.g-wrap { max-width: 1240px; margin: 0 auto; padding: clamp(24px, 5vw, 64px) clamp(16px, 4vw, 40px) 120px; display: flex; flex-direction: column; gap: 56px; }
+.g-head { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; justify-content: space-between; }
+.g-head > div:first-child { display: flex; flex-direction: column; gap: 10px; max-width: 720px; }
+.g-kicker { font: 700 12px/1 var(--lb-font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--lb-accent-text); }
+.g-head h1 { margin: 0; font: 800 clamp(36px, 6vw, 56px)/1 var(--lb-font-display); letter-spacing: -.03em; }
+.g-head p { margin: 0; font: 400 17px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); text-wrap: pretty; }
+.g-page code { font: 500 12px/1.5 ui-monospace, Menlo, monospace; color: var(--lb-text-muted); }
+.g-sec { display: flex; flex-direction: column; gap: 16px; }
+.g-sec > h2 { margin: 0; font: 800 28px/1.1 var(--lb-font-display); }
+.g-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 300px)), 1fr)); gap: 16px; }
+.g-card { padding: 22px; border-radius: 24px; background: var(--lb-surface); border: 1.5px solid var(--lb-border); display: flex; flex-direction: column; gap: 12px; --lb-slider-ring: var(--lb-surface); }
+.g-label { font: 700 13px/1 var(--lb-font-ui); color: var(--lb-text-muted); }
+.g-cap { font: 500 12px/1 var(--lb-font-ui); color: var(--lb-text-muted); }
+.g-cap2 { font: 500 12px/1.3 var(--lb-font-ui); color: var(--lb-text-muted); }
+.g-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.g-books { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px 16px; }
+
+/* Forced states for static comparison only. */
+.g-hover { background: var(--lb-action-hover) !important; }
+.g-pressed { background: var(--lb-action-pressed) !important; transform: scale(.96) !important; }
+.g-focus, .g-focus input { outline: 3px solid var(--lb-focus); outline-offset: 2px; }
+.g-focus input { border-color: var(--lb-text); }
+.g-card-hover .lb-card-lift { transform: translateY(-5px) scale(1.035) rotate(1deg) !important; }
+.g-card-hover .lb-card-open::after { opacity: 1; }
+.g-card-pressed .lb-card-open { transform: scale(.95) !important; }
+.g-tip { position: relative; padding: 8px 12px; border-radius: 10px; background: var(--lb-strong); color: var(--lb-on-strong); font: 600 13px/1 var(--lb-font-ui); }
+.g-tip::before { content: ""; position: absolute; left: -5px; top: 50%; width: 10px; height: 10px; margin-top: -5px; background: var(--lb-strong); transform: rotate(45deg); }
+.g-static-menu { position: static; align-self: start; }
+.g-shell { position: relative; height: 640px; display: flex; border: 1.5px solid var(--lb-border); border-radius: 24px; overflow: hidden; background: var(--lb-bg); }
+.g-variants .lb-seek { display: none; } .g-variants .lb-controls { padding: 0; }

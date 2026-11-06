@@ -4,6 +4,7 @@ const url = 'http://localhost:4173/loudbooks/'
 
 export default defineConfig({
   testDir: 'e2e',
+  testIgnore: 'gallery.spec.ts', // dev-only gallery: playwright.gallery.config.ts
   workers: 1,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,

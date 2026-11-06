@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { usePreset } from '../../motion/presets'
-import { artOf, type Art } from './cover'
+import { artOf, titleSize, type Art } from './cover'
 
 /** Props shape from design/components/api.d.ts (presentational; screens map their models onto it). */
 export interface BookSummary {
@@ -31,7 +31,9 @@ export interface BookCoverProps {
 export function BookCover({ book, size = 'fluid', layoutId, art: override, className, style }: BookCoverProps) {
   const p = usePreset()
   const [w, r] = SIZE[size]
-  const art = { ...artOf(book.title), ...override }
+  // Like the prototype's artOf: fixed art always shows the full title, never initials.
+  const t = book.title.trim() || 'Untitled'
+  const art = override ? { ...artOf(t), display: t, fs: titleSize(t.length), author: '', ...override } : artOf(t)
   const image = book.cover?.kind === 'image' ? book.cover.url : null
   return (
     <motion.div

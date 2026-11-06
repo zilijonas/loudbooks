@@ -15,15 +15,23 @@ export const routes = [
   { path: 'settings', route: 'settings', title: 'settings.title' },
 ] as const
 
+// Dev-only component gallery: the DEV check is statically false in production, so the chunk is never built or linked.
+const devRoutes = import.meta.env.DEV
+  ? [{ path: '__gallery', lazy: async () => ({ Component: (await import('../pages/dev-gallery/Gallery')).Gallery }) }]
+  : []
+
 export const router = createHashRouter([
   {
     path: '/',
     element: <Shell />,
     errorElement: <ErrorFallback />,
-    children: routes.map((r) =>
-      'index' in r
-        ? { index: true, element: <Placeholder route={r.route} title={r.title} /> }
-        : { path: r.path, element: <Placeholder route={r.route} title={r.title} /> },
-    ),
+    children: [
+      ...routes.map((r) =>
+        'index' in r
+          ? { index: true, element: <Placeholder route={r.route} title={r.title} /> }
+          : { path: r.path, element: <Placeholder route={r.route} title={r.title} /> },
+      ),
+      ...devRoutes,
+    ],
   },
 ])
