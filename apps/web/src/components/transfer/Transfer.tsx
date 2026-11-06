@@ -39,7 +39,7 @@ export function PairingCode({ digits, role, error, onChange, disabled, onSubmit 
   const id = useId()
   if (role === 'show') {
     return (
-      <div role="img" aria-label={digits.split('').join(' ')} className="lb-digits">
+      <div role="img" aria-label={t('receive.codeLabel', { code: digits.split('').join(' ') })} className="lb-digits">
         {digits.split('').map((d, i) => <span key={i}>{d}</span>)}
       </div>
     )
@@ -79,12 +79,11 @@ export interface TransferProgressProps {
 /** Live byte progress for Send/Receive. Fill animates scaleX only. */
 export function TransferProgress({ title, bytesDone, bytesTotal, fileIndex, fileCount, direction, onCancel }: TransferProgressProps) {
   const frac = bytesTotal ? bytesDone / bytesTotal : 0
-  // shortcut: "138 / 270 MB" — ui-strings has no "{done} of {total}" key yet; switch to it when added.
   const done = bytesTotal >= 1e9 ? formatBytes(bytesDone) : String(Math.round(bytesDone / 1e6))
   return (
     <div role="status" aria-live="polite" className="lb-transfer">
       <strong>{title}</strong>
-      <div className="lb-transfer-row"><span>{`${done} / ${formatBytes(bytesTotal)}`}</span><span>{Math.round(frac * 100)}%</span></div>
+      <div className="lb-transfer-row"><span>{t('common.bytesOf', { done, total: formatBytes(bytesTotal) })}</span><span>{Math.round(frac * 100)}%</span></div>
       <Progress value={frac} label={title} />
       <span>{`${t('receive.fileOf', { n: fileIndex, total: fileCount })} · ${t(direction === 'send' ? 'send.keepOpen' : 'receive.keepOpen')}`}</span>
       {onCancel && <Button variant="quiet" size="sm" style={{ alignSelf: 'flex-start', padding: 0 }} onClick={onCancel}>{t('common.cancel')}</Button>}

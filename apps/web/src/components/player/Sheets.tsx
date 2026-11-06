@@ -93,9 +93,9 @@ export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile,
     { key: 'm30', label: t('timer.m30'), sub: '' },
     { key: 'custom', label: t('timer.custom'), sub: key === 'custom' && customMin ? t('timer.summaryMinutes', { minutes: customMin }) : t('timer.customSub') },
     { div: t('timer.byChapter') },
-    { key: 'c1', label: t('timer.c1'), sub: singleFile ? t('timer.noChapters') : formatDuration(currentChapterLeftSec / speed), off: singleFile },
-    { key: 'c2', label: t('timer.c2'), sub: singleFile ? t('timer.noChapters') : chaptersRemaining < 1 ? t('timer.lastChapter') : '', off: singleFile || chaptersRemaining < 1 },
-    { key: 'c3', label: t('timer.c3'), sub: singleFile ? t('timer.noChapters') : chaptersRemaining < 1 ? t('timer.lastChapter') : chaptersRemaining < 2 ? t('timer.oneLeft') : '', off: singleFile || chaptersRemaining < 2 },
+    { key: 'c1', label: t('timer.c1'), sub: singleFile ? t('timer.noChapters') : t('timer.c1Sub', { n: chapterIndex + 1, duration: formatDuration(currentChapterLeftSec / speed) }), off: singleFile },
+    { key: 'c2', label: t('timer.c2'), sub: singleFile ? t('timer.noChapters') : chaptersRemaining < 1 ? t('timer.lastChapter') : t('timer.chapterN', { n: chapterIndex + 2 }), off: singleFile || chaptersRemaining < 1 },
+    { key: 'c3', label: t('timer.c3'), sub: singleFile ? t('timer.noChapters') : chaptersRemaining < 1 ? t('timer.lastChapter') : chaptersRemaining < 2 ? t('timer.oneLeft') : t('timer.chapterN', { n: chapterIndex + 3 }), off: singleFile || chaptersRemaining < 2 },
     { div: '' },
     { key: 'off', label: t('timer.off'), sub: t('timer.offSub') },
   ]
@@ -112,7 +112,7 @@ export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile,
   const k = key[0] === 'c' && key !== 'custom' ? Number(key.slice(1)) as 1 | 2 | 3 : 0
   const n = chapterIndex + k
   const [summary, sub] = key === 'off' ? [t('timer.summaryOff'), t('timer.offSub')]
-    : k ? [t('timer.summaryChapter', { n }), k === 1 ? formatDuration(currentChapterLeftSec / speed) : '']
+    : k ? [t('timer.summaryChapter', { n }), k === 1 ? t('timer.summaryChapterSub', { duration: formatDuration(currentChapterLeftSec / speed), next: n + 1 }) : '']
       : minutes >= 1 ? [t('timer.summaryMinutes', { minutes }), t('speed.summarySession', { speed: formatSpeed(speed), minutes, duration: formatDuration(minutes * 60 * speed) })]
         : [t('timer.custom'), t('timer.customSub')]
   const applyLabel = key === 'off' ? t('timer.turnOff') : k ? t('timer.applyChapter', { n }) : minutes >= 1 ? t('timer.start', { minutes }) : t('timer.custom')

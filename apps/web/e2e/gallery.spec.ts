@@ -18,11 +18,10 @@ for (const theme of ['light', 'dark']) {
     await page.addScriptTag({ path: axePath })
     const violations = await page.evaluate(async () => {
       // WCAG A/AA (the spec's bar). Excluded: `.g-pressed` (a frozen 110 ms press transient), `.lb-cover` (cover artwork:
-      // incidental text in an image, 1.4.3 exception), and two light-theme design token pairs reported on LB-3 for the
-      // owner to decide: success badge (#2F7D4F on #DDF3E4) and "Playing now" (accent-text on surface-sunken).
+      // incidental text in an image, 1.4.3 exception).
       // label-content-name-mismatch (axe experimental) only flags cover buttons, whose visible "text" is cover art.
       // @ts-expect-error axe is injected above
-      const r = await window.axe.run({ exclude: ['.g-pressed', '.lb-cover', '.lb-badge[data-tone="success"]', '.lb-chapter-now'] }, { resultTypes: ['violations'], rules: { 'label-content-name-mismatch': { enabled: false } }, runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] })
+      const r = await window.axe.run({ exclude: ['.g-pressed', '.lb-cover'] }, { resultTypes: ['violations'], rules: { 'label-content-name-mismatch': { enabled: false } }, runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] })
       return r.violations.map((v: { id: string; nodes: { target: string[] }[] }) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`)
     })
     expect(violations).toEqual([])
