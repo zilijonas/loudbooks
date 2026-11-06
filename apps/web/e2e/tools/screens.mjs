@@ -211,7 +211,9 @@ try {
     Object.keys(designPages).forEach((k) => delete designPages[k])
     Object.keys(lastSeed).forEach((k) => delete lastSeed[k])
     try {
-      for (const [name, preset, hash, seed, setup, flags = {}] of CASES) {
+      for (const [name, preset, hash, seed0, setup, flags = {}] of CASES) {
+        // Playwright WebKit's ephemeral context refuses OPFS writes for the seeded session files: seed without them there (Clear temporary files then stays disabled).
+        const seed = a.browser === 'webkit' && seed0?.sessionBytes ? { ...seed0, sessionBytes: 0 } : seed0
         if (only && !only.has(name)) continue
         const kind = flags.safari ? 'safari' : 'plain'
         const ctx = (ctxs[kind] ??= await newCtx(width, theme, flags.safari))

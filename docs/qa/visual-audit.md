@@ -15,7 +15,15 @@ Images live in `.qa/` (gitignored). Verdicts below come from looking at the side
 
 Design side of every picture is the design HTML served from `design/`. Its fonts come from Google Fonts with the `opsz` axis; ours are the self-hosted files (see fix 1).
 
-Covered matrix: Chromium and WebKit (Playwright) at 390 and 1440 in light and dark for all 76 cases; 320, 430 and 768 in light and dark for the key screens (welcome, library, empty library, details, player, settings, add, send, receive, timer sheet, delete dialog); numeric text diff at 390 and 1440 for all cases and at 1024/1280 for player, details and library. Break-UI cases (very long title, one-letter title, 20 h book, 40 parts, long chapter title) at the same widths.
+Covered matrix (what was actually rendered and looked at):
+
+- Chromium and WebKit (Playwright), 390 and 1440, light and dark, every case of the tool (about 74 each; `final/<engine>/`). Three reviewers per sweep compared the pictures; I opened the ones they flagged and a sample of the rest myself.
+- 320, 430 and 768, light and dark, both engines, for the key screens: welcome, library (empty, many), details, player (playing), settings, add, send (qr), receive (intro), timer sheet, delete dialog.
+- Numeric text diff, Chromium, light: 390 and 1440 for every case (run before the last round of fixes, then re-run for the affected cases) and 320, 430 and 768 for every case (225 case-widths, after the fixes).
+- 768, 1024 and 1280 pictures for player, details and library (`mid/`).
+- Break-UI cases (very long title, one-letter title, 20 h book, 40 parts, long chapter title): 390 and 1440 in both engines (`final/<engine>/break-*`); the earlier 320 and 768 pictures are in `.qa/screens/` (LB-7).
+- Not rendered through the tool: the playing state of Library and the delete-while-playing dialog (the dev fixture's fake assets clash with seeded books and seeded files are empty); they were checked in real Safari with imported audio and by `e2e/player.spec.ts`. Playwright WebKit cannot write the seeded session files to OPFS, so its Settings pictures show 0 MB temporary files and no Clear-temporary-files dialog; the Chromium and real-Safari Settings cover those.
+- Firefox was not part of this task.
 
 ## Fixes made
 
@@ -82,6 +90,10 @@ Legend: **match** = no difference besides the accepted ones; **fixed** = differe
 - Prototype-only controls ("simulate Don't allow", "tap to simulate a scan") are not built.
 - Receive "Paste pairing link instead" copy from the strings file.
 - Details description "Show more" swaps the clamp instantly (line-clamp cannot animate with transform/opacity).
+- Where the design breaks, ours is better on purpose: the player stays single column from 768 to 1099 px (design: controls squeezed into about 100 px) and the details page stays single column below 1024 (LB-7); the desktop player bar drops its duplicate "open player" icon and tightens at 768-1023 px (design: forward-15 hidden behind the speed chip, "30 min" wrapping).
+- Placeholder text uses the muted text token (AA contrast); the design shows the browser's default light grey.
+- Buttons never wrap (`white-space: nowrap`), so two long labels at 320 px (receive "Cancel and remove partial files", "Replace the one on this phone") stay on one line where the design wraps them.
+- The "How to add to Home Screen" button wraps at 320 px like the design; the page is about 4 px taller there.
 
 ## Motion checklist
 
@@ -113,19 +125,65 @@ Left without animation on purpose: details "Show more" (see above); badges "Fini
 
 ### Frame traces
 
-FRAMES_TABLE
+390 x 844, device scale 2, no reduced motion, headless engines on this Mac (M4). `max` is the longest rAF gap during the interaction and the following 900 ms; a 60 Hz frame is 16.7 ms. Reproduce: `apps/web/e2e/tools/with-servers.sh node e2e/tools/frames.mjs --browser chromium|webkit` through the memory queue.
+
+| Interaction | Chromium frames / max | WebKit frames / max |
+|---|---|---|
+| library to details (shared cover) | 59 / 17 ms | 55 / 25 ms |
+| details to library | 55 / 17 ms | 54 / 21 ms |
+| open book menu sheet | 58 / 17 ms | 55 / 32 ms |
+| close sheet (Escape) | 54 / 17 ms | 55 / 24 ms |
+| open delete-library dialog | 58 / 17 ms | 54 / 37 ms |
+| close dialog | 55 / 17 ms | 55 / 20 ms |
+| dock to player (shared cover) | 56 / 17 ms | 55 / 22 ms |
+| open / close speed sheet | 57 / 17, 55 / 17 ms | 53 / 18, 54 / 19 ms |
+| open / close timer sheet | 57 / 17, 55 / 17 ms | 54 / 29, 55 / 18 ms |
+| player to library (dock returns) | 55 / 17 ms | 54 / 17 ms |
+| add book page (rows) | 55 / 17 ms | 55 / 19 ms |
+
+No frame over 50 ms in either engine, no long task in Chromium (WebKit has no long-task API), and one WebKit frame between 34 and 50 ms (first dialog open). The style-mutation observer saw only `transform`, `opacity` and Motion's own bookkeeping. The `left` x2 on dock to player is `popLayout` pinning the exiting mini-player to its box (set once, not animated). Layout-animated properties found and removed in this audit: none were animating; the library cards now reflow with a `transform` (`layout="position"`) instead of jumping.
 
 ## Real Safari
 
-REAL_SAFARI
+Safari 26.6.2 on macOS 26.6.2 (Mac mini), production build with the data harness (`VITE_DATA_HARNESS=1 pnpm --filter web build`, `vite preview --port 4173`, both through the memory queue). Procedure per AGENTS.md: `with-display-awake`, a new window from AppleScript `make new document` (window id taken by diffing the window ids), only that id addressed, tab URL checked to start with `http://localhost:4173/` before every `do JavaScript`, `screencapture -l <id>`. The owner's windows were not touched (Safari had none open). The new window opened with Safari's Bookmarks sidebar, so the 1280 px window is a 1032 px viewport at first and 1280 px later; the 560 px window is a 328 px viewport (phone layout).
+
+| Check | Result |
+|---|---|
+| Library, Details, Player, Settings, Receive at desktop and phone width, dark (system) and light (`loudbooks:theme`) | render correctly, fonts and layout as in WebKit/Chromium; Receive shows the Safari notice |
+| Import real audio | The file picker cannot be driven from AppleScript without System Events, so the harness page got `window.__lbImportUrls`: the 3 Zeland MP3s were fetched from the same origin and imported through the real worker probe and OPFS import in Safari. SHA-256 read back from OPFS equals `shasum -a 256` of the sources. Book shows 3 chapters, 4 min |
+| Real playback | Play from Details: session compiled to one file (249.7 s), `readyState` 4, `currentTime` advanced (5.9 s after 6 s), speaker icon in the tab, pause stops it; timer badge and counters correct |
+| Service worker | registration scope `/loudbooks/`, `activated`, page controlled, `workbox-precache` cache holds 28 entries |
+| Offline reload | preview server stopped, page reloaded: app shell loads from the worker, library lists the book, Resume plays it from OPFS (blob URL, `currentTime` advancing) with the server down |
+| Re-check after fixes (new build) | dock cover visible on Details (`opacity` 1, no transform), cover title no longer splits mid-word, player single column at a 1050 px window with all three tool buttons whole |
+
+Safari findings, all fixed: dock cover stuck at opacity 0 on Details (fix 3), "Browse/r test" cover split (fix 18), cramped player controls at ~1032 px viewport (fix 7). Not testable here: iOS standalone PWA and the lock screen (no device), Safari's Develop menu network toggle (the server was stopped instead). The AppleScript window id lingers in Safari's scripting list as an invisible zero-tab window after `close`; nothing is on screen.
+
+Images: `.qa/lb11/safari/` (contains Safari chrome and the owner's Bookmarks sidebar in some frames, so do not publish them).
 
 ## Accessibility
 
-AXE_SECTION
+axe-core 4.14 (WCAG 2.0/2.1 A and AA, cover art excluded) on every state of the tool, run with `screens.mjs --axe`.
+
+| Run | Result |
+|---|---|
+| First sweep, Chromium, 390 and 1440, light and dark, all states | 0 critical; **serious**: `aria-hidden-focus` on 16 states (discard, delete, clear and delete-library dialogs) and `color-contrast` on the dark "New" badge (2 states) |
+| After fixes 20 and 21: those states again at all four combinations plus Install sheet, menu sheet, send code, player, timer sheet, edit | 0 violations |
+| After the fixes: all states, Chromium, 390 dark and 1440 light | 0 violations (80 + 80 states) |
+| All states, WebKit, 390 and 1440 light | 0 violations (80 + 80; Settings states run separately, same result) |
+
+Also by hand: Radix dialogs and menus, 44 px targets (`Button`, `IconButton`), visible focus ring, labelled reorder buttons, `aria-live` on status panels and timer summary (all from earlier tasks, unchanged). The component gallery axe spec (`gallery.spec.ts`) was not changed.
 
 ## Remaining open items
 
-OPEN_ITEMS
+No open P0 or P1 difference. Not done, and why:
+
+- iOS standalone PWA, lock-screen controls and the 500 MB iPhone acceptance (spec phase F): needs a device. Real Safari on the Mac stands in for Safari behaviour only.
+- Backup progress, duplicate and error panels were not re-captured after the audit. They are `Dialog` + `StatusPanel`, which were checked in Send/Receive/Import; LB-10's pictures are in `.qa/backup/` (before fixes 9, 20 and 23). Their buttons keep the progress panels' layout unchanged.
+- The Library playing state and the delete-while-playing dialog are not in the side-by-side tool (see matrix); Safari and `player.spec.ts` cover the behaviour. `isBookPlaying` was read and exercised through the player e2e, not photographed.
+- Firefox: not in the scope of this task; the gallery axe spec and the e2e config still list it.
+- Real Safari: Develop > Offline is not scriptable without System Events, so offline was tested by stopping the preview server. A user-gesture autoplay refusal was not provoked (the AppleScript click was accepted by Safari).
+- In the dev tool the Send dialog calls the real pairing Worker and logs a CORS error from `127.0.0.1`; that is expected until LB-13 deploys it with the Pages origin allowed.
+- The 28 px mini-player offset and the extra Cancel link are accepted above; nothing to fix.
 
 ## Image index (all under `.qa/lb11/`, gitignored)
 
