@@ -25,7 +25,8 @@ const FIXTURES: Record<string, string> = {
   ...Object.fromEntries(zeland.map((f, i) => [`z${i + 1}`, join(zelandDir, f)])),
 }
 const TOLERANCE = 0.25
-const resultsDir = join(import.meta.dirname, '../test-results')
+// Outside test-results/, which Playwright empties at the start of every run.
+const resultsFile = process.env.LB_COMPILER_RESULTS ?? join(tmpdir(), 'lb-compiler-results.jsonl')
 
 test.skip(Object.values(FIXTURES).some((f) => !existsSync(f)) || zeland.length !== 6, 'local fixtures missing, see fixtures/README.md')
 test.describe.configure({ mode: 'serial' })
@@ -164,8 +165,7 @@ for (const c of CASES) {
       trims: result!.trims.map((t) => ({ lead: +t.leading.toFixed(4), trail: +t.trailing.toFixed(4), pre: t.prerollPackets, trim: +t.containerTrim.toFixed(4) })),
       measured: !!c.measure,
     }
-    mkdirSync(resultsDir, { recursive: true })
-    appendFileSync(join(resultsDir, 'compiler-results.jsonl'), `${JSON.stringify(row)}\n`)
+    appendFileSync(resultsFile, `${JSON.stringify(row)}\n`)
     testInfo.annotations.push({ type: 'result', description: JSON.stringify(row) })
 
     expect(ff.decodeErrors).toBe('')
