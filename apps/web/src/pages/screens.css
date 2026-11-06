@@ -87,6 +87,7 @@
   .lb-sec > p { margin: 0; font: 400 14px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); }
   .lb-sec .lb-btn[data-size="md"] { align-self: flex-start; padding: 0 18px; font-size: 15px; }
   .lb-sec .lb-btn[data-size="md"][data-icon] { padding-left: 14px; }
+  .lb-actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .lb-sec .lb-btn[data-variant="danger-outline"] { font-weight: 700; }
   .lb-clear { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
   .lb-clear > span { font: 400 13px/1.45 var(--lb-font-ui); color: var(--lb-text-muted); }

@@ -13,7 +13,7 @@ import { Reveal } from '../../components/ui/Reveal'
 import { Ic } from '../../components/icons'
 import { ImportError, naturalSort } from '../../features/import/probe'
 import { coverPath } from '../../features/library/LibraryCommands'
-import { isBookActive, pause } from '../../features/playback/api'
+import { isBookActive, stopListening } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { db } from '../../services/db/database'
 import { MediaStorage } from '../../services/opfs/MediaStorage'
@@ -166,7 +166,7 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
     const v = view!
     setSaving(true)
     try {
-      if (playing) await pause()
+      if (playing) await stopListening()
       const id = v.book.id
       if (title.trim() !== v.book.title) await commands.renameBook(id, title)
       if (desc.trim() !== v.book.description) await commands.updateDescription(id, desc.trim())

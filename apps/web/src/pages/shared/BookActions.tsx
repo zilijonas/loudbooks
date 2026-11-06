@@ -5,9 +5,10 @@ import { BookCover } from '../../components/books/BookCover'
 import { formatBytes } from '../../components/format'
 import { ActionList, type MenuAction } from '../../components/ui/Feedback'
 import { AlertDialog, BottomSheet } from '../../components/ui/Overlays'
-import { isBookActive, pause } from '../../features/playback/api'
+import { isBookActive, stopListening } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { showToast } from '../../app/store'
+import { useBackup } from './Backup'
 import { commands, useSummary, type BookView } from './data'
 
 /** "Book actions" sheet (centred dialog ≥ 768 px) plus the delete confirmation. `view` null = closed. */
@@ -15,6 +16,7 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
   const navigate = useNavigate()
   const [del, setDel] = useState<BookView | null>(null)
   const [busy, setBusy] = useState(false)
+  const backup = useBackup()
   // Keep the last book while the sheet animates out.
   const [last, setLast] = useState(view)
   if (view && view !== last) setLast(view)
@@ -22,9 +24,9 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
 
   const items: MenuAction[] = shown ? [
     { label: t('menu.edit'), icon: 'pencil', onClick: () => { onClose(); navigate(`/book/${shown.book.id}/edit`) } },
-    // Send (LB-9), Export (LB-10) and Re-import attach their flows here.
+    // Send (LB-9) and Re-import attach their flows here.
     { label: t('menu.send'), icon: 'send', onClick: onClose },
-    { label: t('menu.export'), icon: 'archive', onClick: onClose },
+    { label: t('menu.export'), icon: 'archive', onClick: () => { onClose(); void backup.exportBook(shown.book) } },
     ...(shown.book.status === 'missing' ? [{ label: t('menu.reimport'), icon: 'refresh' as const, onClick: onClose }] : []),
     { label: t('menu.delete'), icon: 'trash', danger: true, onClick: () => { setDel(shown); onClose() } },
   ] : []
@@ -33,7 +35,7 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
     if (!del || busy) return
     setBusy(true)
     try {
-      if (isBookActive(del.book.id)) await pause()
+      if (isBookActive(del.book.id)) await stopListening(true)
       await commands.deleteBook(del.book.id)
       setDel(null)
       navigate('/', { replace: true })
@@ -52,6 +54,7 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
         {shown && <SheetBook view={shown} />}
         <ActionList items={items} />
       </BottomSheet>
+      {backup.ui}
       <AlertDialog
         open={!!del}
         danger

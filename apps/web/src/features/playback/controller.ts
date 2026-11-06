@@ -320,6 +320,23 @@ export async function startListening(bookId: string, chapterId?: string) {
   }
 }
 
+/**
+ * Pauses and lets go of the attached file and any preparation, so the book can be edited, replaced or deleted
+ * (`pause()` keeps the file attached, and LibraryCommands refuse active files). The position is saved first.
+ * `forget`: the book is about to disappear, so the player drops it too.
+ */
+export async function stopListening(forget = false) {
+  const s = get()
+  prepareAbort?.abort()
+  prepareAbort = null
+  checkpoint('pause')
+  set({ pending: null, position: currentPosition(s) })
+  retire(detach()?.session ?? null)
+  if (forget) set({ book: null, chapters: [], timeline: null, cover: null })
+  dispatch({ type: 'select', bookId: forget ? null : s.book?.id ?? null })
+  await writes
+}
+
 export function pause() {
   const a = audio()
   if (a.paused) return

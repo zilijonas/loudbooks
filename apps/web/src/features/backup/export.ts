@@ -15,7 +15,9 @@ async function hash(file: Blob) {
   return digest.digest("hex");
 }
 
-async function archive(books: Book[], filename: string) {
+async function archive(books: Book[], filename: string, onProgress?: (written: number, total: number) => void) {
+  const total = (await libraryRepository.database.assets.where("bookId").anyOf(books.map(book => book.id)).toArray()).reduce((sum, asset) => sum + asset.bytes, 0);
+  let done = 0;
   const zip = new ZipWriter(new BlobWriter("application/zip"));
   const manifest = { schemaVersion: 1, app: "loudbooks", books: [] as object[] };
   for (const [index, book] of books.entries()) {
@@ -29,7 +31,8 @@ async function archive(books: Book[], filename: string) {
       const file = await storage.read(asset.path);
       if (file.size !== asset.bytes || await hash(file) !== asset.sha256) throw new Error("Backup source integrity check failed");
       const name = `books/${index}/audio/${assetIndex}`;
-      await zip.add(name, new BlobReader(file), { level: 0 });
+      await zip.add(name, new BlobReader(file), { level: 0, onprogress: async written => { onProgress?.(done + written, total); } });
+      done += file.size;
       files.push({ id: asset.id, bookId: asset.bookId, originalFilename: asset.originalFilename, container: asset.container, codec: asset.codec, channels: asset.channels, sampleRate: asset.sampleRate, duration: asset.duration, bytes: asset.bytes, sha256: asset.sha256, name, size: file.size });
     }
     let cover: { name: string; size: number; sha256: string } | undefined;
@@ -48,13 +51,13 @@ function safeTitle(title: string) {
   return [...title].map(char => char.charCodeAt(0) < 32 || /[\\/:*?"<>|]/.test(char) ? "_" : char).join("").replace(/[. ]+$/g, "").slice(0, 160) || "book";
 }
 
-export async function exportBook(bookId: string) {
+export async function exportBook(bookId: string, onProgress?: (written: number, total: number) => void) {
   const book = await libraryRepository.database.books.get(bookId);
   if (!book) throw new Error("Book not found");
-  return archive([book], `${safeTitle(book.title)}.loudbook.zip`);
+  return archive([book], `${safeTitle(book.title)}.loudbook.zip`, onProgress);
 }
 
-export async function exportLibrary() {
+export async function exportLibrary(onProgress?: (written: number, total: number) => void) {
   const books = await libraryRepository.database.books.toArray();
-  return archive(books, `loudbooks-library-${new Date().toISOString().slice(0, 10)}.loudbook.zip`);
+  return archive(books, `loudbooks-library-${new Date().toISOString().slice(0, 10)}.loudbook.zip`, onProgress);
 }

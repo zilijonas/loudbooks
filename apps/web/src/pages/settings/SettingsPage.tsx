@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { version } from '../../../package.json'
 import { formatBytes } from '../../components/format'
@@ -8,12 +8,13 @@ import { StatusRow } from '../../components/ui/Feedback'
 import { useTheme, type ThemePreference } from '../../theme/ThemeProvider'
 import { AlertDialog, useIsDesktop } from '../../components/ui/Overlays'
 import { StorageBar } from '../../components/ui/StorageBar'
-import { isBookActive, pause } from '../../features/playback/api'
+import { isBookActive, stopListening } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { isStandalone } from '../../app/env'
 import { showToast, useUi } from '../../app/store'
 import symbol from '../../components/brand/symbol.svg'
 import symbolDark from '../../components/brand/symbol-on-dark.svg'
+import { useBackup } from '../shared/Backup'
 import { maintenance, useLibrary } from '../shared/data'
 
 const REPO = 'https://github.com/zilijonas/loudbooks'
@@ -39,6 +40,8 @@ export function SettingsPage() {
   const [usage, setUsage] = useState<Usage>()
   const [dialog, setDialog] = useState<'clear' | 'library' | null>(null)
   const [tick, setTick] = useState(0)
+  const backup = useBackup()
+  const picker = useRef<HTMLInputElement>(null)
   const books = views ?? []
   const playing = books.some((v) => isBookActive(v.book.id))
   const busy = playing || importing
@@ -70,7 +73,7 @@ export function SettingsPage() {
   const deleteLibrary = async () => {
     setDialog(null)
     try {
-      if (playing) await pause()
+      if (playing) await stopListening(true)
       await maintenance.deleteLibrary()
       showToast(t('dialogs.libraryDeleted'))
       navigate('/')
@@ -117,8 +120,14 @@ export function SettingsPage() {
       <section aria-labelledby="st-bk" className="lb-sec" data-gap="10">
         <h2 id="st-bk">{t('settings.backups')}</h2>
         <p>{t('settings.backupsBody')}</p>
-        {/* LB-10 wires the backup picker. */}
-        <Button variant="secondary" icon="archive">{t('settings.importBackup')}</Button>
+        <div className="lb-actions">
+          <Button variant="secondary" icon="upload" disabled={books.length === 0 || importing} onClick={() => void backup.exportLibrary()}>{t('backup.exportLibrary')}</Button>
+          <Button variant="secondary" icon="archive" disabled={importing} onClick={() => picker.current?.click()}>{t('settings.importBackup')}</Button>
+        </div>
+        <input
+          ref={picker} type="file" hidden accept=".zip,application/zip" data-testid="backup-file"
+          onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void backup.importFile(file) }}
+        />
       </section>
 
       <section aria-labelledby="st-app" className="lb-sec" data-gap="10">
@@ -162,6 +171,7 @@ export function SettingsPage() {
         <Button variant="danger-outline" onClick={() => setDialog('library')}>{t('settings.deleteLibraryCta')}</Button>
       </section>
 
+      {backup.ui}
       <AlertDialog
         open={dialog === 'clear'} title={t('dialogs.clearTitle')} body={t('dialogs.clearBody', { size: formatBytes(temp) })}
         confirmLabel={t('settings.clearTemp')} cancelLabel={t('common.cancel')} onConfirm={() => void clear()} onCancel={() => setDialog(null)}
