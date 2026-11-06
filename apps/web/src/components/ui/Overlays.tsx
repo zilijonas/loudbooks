@@ -19,6 +19,15 @@ export function useIsDesktop() {
 
 type Kind = 'sheet' | 'dialog'
 
+/** Radix returns focus to its own Trigger, which screens don't use (dialogs open from state). Remember the opener instead. */
+function useReturnFocus() {
+  const opener = useRef<HTMLElement | null>(null)
+  return {
+    onOpenAutoFocus: () => { opener.current = document.activeElement as HTMLElement | null },
+    onCloseAutoFocus: (e: Event) => { e.preventDefault(); opener.current?.focus({ preventScroll: true }) },
+  }
+}
+
 /** Shared enter/exit for scrim + panel. Sheets slide (spring in, drawer-curve out); dialogs scale from centre. */
 function Stage({ kind, wide, children, scrim }: { kind: Kind; wide?: boolean; children: ReactNode; scrim: ReactNode }) {
   const p = usePreset()
@@ -104,13 +113,14 @@ export interface DialogProps {
 
 function DialogImpl({ open, onOpenChange, title, dismissible = true, children, kind, wide, dragToDismiss = true }: DialogProps & { kind: Kind; wide?: boolean; dragToDismiss?: boolean }) {
   const block = (e: Event) => { if (!dismissible) e.preventDefault() }
+  const focus = useReturnFocus()
   return (
     <RDialog.Root open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
         {open && (
           <RDialog.Portal forceMount>
             <Stage kind={kind} wide={wide} scrim={<RDialog.Overlay forceMount asChild><ScrimMotion /></RDialog.Overlay>}>
-              <RDialog.Content forceMount asChild aria-describedby={undefined} onEscapeKeyDown={block} onPointerDownOutside={block} onInteractOutside={block}>
+              <RDialog.Content forceMount asChild aria-describedby={undefined} {...focus} onEscapeKeyDown={block} onPointerDownOutside={block} onInteractOutside={block}>
                 <Panel kind={kind} title={title} showClose={dismissible} grabber drag={dismissible && dragToDismiss} onDismiss={() => onOpenChange(false)} Title={RDialog.Title}>
                   {children}
                 </Panel>
@@ -156,13 +166,14 @@ export function AlertDialog({ open, title, body, confirmLabel, cancelLabel, dang
   const [typed, setTyped] = useState('')
   const input = useRef<HTMLInputElement>(null)
   const locked = !!typedConfirm && typed.trim().toLowerCase() !== typedConfirm.toLowerCase()
+  const focus = useReturnFocus()
   return (
     <RAlert.Root open={open} onOpenChange={(o) => { if (!o) onCancel() }}>
       <AnimatePresence onExitComplete={() => setTyped('')}>
         {open && (
           <RAlert.Portal forceMount>
             <Stage kind="dialog" scrim={<RAlert.Overlay forceMount asChild><ScrimMotion /></RAlert.Overlay>}>
-              <RAlert.Content forceMount asChild onOpenAutoFocus={typedConfirm ? (e) => { e.preventDefault(); input.current?.focus() } : undefined}>
+              <RAlert.Content forceMount asChild onCloseAutoFocus={focus.onCloseAutoFocus} onOpenAutoFocus={(e) => { focus.onOpenAutoFocus(); if (typedConfirm) { e.preventDefault(); input.current?.focus() } }}>
                 <Panel kind="dialog" title={title} showClose={false} grabber={false} drag={false} onDismiss={onCancel} Title={RAlert.Title}>
                     <RAlert.Description className="lb-dialog-body">{body}</RAlert.Description>
                     {note && <p className="lb-dialog-note">{note}</p>}

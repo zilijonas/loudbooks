@@ -41,6 +41,7 @@ export function BookCover({ book, size = 'fluid', layoutId, art: override, class
       transition={p.sharedCover.transition}
       className={className ? `lb-cover ${className}` : 'lb-cover'}
       data-size={size}
+      aria-hidden="true" // decorative: the title is always the accessible name of the surrounding control
       style={{ '--w': typeof w === 'number' ? `${w}px` : w, '--cover-r': `${r}px`, background: art.bg, color: art.fg, border: art.border, ...style } as CSSProperties}
     >
       {image ? (

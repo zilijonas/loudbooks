@@ -112,7 +112,8 @@
   .lb-badge[data-tone="warning"] { background: var(--lb-warning-bg); color: var(--lb-warning); }
   .lb-badge[data-tone="danger"] { background: var(--lb-danger-bg); color: var(--lb-danger); }
   .lb-badge[data-tone="neutral"] { background: var(--lb-surface-sunken); color: var(--lb-text); }
-  .lb-badge[data-tone="action"] { background: var(--lb-surface-sunken); color: var(--lb-accent-text); }
+  .lb-badge[data-tone="action"] { background: var(--lb-surface-sunken); color: var(--lb-text); }
+  .lb-badge[data-tone="action"] > .lb-ic { color: var(--lb-accent-text); }
   .lb-badge-new { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px 0 6px; border-radius: var(--lb-radius-pill); background: var(--lb-success); color: #FFFFFF; font: 700 12px/1 var(--lb-font-ui); }
   .lb-badge-new[data-floating] { position: absolute; top: -8px; right: -8px; box-shadow: 0 0 0 3px var(--lb-bg); }
 
