@@ -7,8 +7,8 @@ export async function startListening(_bookId: string, _chapterId?: string): Prom
 /** Opens the full player route. */
 export function openPlayer(): void {}
 
-/** Stops playback and releases the session files (before deleting the playing book or the library). */
-export async function stopListening(): Promise<void> {}
+/** Pauses playback (before editing or deleting the playing book). */
+export async function pause(): Promise<void> {}
 
 /** True while this book is playing, paused with a prepared session, or preparing one. */
 export function isBookActive(_bookId: string): boolean { return false }

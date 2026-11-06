@@ -36,7 +36,9 @@
   .lb-details-info h1 { margin: 0; font: 800 28px/1.12 var(--lb-font-display); letter-spacing: -.02em; overflow-wrap: anywhere; text-wrap: balance; }
   .lb-details-info > span { font: 500 14px/1.4 var(--lb-font-ui); color: var(--lb-text-muted); font-variant-numeric: tabular-nums; }
   .lb-details-info .lb-badge { align-self: auto; }
-  @media (min-width: 768px) {
+  /* Design switches at 768 px, but 248 px sidebar + 300 px cover leaves ~96 px for the text column there (the design
+     frame breaks too), so the two-column details layout waits for 1024 px. */
+  @media (min-width: 1024px) {
     .lb-details-grid { grid-template-columns: 300px minmax(0, 1fr); }
     .lb-details-cover { width: 100%; }
     .lb-details-info { align-items: flex-start; text-align: left; }
@@ -66,6 +68,7 @@
   .lb-files-head span { font: 400 14px/1.45 var(--lb-font-ui); color: var(--lb-text-muted); }
   .lb-files-sum { display: flex; justify-content: space-between; gap: 12px; font: 600 14px/1.3 var(--lb-font-ui); font-variant-numeric: tabular-nums; }
   .lb-files-sum > span:last-child { color: var(--lb-text-muted); }
+  .lb-files .lb-edit-list { margin-bottom: 8px; } /* design list height is n × 84 px, trailing gap included */
   .lb-warnnote { margin: 0; padding: 12px 14px; border-radius: 16px; background: var(--lb-warning-bg); font: 500 14px/1.45 var(--lb-font-ui); }
   .lb-form-note { margin: 0; font: 500 13px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); }
   .lb-import { padding: 12px 0 4px; }
@@ -118,7 +121,7 @@
   .lb-welcome-art > div { position: absolute; width: 44%; aspect-ratio: 2 / 3; border-radius: 22px; box-shadow: var(--lb-shadow-lift); padding: 22px; display: flex; flex-direction: column; }
 
   /* Storage unavailable */
-  .lb-dataerror { min-height: 100dvh; padding: 40px 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; max-width: 460px; margin: 0 auto; }
+  .lb-dataerror { width: 100%; min-height: 100dvh; padding: 40px 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; max-width: 460px; margin: 0 auto; }
   .lb-dataerror > div:first-child { width: 64px; height: 64px; border-radius: 50%; background: var(--lb-danger-bg); color: var(--lb-danger); display: flex; align-items: center; justify-content: center; }
   .lb-dataerror h1 { margin: 0; font: 800 28px/1.15 var(--lb-font-display); letter-spacing: -.02em; }
   .lb-dataerror p { margin: 0; font: 400 16px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); }

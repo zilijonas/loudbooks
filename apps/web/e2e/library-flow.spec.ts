@@ -23,7 +23,7 @@ test('create, reorder, rename and delete a book', async ({ playwright, browserNa
     await expect(page.getByRole('heading', { name: 'Your library is empty' })).toBeVisible()
     await page.getByRole('button', { name: 'Add book' }).click()
 
-    await page.getByLabel('Title').fill('Zeland test')
+    await page.getByRole('textbox', { name: 'Title Required' }).fill('Zeland test')
     await page.locator('input[type=file][multiple]').setInputFiles(files)
     const rows = page.getByRole('list', { name: 'Chapters' }).locator('input')
     await expect(rows).toHaveCount(3)
@@ -43,7 +43,7 @@ test('create, reorder, rename and delete a book', async ({ playwright, browserNa
     await expect(chapters.nth(2)).toContainText(third!)
 
     await page.getByRole('button', { name: 'Edit', exact: true }).click()
-    await page.getByLabel('Title').fill('Zeland renamed')
+    await page.getByRole('textbox', { name: 'Title Required' }).fill('Zeland renamed')
     await page.getByRole('button', { name: 'Save changes' }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Zeland renamed' })).toBeVisible()
     await expect(chapters.nth(0)).toContainText(second!)
@@ -62,7 +62,8 @@ test('create, reorder, rename and delete a book', async ({ playwright, browserNa
         }
       }
       await walk(await navigator.storage.getDirectory(), '')
-      return names.filter((n) => n.endsWith('.mp3'))
+      // Only book/import files: WebKit can keep other suites' session files for this origin outside the profile.
+      return names.filter((n) => /\/(books|staging)\//.test(n))
     })
     expect(left).toEqual([])
   } finally {

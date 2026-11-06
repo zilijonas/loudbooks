@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutlet } from 'react-router'
 import { InstallGuide, Sidebar } from '../components/ui/Navigation'
 import { Toast } from '../components/ui/Feedback'
@@ -10,6 +10,7 @@ import { PlayerDock } from '../features/playback/PlayerDock'
 import { t } from '../i18n'
 import { usePreset } from '../motion/presets'
 import { usePwaUpdate } from '../pwa/usePwaUpdate'
+import { db } from '../services/db/database'
 import { useOnline } from './env'
 import { useUi } from './store'
 
@@ -31,16 +32,21 @@ export function Shell() {
   const online = useOnline()
   const p = usePreset()
   const main = useRef<HTMLElement>(null)
-  const { needRefresh, offlineReady, apply } = usePwaUpdate()
+  const pwa = usePwaUpdate()
   const toast = useUi((s) => s.toast)
   const installOpen = useUi((s) => s.installOpen)
+  const offlineReady = useUi((s) => s.pwa.offlineReady)
+  const { needRefresh, apply } = pwa
 
-  useEffect(recoverOnce, [])
+  // A8: storage that can't be opened (private window, cleared data) goes to the route error screen.
+  const [dbError, setDbError] = useState<unknown>(null)
+  useEffect(() => { db.open().then(recoverOnce, setDbError) }, [])
   // A returning visit already runs under an active worker; `offlineReady` only fires on the first install.
-  const ready = offlineReady || !!navigator.serviceWorker?.controller
+  const ready = pwa.offlineReady || !!navigator.serviceWorker?.controller
   useEffect(() => useUi.setState({ pwa: { needRefresh, offlineReady: ready, apply } }), [needRefresh, ready]) // eslint-disable-line react-hooks/exhaustive-deps
   useLayoutEffect(() => { main.current?.scrollTo({ top: 0 }) }, [location.pathname])
 
+  if (dbError) throw dbError
   const path = location.pathname
   const welcome = path === '/welcome'
   const dock = !welcome && path !== '/add' && path !== '/player' && !path.endsWith('/edit')
@@ -51,7 +57,7 @@ export function Shell() {
       {desktop && !welcome && (
         <Sidebar
           onAdd={() => navigate('/add')}
-          offlineReady={ready || !online}
+          offlineReady={offlineReady || !online}
           offline={!online}
           items={[
             { label: t('common.library'), icon: 'book', current: section === 'library', onClick: () => navigate('/') },

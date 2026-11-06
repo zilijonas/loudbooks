@@ -51,7 +51,7 @@ const CASES = [
   ['add-single', 'add-single', '#/add', {}, async (p) => { await p.getByLabel('Title').fill('The Orchard at the End of the Line'); await pick(p, [await file(zFiles[1], 'orchard-unabridged.m4b')]); await p.getByRole('switch').click() }],
   ['add-errors', 'add-errors', '#/add', {}, async (p) => {
     const [, b, c] = await demoFiles(); await pick(p, [b, c, { name: 'Quiet Rooms extras.flac', mimeType: 'audio/flac', buffer: Buffer.from('fLaC not really') }])
-    await p.getByRole('button', { name: 'Save book' }).click()
+    await p.getByRole('button', { name: 'Save', exact: true }).click()
   }],
   ['add-discard', 'add-discard', '#/add', {}, async (p) => { await p.getByLabel('Title').fill('A Field Guide to Quiet Rooms'); await pick(p, await demoFiles()); await p.getByRole('button', { name: 'Cancel' }).first().click() }],
   ['edit', 'edit', '#/book/b1/edit', { books: MANY }],
@@ -106,7 +106,7 @@ async function newCtx(width, theme, safari) {
     try { localStorage.setItem('loudbooks:theme', theme) } catch { /* ignore */ }
     if (location.port !== '5173') return
     const flags = new URLSearchParams(location.search).get('f')?.split(',') ?? []
-    if (flags.includes('noIdb')) Object.defineProperty(window, 'indexedDB', { get() { throw new DOMException('blocked', 'SecurityError') } })
+    if (flags.includes('noIdb')) indexedDB.open = () => { throw new DOMException('The user denied permission to access the database.', 'SecurityError') }
     if (flags.includes('persisted') && navigator.storage) navigator.storage.persisted = async () => true
     if (flags.includes('standalone')) { const mm = window.matchMedia.bind(window); window.matchMedia = (q) => (q.includes('display-mode') ? { ...mm(q), matches: true } : mm(q)) }
   }, theme)

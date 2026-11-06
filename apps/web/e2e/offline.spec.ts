@@ -13,7 +13,7 @@ test('app shell loads again offline once the service worker is active', async ({
     await context.setOffline(true)
     await page.reload()
     await expect(heading).toBeVisible()
-    await expect(page).toHaveURL(/\/loudbooks\/$/)
+    await expect(page).toHaveURL(/\/loudbooks\/(#\/welcome)?$/) // first launch lands on Welcome
   } finally {
     await context.setOffline(false)
   }

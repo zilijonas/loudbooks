@@ -8,7 +8,7 @@ import { StatusRow } from '../../components/ui/Feedback'
 import { useTheme, type ThemePreference } from '../../theme/ThemeProvider'
 import { AlertDialog, useIsDesktop } from '../../components/ui/Overlays'
 import { StorageBar } from '../../components/ui/StorageBar'
-import { isBookActive, stopListening } from '../../features/playback/api'
+import { isBookActive, pause } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { isStandalone } from '../../app/env'
 import { showToast, useUi } from '../../app/store'
@@ -70,7 +70,7 @@ export function SettingsPage() {
   const deleteLibrary = async () => {
     setDialog(null)
     try {
-      if (playing) await stopListening()
+      if (playing) await pause()
       await maintenance.deleteLibrary()
       showToast(t('dialogs.libraryDeleted'))
       navigate('/')

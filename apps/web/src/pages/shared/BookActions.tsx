@@ -5,7 +5,7 @@ import { BookCover } from '../../components/books/BookCover'
 import { formatBytes } from '../../components/format'
 import { ActionList, type MenuAction } from '../../components/ui/Feedback'
 import { AlertDialog, BottomSheet } from '../../components/ui/Overlays'
-import { isBookActive, stopListening } from '../../features/playback/api'
+import { isBookActive, pause } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { showToast } from '../../app/store'
 import { commands, useSummary, type BookView } from './data'
@@ -33,7 +33,7 @@ export function BookActions({ view, onClose }: { view: BookView | null; onClose:
     if (!del || busy) return
     setBusy(true)
     try {
-      if (isBookActive(del.book.id)) await stopListening()
+      if (isBookActive(del.book.id)) await pause()
       await commands.deleteBook(del.book.id)
       setDel(null)
       navigate('/', { replace: true })
