@@ -16,7 +16,7 @@ async function hash(file: Blob) {
 }
 
 async function archive(books: Book[], filename: string, onProgress?: (written: number, total: number) => void) {
-  const total = (await libraryRepository.database.assets.where("bookId").anyOf(books.map(book => book.id)).toArray()).reduce((sum, asset) => sum + asset.bytes, 0);
+  const total = (await Promise.all(books.map(book => libraryRepository.database.assets.where("bookId").equals(book.id).toArray()))).flat().reduce((sum, asset) => sum + asset.bytes, 0);
   let done = 0;
   const zip = new ZipWriter(new BlobWriter("application/zip"));
   const manifest = { schemaVersion: 1, app: "loudbooks", books: [] as object[] };
