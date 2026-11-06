@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBF4EA;color:#2A1E17;font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#C23E22;text-underline-offset:3px}a:hover{color:#2A1E17}code{font:500 .9em/1 ui-monospace,Menlo,monospace;background:#F1E6D6;padding:2px 6px;border-radius:6px}@media (prefers-reduced-motion:reduce){*{transition-duration:0ms!important}}</style>
+</helmet>
+<div style="max-width:1200px;margin:0 auto;padding:clamp(24px,5vw,72px) clamp(16px,4vw,48px) 120px;display:flex;flex-direction:column;gap:96px">
+
+  <header data-screen-label="00 Cover" style="display:flex;flex-direction:column;gap:28px">
+    <img src="brand/logo/wordmark-horizontal.svg" alt="Loud Books" style="height:56px;width:auto;align-self:flex-start">
+    <div style="font:800 clamp(40px,7vw,80px)/.98 'Bricolage Grotesque';letter-spacing:-.035em;max-width:900px;text-wrap:balance">Brand &amp; design tokens</div>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;font:500 15px/1.5 'Hanken Grotesk';color:#6B5A4E">
+      <span>Direction 1a · Paperback Pop</span><span>Phase 1 of 5</span><span>v0.1 · Nov 2026</span>
+    </div>
+    <p style="font:400 19px/1.55 'Hanken Grotesk';max-width:680px;margin:0;color:#4A3B31;text-wrap:pretty">Loud Books is a personal audiobook player for files you own. The brand is warm and tactile, like a well-thumbed paperback, with one loud color reserved for what matters: the thing you're listening to and the button that plays it.</p>
+  </header>
+
+  <!-- LOGO -->
+  <section data-screen-label="01 Logo" style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">01 · Logo</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">An open book that speaks</h2><p style="margin:0;font:400 17px/1.5 'Hanken Grotesk';color:#4A3B31;max-width:640px">Two pages form the base; two arcs rise from the spine like sound leaving the book. The arcs are never animated as a fake waveform.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+      <figure style="margin:0;display:flex;flex-direction:column;gap:10px"><div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;height:200px;display:flex;align-items:center;justify-content:center"><img src="brand/logo/wordmark-horizontal.svg" alt="" style="height:52px"></div><figcaption style="font:500 13px/1.4 'Hanken Grotesk';color:#6B5A4E">Horizontal · primary · <code>wordmark-horizontal.svg</code></figcaption></figure>
+      <figure style="margin:0;display:flex;flex-direction:column;gap:10px"><div style="background:#1C1512;border-radius:28px;height:200px;display:flex;align-items:center;justify-content:center"><img src="brand/logo/wordmark-horizontal-on-dark.svg" alt="" style="height:52px"></div><figcaption style="font:500 13px/1.4 'Hanken Grotesk';color:#6B5A4E">On dark · <code>wordmark-horizontal-on-dark.svg</code></figcaption></figure>
+      <figure style="margin:0;display:flex;flex-direction:column;gap:10px"><div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;height:200px;display:flex;align-items:center;justify-content:center"><img src="brand/logo/lockup-compact.svg" alt="" style="height:150px"></div><figcaption style="font:500 13px/1.4 'Hanken Grotesk';color:#6B5A4E">Compact lockup · splash, About · <code>lockup-compact.svg</code></figcaption></figure>
+      <figure style="margin:0;display:flex;flex-direction:column;gap:10px"><div style="background:#FF6B4A;border-radius:28px;height:200px;display:flex;align-items:center;justify-content:center"><img src="brand/logo/wordmark-horizontal-mono.svg" alt="" style="height:52px"></div><figcaption style="font:500 13px/1.4 'Hanken Grotesk';color:#6B5A4E">Mono ink on coral · <code>wordmark-horizontal-mono.svg</code></figcaption></figure>
+      <figure style="margin:0;display:flex;flex-direction:column;gap:10px"><div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;height:200px;display:flex;align-items:center;justify-content:center;gap:36px"><img src="brand/logo/symbol.svg" alt="" style="height:88px"><img src="brand/logo/symbol-mono-ink.svg" alt="" style="height:88px"></div><figcaption style="font:500 13px/1.4 'Hanken Grotesk';color:#6B5A4E">Symbol, color and mono · <code>symbol.svg</code>, <code>symbol-mono-ink.svg</code></figcaption></figure>
+      <figure style="margin:0;display:flex;flex-direction:column;gap:10px"><div style="background:#2A1E17;border-radius:28px;height:200px;display:flex;align-items:center;justify-content:center;gap:36px"><img src="brand/logo/symbol-on-dark.svg" alt="" style="height:88px"><img src="brand/logo/symbol-mono-white.svg" alt="" style="height:88px"></div><figcaption style="font:500 13px/1.4 'Hanken Grotesk';color:#6B5A4E">Symbol on dark · <code>symbol-on-dark.svg</code>, <code>symbol-mono-white.svg</code></figcaption></figure>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:18px">
+        <div style="font:700 18px/1.2 'Bricolage Grotesque'">Clear space</div>
+        <div style="align-self:center;position:relative;padding:28px;outline:1.5px dashed #C23E22;outline-offset:-1px;border-radius:4px;background:repeating-linear-gradient(45deg,#FFF1EC 0 6px,transparent 6px 12px)">
+          <div style="background:#FFFBF5;display:flex"><img src="brand/logo/wordmark-horizontal.svg" alt="" style="height:56px;display:block"></div>
+        </div>
+        <p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31">Keep a margin of ½ the symbol height on every side. Nothing else (text, edges, other marks) enters the hatched area.</p>
+      </div>
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:18px">
+        <div style="font:700 18px/1.2 'Bricolage Grotesque'">Minimum sizes</div>
+        <div style="display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><img src="brand/logo/wordmark-horizontal.svg" alt="" style="height:24px"><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">Wordmark ≥ 120 px wide</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><img src="brand/logo/symbol.svg" alt="" style="height:24px"><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">Full symbol ≥ 24 px</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><img src="brand/logo/symbol-small.svg" alt="" style="height:16px"><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">Small symbol 16–23 px</span></div>
+        </div>
+        <p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31">Below 24 px the inner arc fills in, so <code>symbol-small.svg</code> keeps one thicker arc. Favicons use it.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="font:700 18px/1.2 'Bricolage Grotesque'">Don't</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px">
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:130px;border-radius:20px;background:#FFFBF5;border:1.5px solid #E8DCCB;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="brand/logo/wordmark-horizontal.svg" alt="" style="height:40px;transform:scaleX(1.5)"></div><span style="font:500 13px/1.4 'Hanken Grotesk';color:#B42318">✕ Stretch or squash</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:130px;border-radius:20px;background:#FFFBF5;border:1.5px solid #E8DCCB;display:flex;align-items:center;justify-content:center"><img src="brand/logo/wordmark-horizontal.svg" alt="" style="height:40px;filter:hue-rotate(200deg)"></div><span style="font:500 13px/1.4 'Hanken Grotesk';color:#B42318">✕ Recolor the pages</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:130px;border-radius:20px;background:#FF6B4A;display:flex;align-items:center;justify-content:center"><img src="brand/logo/wordmark-horizontal.svg" alt="" style="height:40px"></div><span style="font:500 13px/1.4 'Hanken Grotesk';color:#B42318">✕ Color logo on coral (use mono)</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="height:130px;border-radius:20px;background:#FFFBF5;border:1.5px solid #E8DCCB;display:flex;align-items:center;justify-content:center"><img src="brand/logo/wordmark-horizontal.svg" alt="" style="height:40px;transform:rotate(-12deg);filter:drop-shadow(0 6px 6px rgba(0,0,0,.4))"></div><span style="font:500 13px/1.4 'Hanken Grotesk';color:#B42318">✕ Rotate or add effects</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ICONS -->
+  <section data-screen-label="02 App icons" style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">02 · App icon &amp; favicon</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">Home Screen ready</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px">
+      <div style="background:#2A1E17;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:20px;color:#F7EDE2">
+        <div style="display:flex;gap:22px;align-items:flex-end;justify-content:center;padding:12px 0">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><img src="brand/icons/apple-touch-icon-180.png" alt="" style="width:76px;height:76px;border-radius:17px"><span style="font:500 12px/1 'Hanken Grotesk'">Loud Books</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><img src="brand/icons/apple-touch-icon-180.png" alt="" style="width:40px;height:40px;border-radius:9px"><span style="font:500 11px/1 'Hanken Grotesk';color:#BFAE9F">Spotlight</span></div>
+        </div>
+        <p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#BFAE9F">iOS applies its own mask. <code style="background:#3D3028;color:#F7EDE2">apple-touch-icon-180.png</code> is full-bleed square, no transparency.</p>
+      </div>
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;justify-content:center;padding:12px 0"><div style="position:relative;width:132px;height:132px"><img src="brand/icons/pwa-maskable-512.png" alt="" style="width:132px;height:132px;border-radius:50%"><div style="position:absolute;inset:13px;border:2px dashed #2A1E17;border-radius:50%"></div></div></div>
+        <p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31">Maskable: the symbol stays inside the 80% safe circle (dashed). <code>pwa-maskable-192/512.png</code></p>
+      </div>
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;justify-content:center;align-items:center;gap:20px;padding:12px 0;min-height:156px">
+          <img src="brand/icons/pwa-512.png" alt="" style="width:96px;height:96px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px;background:#F1E6D6;border-radius:8px 8px 0 0;padding:6px 10px"><img src="brand/icons/favicon-32.png" alt="" style="width:16px;height:16px"><span style="font:500 12px/1 'Hanken Grotesk'">Loud Books</span></div>
+            <div style="display:flex;align-items:center;gap:8px;background:#2A201B;border-radius:8px 8px 0 0;padding:6px 10px"><img src="brand/icons/favicon.svg" alt="" style="width:16px;height:16px;filter:invert(0)"><span style="font:500 12px/1 'Hanken Grotesk';color:#F7EDE2">Loud Books</span></div>
+          </div>
+        </div>
+        <p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31"><code>pwa-192/512.png</code> (purpose "any") and <code>favicon.svg</code>, whose arc switches to cream in dark mode.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLOR -->
+  <section data-screen-label="03 Color" style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">03 · Color</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">One loud color, used on purpose</h2><p style="margin:0;font:400 17px/1.5 'Hanken Grotesk';color:#4A3B31;max-width:680px">Coral marks the primary action and what's playing. Yolk is for small, rare highlights. Everything else is cream, paper and ink. Coral 500 is a fill color: text on it is always ink. For coral text, use <code>accent-text</code>.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px">
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:8px 24px">
+        <div style="display:grid;grid-template-columns:44px 1fr auto;gap:4px 14px;padding:14px 0 10px;font:700 12px/1 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#6B5A4E"><span></span><span>Light</span><span></span></div>
+        <sc-for list="{{ tokens }}" as="t" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:8px 0;border-top:1px solid #F1E6D6">
+            <div style="width:44px;height:32px;border-radius:10px;background:{{ t.l }};box-shadow:inset 0 0 0 1px rgba(42,30,23,.12)"></div>
+            <div style="display:flex;flex-direction:column;gap:2px;min-width:0"><code style="align-self:flex-start">--lb-{{ t.n }}</code><span style="font:400 12px/1.3 'Hanken Grotesk';color:#6B5A4E">{{ t.note }}</span></div>
+            <span style="font:500 12px/1 ui-monospace,Menlo,monospace;color:#6B5A4E">{{ t.l }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#1C1512;border-radius:28px;padding:8px 24px;color:#F7EDE2">
+        <div style="display:grid;grid-template-columns:44px 1fr auto;gap:4px 14px;padding:14px 0 10px;font:700 12px/1 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#BFAE9F"><span></span><span>Dark</span><span></span></div>
+        <sc-for list="{{ tokens }}" as="t" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:8px 0;border-top:1px solid #2E2520">
+            <div style="width:44px;height:32px;border-radius:10px;background:{{ t.d }};box-shadow:inset 0 0 0 1px rgba(247,237,226,.14)"></div>
+            <div style="display:flex;flex-direction:column;gap:2px;min-width:0"><code style="align-self:flex-start;background:#2E2520;color:#F7EDE2">--lb-{{ t.n }}</code><span style="font:400 12px/1.3 'Hanken Grotesk';color:#BFAE9F">{{ t.note }}</span></div>
+            <span style="font:500 12px/1 ui-monospace,Menlo,monospace;color:#BFAE9F">{{ t.d }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#6B5A4E">Theme is set with <code>data-theme="light|dark"</code> on <code>&lt;html&gt;</code>. If it's absent, the System setting applies through <code>prefers-color-scheme</code>. Status is never shown by color alone: every status pairs an icon with a word.</p>
+  </section>
+
+  <!-- TYPE -->
+  <section data-screen-label="04 Type" style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">04 · Typography</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">Chunky titles, calm reading</h2><p style="margin:0;font:400 17px/1.5 'Hanken Grotesk';color:#4A3B31;max-width:680px">Bricolage Grotesque (OFL) handles titles and covers. Hanken Grotesk (OFL) handles everything you read or tap. Both ship as local variable WOFF2 files in the precache, with no font CDN. All sizes are in rem, so they follow iOS Larger Text.</p></div>
+    <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:8px 28px">
+      <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="10">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:16px;align-items:baseline;padding:18px 0;border-top:1px solid #F1E6D6">
+          <div style="font-family:{{ t.f }};font-size:{{ t.s }};line-height:{{ t.lh }};font-weight:{{ t.w }};letter-spacing:{{ t.ls }};font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ t.sample }}</div>
+          <div style="display:flex;flex-direction:column;gap:3px"><code style="align-self:flex-start">{{ t.n }}</code><span style="font:400 12px/1.3 'Hanken Grotesk';color:#6B5A4E">{{ t.spec }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- SPACE -->
+  <section data-screen-label="05 Space, radius, depth" style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">05 · Space, shape, depth</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">Soft corners, warm shadows</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:12px">
+        <div style="font:700 18px/1.2 'Bricolage Grotesque'">Spacing · 4 px base</div>
+        <sc-for list="{{ spaces }}" as="s" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:12px"><code>{{ s.k }}</code><div style="height:12px;width:{{ s.v }};background:#FF6B4A;border-radius:3px"></div><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E;text-align:right">{{ s.v }}</span></div>
+        </sc-for>
+      </div>
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="font:700 18px/1.2 'Bricolage Grotesque'">Radius</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <sc-for list="{{ radii }}" as="r" hint-placeholder-count="8">
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:100%;aspect-ratio:1;background:#F1E6D6;border:2px solid #2A1E17;border-radius:{{ r.v }}"></div><span style="font:500 12px/1.2 'Hanken Grotesk';text-align:center">{{ r.k }}<br><span style="color:#6B5A4E">{{ r.v }}</span></span></div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#F1E6D6;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="font:700 18px/1.2 'Bricolage Grotesque'">Shadow &amp; layers</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="height:84px;background:#FFFBF5;border-radius:20px;box-shadow:0 14px 24px -14px rgba(120,40,10,.45);display:flex;align-items:flex-end;padding:10px"><code>card</code></div>
+          <div style="height:84px;background:#FFFBF5;border-radius:20px;box-shadow:0 24px 34px -16px rgba(120,40,10,.5);transform:translateY(-5px);display:flex;align-items:flex-end;padding:10px"><code>lift</code></div>
+          <div style="height:84px;background:#FFFFFF;border-radius:20px;box-shadow:0 12px 32px -8px rgba(42,30,23,.28);display:flex;align-items:flex-end;padding:10px"><code>menu</code></div>
+          <div style="height:84px;background:#FFFFFF;border-radius:28px 28px 0 0;box-shadow:0 -16px 40px -16px rgba(42,30,23,.35);display:flex;align-items:flex-end;padding:10px"><code>sheet</code></div>
+        </div>
+        <p style="margin:0;font:400 13px/1.5 'Hanken Grotesk';color:#4A3B31">z: base 0 · sticky 10 · mini-player 30 · sheet 40 · dialog 50 · toast 60. Shadows are warm-tinted, never neutral grey.</p>
+      </div>
+    </div>
+    <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 18px/1.2 'Bricolage Grotesque'">Targets</div><p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31">44 px minimum, 48 px default, 56 px mini-player Play, 80 px full-player Play.</p></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 18px/1.2 'Bricolage Grotesque'">Icons</div><p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31">Lucide at 2 px stroke: 16 inline, 20 in buttons, 24 in the toolbar, 32 for seek. The logo is never swapped for a Lucide glyph.</p></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 18px/1.2 'Bricolage Grotesque'">Breakpoints</div><p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31">xs 320 · sm 390 (primary) · md 430 · lg 768 (tablet: two columns) · 2xl 1440 (desktop: sidebar and persistent player). Full layouts come in Phase 3.</p></div>
+    </div>
+  </section>
+
+  <!-- MOTION -->
+  <section data-screen-label="06 Motion" style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">06 · Motion</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">Springy, and fast to respond</h2><p style="margin:0;font:400 17px/1.5 'Hanken Grotesk';color:#4A3B31;max-width:700px">Presses respond within 120 ms; the overshoot comes on release. Bounce is reserved for things you touch, and exits are always quicker than entrances. Keyboard-triggered actions don't animate. With reduced motion on, every preset becomes a 150 ms fade. Exact values are in <code>design-system/motion.ts</code>.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:16px">
+
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><code>press</code><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">scale .96 · release bounce .45</span></div>
+        <div style="height:150px;display:flex;align-items:center;justify-content:center;gap:20px">
+          <button onClick="{{ togglePlay }}" aria-label="{{ playLabel }}" style="width:80px;height:80px;border:0;border-radius:50%;background:#FF6B4A;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1);-webkit-tap-highlight-color:transparent" style-active="transform:scale(.92);transition:transform 110ms cubic-bezier(.23,1,.32,1)">
+            <div style="position:relative;width:30px;height:30px">
+              <svg width="30" height="30" viewBox="0 0 24 24" style="position:absolute;inset:0;transition:opacity 160ms, transform 320ms cubic-bezier(.34,1.8,.5,1), filter 160ms;opacity:{{ pauseO }};transform:scale({{ pauseS }});filter:blur({{ pauseB }})"><rect x="5" y="4" width="5" height="16" rx="2" fill="#2A1E17"></rect><rect x="14" y="4" width="5" height="16" rx="2" fill="#2A1E17"></rect></svg>
+              <svg width="30" height="30" viewBox="0 0 24 24" style="position:absolute;inset:0;transition:opacity 160ms, transform 320ms cubic-bezier(.34,1.8,.5,1), filter 160ms;opacity:{{ playO }};transform:scale({{ playS }});filter:blur({{ playB }})"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5Z" fill="#2A1E17"></path></svg>
+            </div>
+          </button>
+          <button style="height:48px;padding:0 22px;border:0;border-radius:999px;background:#2A1E17;color:#FBF4EA;font:600 16px/1 'Hanken Grotesk';cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">Add book</button>
+        </div>
+        <p style="margin:0;font:400 13px/1.45 'Hanken Grotesk';color:#4A3B31">The Play/Pause icons crossfade with a 2 px blur and a scale from 0.6, never from 0. Taps are never blocked while the animation runs.</p>
+      </div>
+
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><code>hoverLift</code><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">−5 px · 1.035 · ±1°</span></div>
+        <div style="height:150px;display:flex;align-items:center;justify-content:center;gap:16px">
+          <div style="width:78px;aspect-ratio:2/3;border-radius:14px;background:#FF6B4A;padding:9px;font:800 13px/1 'Bricolage Grotesque';cursor:pointer;box-shadow:0 14px 24px -14px rgba(120,40,10,.45);transition:transform 350ms cubic-bezier(.34,1.6,.5,1),box-shadow 350ms" style-hover="transform:translateY(-5px) scale(1.035) rotate(-1deg);box-shadow:0 24px 34px -16px rgba(120,40,10,.5)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">Salt &amp; Static</div>
+          <div style="width:78px;aspect-ratio:2/3;border-radius:14px;background:#2A1E17;color:#FBF4EA;padding:9px;font:800 13px/1 'Bricolage Grotesque';cursor:pointer;box-shadow:0 14px 24px -14px rgba(40,20,10,.6);transition:transform 350ms cubic-bezier(.34,1.6,.5,1),box-shadow 350ms" style-hover="transform:translateY(-5px) scale(1.035) rotate(1deg);box-shadow:0 24px 34px -16px rgba(40,20,10,.6)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">Moth Hours</div>
+        </div>
+        <p style="margin:0;font:400 13px/1.45 'Hanken Grotesk';color:#4A3B31">Hover only applies on devices with a fine pointer. On touch, cards only get the press.</p>
+      </div>
+
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><code>springPlayful</code><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">0.45 s · bounce .35</span></div>
+        <div style="height:150px;display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:14px">
+          <div style="position:relative;display:grid;grid-template-columns:repeat(4,1fr);background:#F1E6D6;border-radius:999px;padding:5px;height:52px">
+            <div style="position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px)/4);background:#2A1E17;border-radius:999px;transform:translateX({{ pill }});transition:transform 450ms cubic-bezier(.34,1.56,.5,1)"></div>
+            <sc-for list="{{ speeds }}" as="s" hint-placeholder-count="4">
+              <button onClick="{{ s.pick }}" aria-pressed="{{ s.on }}" style="position:relative;border:0;background:transparent;font:700 15px/1 'Hanken Grotesk';color:{{ s.color }};cursor:pointer;transition:color 180ms">{{ s.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin:0;font:400 13px/1.45 'Hanken Grotesk';color:#4A3B31">Used by the speed and timer selectors and by Switch. The pill moves with a transform, never with left or width.</p>
+      </div>
+
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><code>sheet</code><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">in .45 s bounce .18 · out .2 s</span></div>
+        <div style="position:relative;height:150px;border-radius:20px;background:#F1E6D6;overflow:hidden;display:flex;align-items:flex-start;justify-content:center;padding-top:22px">
+          <button onClick="{{ toggleSheet }}" style="height:44px;padding:0 18px;border:0;border-radius:999px;background:#2A1E17;color:#FBF4EA;font:600 15px/1 'Hanken Grotesk';cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.96);transition:transform 110ms ease-out">{{ sheetLabel }}</button>
+          <div style="position:absolute;left:0;right:0;bottom:0;height:84px;background:#FFFFFF;border-radius:22px 22px 0 0;box-shadow:0 -16px 40px -16px rgba(42,30,23,.35);transform:translateY({{ sheetY }});transition:{{ sheetT }};display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:8px">
+            <div style="width:36px;height:5px;border-radius:9px;background:#D4C3AE"></div>
+            <span style="font:700 15px/1 'Bricolage Grotesque'">Sleep timer</span>
+          </div>
+        </div>
+        <p style="margin:0;font:400 13px/1.45 'Hanken Grotesk';color:#4A3B31">Drag to dismiss only from the grabber or header. A flick faster than 0.11 px/ms dismisses at any distance.</p>
+      </div>
+
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><code>success</code><span style="font:500 12px/1 'Hanken Grotesk';color:#6B5A4E">0.9 → 1 · bounce .45 · check draws</span></div>
+        <div style="height:150px;display:flex;align-items:center;justify-content:center;gap:20px">
+          <div style="position:relative;width:78px;aspect-ratio:2/3;border-radius:14px;background:#FFC93C;padding:9px;font:800 13px/1 'Bricolage Grotesque';opacity:{{ succO }};transform:scale({{ succS }});transition:{{ succT }}">North of Nowhere
+            <div style="position:absolute;right:-10px;top:-10px;width:30px;height:30px;border-radius:50%;background:#2F7D4F;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px #FFFBF5"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" stroke="#FFFFFF" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16" style="stroke-dashoffset:{{ checkOff }};transition:{{ checkT }}"></path></svg></div>
+          </div>
+          <button onClick="{{ replay }}" style="height:44px;padding:0 18px;border:1.5px solid #8E7B6C;border-radius:999px;background:transparent;color:#2A1E17;font:600 15px/1 'Hanken Grotesk';cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.96);transition:transform 110ms ease-out">Replay</button>
+        </div>
+        <p style="margin:0;font:400 13px/1.45 'Hanken Grotesk';color:#4A3B31">Plays once, when a received or imported book lands in the library. Rare events are where the extra delight goes.</p>
+      </div>
+
+      <div style="background:#2A1E17;color:#F7EDE2;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:12px">
+        <code style="align-self:flex-start;background:#3D3028;color:#F7EDE2">sharedCover · page · reorder</code>
+        <p style="margin:0;font:400 14px/1.55 'Hanken Grotesk';color:#BFAE9F"><strong style="color:#F7EDE2">sharedCover</strong> 0.5 s, bounce .15: the card cover morphs into the player artwork through <code style="background:#3D3028;color:#F7EDE2">layoutId</code>, and the mini-player expands the same way.</p>
+        <p style="margin:0;font:400 14px/1.55 'Hanken Grotesk';color:#BFAE9F"><strong style="color:#F7EDE2">page</strong> 12 px rise with a soft spring; exits are a 120 ms fade.</p>
+        <p style="margin:0;font:400 14px/1.55 'Hanken Grotesk';color:#BFAE9F"><strong style="color:#F7EDE2">reorder</strong> lifts the row to 1.03 with the lift shadow and an ink-dashed placeholder; neighbours move with springPlayful. Up/Down buttons do the same job without dragging.</p>
+        <p style="margin:0;font:400 13px/1.5 'Hanken Grotesk';color:#BFAE9F">Interactive demos come in Phase 2.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COVERS -->
+  <section data-screen-label="07 Covers" style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">07 · Covers</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">Sample library &amp; generated covers</h2><p style="margin:0;font:400 17px/1.5 'Hanken Grotesk';color:#4A3B31;max-width:700px">The six fictional books below are prototype fixtures. When a book has no artwork, the app builds a typographic cover from a hash of its title. The same title always gets the same cover, on every device.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:20px">
+      <sc-for list="{{ covers }}" as="c" hint-placeholder-count="6">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="aspect-ratio:2/3;border-radius:18px;background:{{ c.bg }};color:{{ c.fg }};padding:14px;display:flex;flex-direction:column;justify-content:{{ c.justify }};gap:8px;box-shadow:0 14px 24px -14px rgba(120,40,10,.45);border:{{ c.border }};overflow:hidden">
+            <div style="width:30px;height:6px;border-radius:9px;background:{{ c.accent }}"></div>
+            <div style="font:800 {{ c.size }}/1 'Bricolage Grotesque';letter-spacing:-.025em;overflow-wrap:anywhere;hyphens:auto;text-wrap:balance">{{ c.display }}</div>
+            <div style="font:600 11px/1.2 'Hanken Grotesk';opacity:.9">{{ c.author }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="font:600 14px/1.3 'Hanken Grotesk';display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ c.title }}</span><span style="font:500 12px/1.3 'Hanken Grotesk';color:#6B5A4E">{{ c.meta }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:28px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 18px/1.2 'Bricolage Grotesque'">How a generated cover is built</div><p style="margin:0;font:400 14px/1.55 'Hanken Grotesk';color:#4A3B31">A FNV-1a hash of the title (trimmed and lower-cased) picks one of five palettes and one of three layouts: title on top, title at the bottom, or monogram. Title size steps down with length: 34 px up to 12 characters, 26 up to 24, 20 up to 40, and 16 beyond that.</p></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 18px/1.2 'Bricolage Grotesque'">Rules</div><p style="margin:0;font:400 14px/1.55 'Hanken Grotesk';color:#4A3B31">Every palette is ink on a light fill or cream on a dark fill (AA or better). No gradients or photos. Long words wrap anywhere rather than overflow. The cover always has an accessible name: "Cover for {title}".</p></div>
+      <div style="display:flex;flex-direction:column;gap:10px"><div style="font:700 18px/1.2 'Bricolage Grotesque'">Try a title</div>
+        <input value="{{ tryTitle }}" onChange="{{ setTry }}" aria-label="Title to generate cover" style="height:48px;border:1.5px solid #8E7B6C;border-radius:14px;background:#FFFFFF;padding:0 14px;font:500 16px/1 'Hanken Grotesk';color:#2A1E17;outline-offset:2px">
+        <div style="width:120px;aspect-ratio:2/3;border-radius:16px;background:{{ tc.bg }};color:{{ tc.fg }};padding:12px;display:flex;flex-direction:column;justify-content:{{ tc.justify }};gap:6px;border:{{ tc.border }};overflow:hidden">
+          <div style="width:24px;height:5px;border-radius:9px;background:{{ tc.accent }}"></div>
+          <div style="font:800 {{ tc.sizeSm }}/1 'Bricolage Grotesque';letter-spacing:-.025em;overflow-wrap:anywhere;text-wrap:balance">{{ tc.display }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILES -->
+  <section data-screen-label="08 Files" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#C23E22">08 · Deliverables in this phase</div><h2 style="font:800 36px/1.1 'Bricolage Grotesque';letter-spacing:-.02em;margin:0">Files</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;font:400 14px/1.7 'Hanken Grotesk';color:#4A3B31">
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:24px;padding:22px"><strong style="color:#2A1E17">brand/logo/</strong><br>symbol, symbol-on-dark, symbol-mono-ink, symbol-mono-white, symbol-small, wordmark-horizontal (+ on-dark, mono), lockup-compact. Wordmark text must be converted to outlines before release.</div>
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:24px;padding:22px"><strong style="color:#2A1E17">brand/icons/</strong><br>favicon.svg, favicon-16/32.png, pwa-192/512.png, pwa-maskable-192/512.png, apple-touch-icon-180.png, plus source SVGs.</div>
+      <div style="background:#FFFBF5;border:1.5px solid #E8DCCB;border-radius:24px;padding:22px"><strong style="color:#2A1E17">design-system/</strong><br><a href="design-system/tokens.css">tokens.css</a> · <a href="design-system/tokens.json">tokens.json</a> · <a href="design-system/tailwind.theme.css">tailwind.theme.css</a> (Tailwind v4 <code>@theme</code>) · <a href="design-system/motion.ts">motion.ts</a> (Motion for React presets + <code>usePreset()</code>).</div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PAL = [
+  { bg: '#FF6B4A', fg: '#2A1E17', accent: '#2A1E17', border: '0' },
+  { bg: '#2A1E17', fg: '#FBF4EA', accent: '#FFC93C', border: '0' },
+  { bg: '#FFC93C', fg: '#2A1E17', accent: '#C23E22', border: '0' },
+  { bg: '#FFFBF5', fg: '#2A1E17', accent: '#FF6B4A', border: '2px solid #2A1E17' },
+  { bg: '#93301C', fg: '#FBF4EA', accent: '#FF9878', border: '0' },
+];
+const LAYOUT = ['flex-start', 'flex-end', 'space-between'];
+function fnv(s) { let h = 0x811c9dc5; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193); } return h >>> 0; }
+function gen(title, author) {
+  const t = (title || '').trim() || 'Untitled';
+  const h = fnv(t.toLowerCase());
+  const p = PAL[h % PAL.length], li = (h >>> 8) % 3;
+  const words = t.replace(/^(the|a|an)\s+/i, '').split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w));
+  const initials = words.slice(0, 2).map(w => w.match(/[\p{L}\p{N}]/u)[0].toUpperCase());
+  const mono = li === 2 && initials.length > 0;
+  const display = mono ? initials.join('.') + '.' : t;
+  const n = t.length;
+  const size = mono ? '44px' : n <= 12 ? '34px' : n <= 24 ? '26px' : n <= 40 ? '20px' : '16px';
+  const sizeSm = mono ? '36px' : n <= 12 ? '26px' : n <= 24 ? '20px' : n <= 40 ? '16px' : '13px';
+  return { ...p, justify: LAYOUT[li], display, size, sizeSm, title: t, author: author || '' };
+}
+const BOOKS = [
+  ['Salt & Static', 'Mara Quell', '9 h 12 min · 14 chapters'],
+  ["The Lighthouse Keeper's Almanac of Small Weather", 'Ines Abernathy', '13 h 40 min · 22 chapters'],
+  ['North of Nowhere', 'Tomas Reyl', '6 h 05 min · 1 file'],
+  ['A Field Guide to Quiet Rooms', 'Odile Fenn', 'Generated cover'],
+  ['Moth Hours', 'J. P. Amari', '4 h 48 min · 8 chapters'],
+  ['The Orchard at the End of the Line', 'Kasimir Vale', '20 h 02 min · 1 file'],
+];
+const SEM = [['bg','#FBF4EA','#1C1512','App background'],['surface','#FFFBF5','#261D18','Cards, rows'],['surface-raised','#FFFFFF','#33281F','Sheets, menus, dialogs'],['surface-sunken','#F1E6D6','#140F0C','Tracks, wells'],['text','#2A1E17','#F7EDE2','Primary text · 15.2 / 14.6:1'],['text-muted','#6B5A4E','#BFAE9F','Secondary · 6.1 / 8.6:1'],['border','#E8DCCB','#3D3028','Hairlines'],['border-strong','#8E7B6C','#8E7B6C','Input outlines · 3:1'],['action','#FF6B4A','#FF7A5C','Primary fill'],['on-action','#2A1E17','#1C1512','On action · 6.3 / 7.4:1'],['accent-text','#C23E22','#FF9878','Coral text · 5.1 / 7.3:1'],['strong','#2A1E17','#F7EDE2','Selected pill, mini-player'],['highlight','#FFC93C','#FFC93C','Rare badges, ink text only'],['focus','#2A1E17','#FFC93C','3 px ring + 2 px offset'],['success','#2F7D4F','#6FD39A','Success'],['warning','#8A5A00','#FFC93C','Warning'],['danger','#B42318','#FF8A80','Destructive'],['disabled-fg','#A8988A','#6E5F53','Disabled label']];
+const TYPE = [
+  ['display-xl',"'Bricolage Grotesque'",'2.75rem','1.05',800,'-0.02em','Your books. Your pace.','44 / 1.05 · 800'],
+  ['display-l',"'Bricolage Grotesque'",'2.125rem','1.1',800,'-0.02em','Library','34 / 1.1 · 800'],
+  ['title-l',"'Bricolage Grotesque'",'1.625rem','1.15',700,'-0.015em',"The Lighthouse Keeper's Almanac of Small Weather",'26 / 1.15 · 700'],
+  ['title-m',"'Bricolage Grotesque'",'1.25rem','1.25',700,'-0.01em','Chapter 4 · The Long Tide','20 / 1.25 · 700'],
+  ['body-l',"'Hanken Grotesk'",'1.0625rem','1.5',400,'0','A quiet coastal story told across one year of weather reports, read by the author.','17 / 1.5 · 400'],
+  ['body-m',"'Hanken Grotesk'",'0.9375rem','1.5',400,'0','Everything stays on this device. You can listen in airplane mode.','15 / 1.5 · 400'],
+  ['label-l',"'Hanken Grotesk'",'1rem','1.2',600,'0','Resume listening','16 / 1.2 · 600'],
+  ['label-m',"'Hanken Grotesk'",'0.875rem','1.2',600,'0','End of this chapter','14 / 1.2 · 600'],
+  ['caption',"'Hanken Grotesk'",'0.75rem','1.3',500,'0.01em','14 chapters · 412 MB','12 / 1.3 · 500'],
+  ['time-xl',"'Hanken Grotesk'",'3rem','1',700,'-0.02em','1:24:07','48 / 1 · 700 · tabular'],
+  ['time-m',"'Hanken Grotesk'",'0.9375rem','1',600,'0','−12:38','15 / 1 · 600 · tabular'],
+];
+class Component extends DCLogic {
+  state = { playing: false, speed: 1, sheet: false, succ: true, tryTitle: 'Letters from a Small Planet' };
+  replay = () => { this.setState({ succ: false }); clearTimeout(this.t); this.t = setTimeout(() => this.setState({ succ: true }), 260); };
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    const { playing, speed, sheet, succ, tryTitle } = this.state;
+    return {
+      tokens: SEM.map(([n, l, d, note]) => ({ n, l, d, note })),
+      typeScale: TYPE.map(([n, f, s, lh, w, ls, sample, spec]) => ({ n, f, s, lh, w, ls, sample, spec })),
+      spaces: [['1','4px'],['2','8px'],['3','12px'],['4','16px'],['5','20px'],['6','24px'],['8','32px'],['10','40px'],['12','48px'],['16','64px']].map(([k,v])=>({k,v})),
+      radii: [['xs','8px'],['sm','12px'],['md','16px'],['cover','18px'],['lg','20px'],['xl','28px'],['2xl','36px'],['pill','999px']].map(([k,v])=>({k,v})),
+      togglePlay: () => this.setState(s => ({ playing: !s.playing })),
+      playLabel: playing ? 'Pause' : 'Play',
+      pauseO: playing ? 1 : 0, pauseS: playing ? 1 : 0.6, pauseB: playing ? '0px' : '2px',
+      playO: playing ? 0 : 1, playS: playing ? 0.6 : 1, playB: playing ? '2px' : '0px',
+      speeds: ['0.75×','1×','1.25×','1.5×'].map((label, i) => ({ label, on: i === speed ? 'true' : 'false', color: i === speed ? '#FBF4EA' : '#2A1E17', pick: () => this.setState({ speed: i }) })),
+      pill: `calc(100% * ${speed})`,
+      toggleSheet: () => this.setState(s => ({ sheet: !s.sheet })),
+      sheetLabel: sheet ? 'Close sheet' : 'Open sheet',
+      sheetY: sheet ? '0%' : '110%',
+      sheetT: sheet ? 'transform 450ms cubic-bezier(.34,1.3,.5,1)' : 'transform 200ms cubic-bezier(.32,.72,0,1)',
+      succO: succ ? 1 : 0, succS: succ ? 1 : 0.9,
+      succT: succ ? 'opacity 200ms ease-out, transform 500ms cubic-bezier(.34,1.8,.5,1)' : 'none',
+      checkOff: succ ? 0 : 16, checkT: succ ? 'stroke-dashoffset 300ms cubic-bezier(.23,1,.32,1) 200ms' : 'none',
+      replay: this.replay,
+      covers: BOOKS.map(([t, a, meta]) => ({ ...gen(t, a), meta })),
+      tryTitle, setTry: e => this.setState({ tryTitle: e.target.value }),
+      tc: gen(tryTitle),
+    };
+  }
+}
+</script>
+</body>
+</html>

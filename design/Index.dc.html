@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBF4EA;color:#2A1E17;font-family:'Hanken Grotesk',sans-serif}*{box-sizing:border-box}a{color:#C23E22;text-underline-offset:3px}a:hover{color:#2A1E17}</style>
+</helmet>
+<div style="max-width:960px;margin:0 auto;padding:clamp(24px,6vw,72px) clamp(16px,4vw,40px) 96px;display:flex;flex-direction:column;gap:40px">
+  <header style="display:flex;flex-direction:column;gap:16px">
+    <img src="brand/logo/wordmark-horizontal.svg" alt="Loud Books" style="height:48px;width:auto;align-self:flex-start">
+    <h1 style="margin:0;font:800 clamp(36px,7vw,60px)/1 'Bricolage Grotesque';letter-spacing:-.03em">Design package</h1>
+    <p style="margin:0;font:400 18px/1.5 'Hanken Grotesk';color:#4A3B31;max-width:620px">Brand, tokens, components, every screen and state, a connected prototype, and developer handoff. Direction 1a, Paperback Pop.</p>
+  </header>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px">
+    <a href="Prototype.dc.html" style="display:flex;flex-direction:column;gap:8px;padding:24px;border-radius:24px;background:#FF6B4A;color:#2A1E17;text-decoration:none;transition:transform 320ms cubic-bezier(.34,1.6,.5,1)" style-hover="transform:translateY(-4px)" style-active="transform:scale(.97);transition:transform 110ms ease-out"><strong style="font:800 24px/1.1 'Bricolage Grotesque'">Prototype</strong><span style="font:500 15px/1.45 'Hanken Grotesk'">Four connected scenarios with scenario controls, phone and desktop.</span></a>
+    <a href="Screens.dc.html" style="display:flex;flex-direction:column;gap:8px;padding:24px;border-radius:24px;background:#2A1E17;color:#FBF4EA;text-decoration:none;transition:transform 320ms cubic-bezier(.34,1.6,.5,1)" style-hover="transform:translateY(-4px)" style-active="transform:scale(.97);transition:transform 110ms ease-out"><strong style="font:800 24px/1.1 'Bricolage Grotesque'">Screens &amp; states</strong><span style="font:500 15px/1.45 'Hanken Grotesk';color:#E8DCCB">100+ frames: 320 to 1440 px, light and dark.</span></a>
+    <a href="Component Library.dc.html" style="display:flex;flex-direction:column;gap:8px;padding:24px;border-radius:24px;background:#FFFBF5;border:1.5px solid #E8DCCB;color:#2A1E17;text-decoration:none;transition:transform 320ms cubic-bezier(.34,1.6,.5,1)" style-hover="transform:translateY(-4px)" style-active="transform:scale(.97);transition:transform 110ms ease-out"><strong style="font:800 24px/1.1 'Bricolage Grotesque'">Component library</strong><span style="font:500 15px/1.45 'Hanken Grotesk';color:#4A3B31">Variants and states, with proposed APIs.</span></a>
+    <a href="Brand Guidelines.dc.html" style="display:flex;flex-direction:column;gap:8px;padding:24px;border-radius:24px;background:#FFFBF5;border:1.5px solid #E8DCCB;color:#2A1E17;text-decoration:none;transition:transform 320ms cubic-bezier(.34,1.6,.5,1)" style-hover="transform:translateY(-4px)" style-active="transform:scale(.97);transition:transform 110ms ease-out"><strong style="font:800 24px/1.1 'Bricolage Grotesque'">Brand &amp; tokens</strong><span style="font:500 15px/1.45 'Hanken Grotesk';color:#4A3B31">Logo, icons, colour, type, motion, covers.</span></a>
+  </div>
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2 style="margin:0;font:800 24px/1.1 'Bricolage Grotesque'">Files</h2>
+    <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font:500 15px/1.5 'Hanken Grotesk'">
+      <li><a href="handoff/README.md">handoff/README.md</a>: start here; lists what is simulated</li>
+      <li><a href="handoff/state-matrix.md">state-matrix.md</a>, <a href="handoff/screen-map.md">screen-map.md</a>, <a href="handoff/component-map.md">component-map.md</a>, <a href="handoff/domain-mapping.md">domain-mapping.md</a>, <a href="handoff/motion-spec.md">motion-spec.md</a>, <a href="handoff/ui-strings.en.json">ui-strings.en.json</a>, <a href="handoff/implementation-notes.md">implementation-notes.md</a>, <a href="handoff/open-questions.md">open-questions.md</a></li>
+      <li><a href="design-system/tokens.css">tokens.css</a>, <a href="design-system/tokens.json">tokens.json</a>, <a href="design-system/tailwind.theme.css">tailwind.theme.css</a>, <a href="design-system/motion.ts">motion.ts</a>, <a href="design-system/README.md">design-system/README.md</a></li>
+      <li><a href="components/api.d.ts">components/api.d.ts</a>, <a href="components/README.md">components/README.md</a></li>
+      <li><a href="brand/README.md">brand/README.md</a>, logo SVGs in brand/logo, icons in brand/icons</li>
+    </ul>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

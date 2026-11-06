@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system/tokens.css">
+<style>body{margin:0;-webkit-tap-highlight-color:transparent}*{box-sizing:border-box}a{color:var(--lb-accent-text)}a:hover{color:var(--lb-text)}code{font:500 12px/1.5 ui-monospace,Menlo,monospace}@keyframes lbSpin{to{transform:rotate(360deg)}}@keyframes lbIndet{from{transform:translateX(-110%)}to{transform:translateX(260%)}}@keyframes lbShimmer{0%,100%{opacity:.55}50%{opacity:1}}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--lb-bg);color:var(--lb-text);font-family:var(--lb-font-ui);-webkit-font-smoothing:antialiased">
+<div style="max-width:1240px;margin:0 auto;padding:clamp(24px,5vw,64px) clamp(16px,4vw,40px) 120px;display:flex;flex-direction:column;gap:56px">
+
+  <header style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between">
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:720px">
+      <div style="font:700 12px/1 var(--lb-font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--lb-accent-text)">Phase 2 · Component library</div>
+      <h1 style="margin:0;font:800 clamp(36px,6vw,56px)/1 var(--lb-font-display);letter-spacing:-.03em">Components &amp; states</h1>
+      <p style="margin:0;font:400 17px/1.5 var(--lb-font-ui);color:var(--lb-text-muted);text-wrap:pretty">Each component uses semantic tokens only, so the theme switch repaints everything. Hover and press the controls to feel the motion. API signatures match <code>components/api.d.ts</code>.</p>
+    </div>
+    <div role="radiogroup" aria-label="Theme" style="position:relative;display:grid;grid-template-columns:repeat(2,96px);background:var(--lb-surface-sunken);border-radius:999px;padding:5px;height:52px">
+      <div aria-hidden="true" style="position:absolute;top:5px;bottom:5px;left:5px;width:96px;border-radius:999px;background:var(--lb-strong);transform:translateX({{ themeX }});transition:transform 450ms cubic-bezier(.34,1.56,.5,1)"></div>
+      <button role="radio" aria-checked="{{ lightOn }}" onClick="{{ setLight }}" style="position:relative;border:0;background:none;font:700 15px/1 var(--lb-font-ui);color:{{ lightFg }};cursor:pointer">Light</button>
+      <button role="radio" aria-checked="{{ darkOn }}" onClick="{{ setDark }}" style="position:relative;border:0;background:none;font:700 15px/1 var(--lb-font-ui);color:{{ darkFg }};cursor:pointer">Dark</button>
+    </div>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font:800 28px/1.1 var(--lb-font-display)">Button</h2>
+    <code style="color:var(--lb-text-muted)">&lt;Button variant="primary|secondary|strong|ghost|danger" size="md|lg" icon? loading? disabled? fullWidth?&gt;</code>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;gap:12px">
+        <span style="font:700 13px/1 var(--lb-font-ui);color:var(--lb-text-muted)">Variants</span>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <button style="height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--lb-action);color:var(--lb-on-action);font:700 16px/1 var(--lb-font-ui);cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1),background-color 150ms" style-hover="background:var(--lb-action-hover)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">Primary</button>
+          <button style="height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--lb-surface-sunken);color:var(--lb-text);font:600 16px/1 var(--lb-font-ui);cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1),background-color 150ms" style-hover="background:var(--lb-border)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">Secondary</button>
+          <button style="height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--lb-strong);color:var(--lb-on-strong);font:700 16px/1 var(--lb-font-ui);cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">Strong</button>
+          <button style="height:48px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--lb-text);font:600 16px/1 var(--lb-font-ui);text-decoration:underline;text-underline-offset:3px;cursor:pointer">Ghost</button>
+          <button style="height:48px;padding:0 20px;border:1.5px solid var(--lb-danger);border-radius:999px;background:transparent;color:var(--lb-danger);font:700 16px/1 var(--lb-font-ui);cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1),background-color 150ms" style-hover="background:var(--lb-danger-bg)" style-active="transform:scale(.96);transition:transform 110ms ease-out">Danger outline</button>
+          <button style="height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--lb-danger);color:var(--lb-on-danger);font:700 16px/1 var(--lb-font-ui);cursor:pointer">Danger</button>
+        </div>
+      </div>
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;gap:12px">
+        <span style="font:700 13px/1 var(--lb-font-ui);color:var(--lb-text-muted)">States (primary)</span>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="height:48px;border-radius:999px;background:var(--lb-action);color:var(--lb-on-action);font:700 15px/48px var(--lb-font-ui);text-align:center">Default</span><span style="font:500 12px/1 var(--lb-font-ui);color:var(--lb-text-muted)">action</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="height:48px;border-radius:999px;background:var(--lb-action-hover);color:var(--lb-on-action);font:700 15px/48px var(--lb-font-ui);text-align:center">Hover</span><span style="font:500 12px/1 var(--lb-font-ui);color:var(--lb-text-muted)">fine pointer only</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="height:48px;border-radius:999px;background:var(--lb-action-pressed);color:var(--lb-on-action);font:700 15px/48px var(--lb-font-ui);text-align:center;transform:scale(.96)">Pressed</span><span style="font:500 12px/1 var(--lb-font-ui);color:var(--lb-text-muted)">scale .96 · 110 ms</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="height:48px;border-radius:999px;background:var(--lb-action);color:var(--lb-on-action);font:700 15px/48px var(--lb-font-ui);text-align:center;outline:3px solid var(--lb-focus);outline-offset:2px">Focus visible</span><span style="font:500 12px/1 var(--lb-font-ui);color:var(--lb-text-muted)">3 px ring + 2 px gap</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="height:48px;border-radius:999px;background:var(--lb-disabled-bg);color:var(--lb-disabled-fg);font:700 15px/48px var(--lb-font-ui);text-align:center">Disabled</span><span style="font:500 12px/1 var(--lb-font-ui);color:var(--lb-text-muted)">explain why nearby</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="height:48px;border-radius:999px;background:var(--lb-action);color:var(--lb-on-action);font:700 15px/1 var(--lb-font-ui);display:flex;align-items:center;justify-content:center;gap:8px"><span style="width:18px;height:18px;display:flex">{{ ic.spin }}</span>Saving</span><span style="font:500 12px/1 var(--lb-font-ui);color:var(--lb-text-muted)">loading keeps width</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font:800 28px/1.1 var(--lb-font-display)">Playback</h2>
+    <code style="color:var(--lb-text-muted)">&lt;PlaybackControls state onToggle onSeek /&gt; · &lt;SeekButtons back={30} forward={15} /&gt; · &lt;TimeDisplay value kind="elapsed|remaining|session" /&gt; · &lt;ActiveSessionBadge mode remaining paused /&gt; · &lt;SessionPreparation phase reason /&gt;</code>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;gap:16px;align-items:center">
+        <div style="display:flex;align-items:center;gap:20px">
+          <button aria-label="Back 30 seconds" style="position:relative;width:64px;height:64px;border:0;border-radius:50%;background:transparent;color:var(--lb-text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1),background-color 150ms" style-hover="background:var(--lb-surface-sunken)" style-active="transform:scale(.9) rotate(-12deg);transition:transform 110ms ease-out"><span style="width:38px;height:38px;display:flex">{{ ic.back }}</span><span style="position:absolute;font:800 11px/1 var(--lb-font-ui);padding-top:2px">30</span></button>
+          <button onClick="{{ togglePlay }}" aria-label="{{ playAria }}" style="width:84px;height:84px;border:0;border-radius:50%;background:var(--lb-action);color:var(--lb-on-action);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 340ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.9);transition:transform 110ms cubic-bezier(.23,1,.32,1)">
+            <span style="position:relative;width:32px;height:32px;display:block"><span style="position:absolute;inset:0;display:flex;opacity:{{ pauseO }};transform:scale({{ pauseS }});filter:blur({{ pauseB }});transition:opacity 160ms,transform 340ms cubic-bezier(.34,1.8,.5,1),filter 160ms">{{ ic.pause }}</span><span style="position:absolute;inset:0;display:flex;padding-left:2px;opacity:{{ playO }};transform:scale({{ playS }});filter:blur({{ playB }});transition:opacity 160ms,transform 340ms cubic-bezier(.34,1.8,.5,1),filter 160ms">{{ ic.play }}</span></span>
+          </button>
+          <button aria-label="Forward 15 seconds" style="position:relative;width:64px;height:64px;border:0;border-radius:50%;background:transparent;color:var(--lb-text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1),background-color 150ms" style-hover="background:var(--lb-surface-sunken)" style-active="transform:scale(.9) rotate(12deg);transition:transform 110ms ease-out"><span style="width:38px;height:38px;display:flex">{{ ic.fwd }}</span><span style="position:absolute;font:800 11px/1 var(--lb-font-ui);padding-top:2px">15</span></button>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center">
+          <span style="width:64px;height:64px;border-radius:50%;background:var(--lb-action);color:var(--lb-on-action);display:flex;align-items:center;justify-content:center"><span style="width:34px;height:34px;display:flex">{{ ic.spin }}</span></span>
+          <span style="height:60px;padding:0 24px 0 18px;border-radius:999px;background:var(--lb-action);color:var(--lb-on-action);display:flex;align-items:center;gap:8px;font:800 17px/1 var(--lb-font-display)"><span style="width:22px;height:22px;display:flex">{{ ic.play }}</span>Ready — play</span>
+        </div>
+        <span style="font:500 12px/1.4 var(--lb-font-ui);color:var(--lb-text-muted);text-align:center">Play/Pause, preparing, and "Ready — play" for when the browser needs another tap.</span>
+      </div>
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;gap:14px">
+        <div style="position:relative;height:36px;display:flex;align-items:center"><div style="position:absolute;left:0;right:0;height:8px;border-radius:9px;background:var(--lb-surface-sunken)"><div style="height:100%;width:42%;background:var(--lb-text);border-radius:9px"></div></div><div style="position:absolute;left:42%;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--lb-text);box-shadow:0 0 0 4px var(--lb-surface)"></div></div>
+        <div style="display:flex;justify-content:space-between;font:600 14px/1 var(--lb-font-ui);font-variant-numeric:tabular-nums"><span>12:40</span><span style="color:var(--lb-text-muted);font-weight:500;font-size:13px">6 h 45 min left in book</span><span>−28:20</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span style="min-height:36px;padding:6px 12px 6px 10px;border-radius:999px;background:var(--lb-surface-sunken);display:flex;align-items:center;gap:8px;font:600 14px/1.2 var(--lb-font-ui);font-variant-numeric:tabular-nums"><span style="width:16px;height:16px;display:flex;color:var(--lb-accent-text)">{{ ic.moon }}</span>28:14 of listening left</span>
+          <span style="min-height:36px;padding:6px 12px 6px 10px;border-radius:999px;background:var(--lb-surface-sunken);display:flex;align-items:center;gap:8px;font:600 14px/1.2 var(--lb-font-ui)"><span style="width:16px;height:16px;display:flex;color:var(--lb-accent-text)">{{ ic.moon }}</span>Stops after Chapter 4</span>
+          <span style="min-height:36px;padding:6px 12px 6px 10px;border-radius:999px;background:var(--lb-surface-sunken);display:flex;align-items:center;gap:8px;font:600 14px/1.2 var(--lb-font-ui);font-variant-numeric:tabular-nums"><span style="width:16px;height:16px;display:flex;color:var(--lb-accent-text)">{{ ic.moon }}</span>Paused · 28:14 left</span>
+        </div>
+        <div role="status" style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:20px;background:var(--lb-bg);border:1.5px solid var(--lb-border)">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:20px;height:20px;display:flex;color:var(--lb-accent-text)">{{ ic.spin }}</span><strong style="font:700 15px/1.3 var(--lb-font-ui)">Preparing your listening session</strong></div>
+          <span style="font:500 13px/1.45 var(--lb-font-ui);color:var(--lb-text-muted)">30 minutes at 1.5× covers about 45 min of the book.</span>
+          <div style="height:5px;border-radius:99px;background:var(--lb-surface-sunken);overflow:hidden"><div style="width:40%;height:100%;border-radius:99px;background:var(--lb-action);animation:lbIndet 1.3s cubic-bezier(.77,0,.175,1) infinite"></div></div>
+        </div>
+      </div>
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;gap:14px">
+        <span style="font:700 13px/1 var(--lb-font-ui);color:var(--lb-text-muted)">SpeedSelector · SegmentedControl</span>
+        <div role="radiogroup" aria-label="Speed" style="position:relative;display:grid;grid-template-columns:repeat(5,1fr);background:var(--lb-surface-sunken);border-radius:999px;padding:5px;height:56px">
+          <div aria-hidden="true" style="position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px)/5);border-radius:999px;background:var(--lb-strong);transform:translateX({{ pillX }});transition:transform 450ms cubic-bezier(.34,1.56,.5,1)"></div>
+          <sc-for list="{{ speeds }}" as="o" hint-placeholder-count="5"><button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="position:relative;border:0;background:none;font:700 14px/1 var(--lb-font-ui);color:{{ o.color }};cursor:pointer;transition:color 180ms;font-variant-numeric:tabular-nums">{{ o.label }}</button></sc-for>
+        </div>
+        <span style="font:700 13px/1 var(--lb-font-ui);color:var(--lb-text-muted);margin-top:6px">Switch</span>
+        <button role="switch" aria-checked="{{ swOn }}" onClick="{{ toggleSw }}" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 14px;border:1.5px solid var(--lb-border);border-radius:18px;background:var(--lb-bg);color:var(--lb-text);cursor:pointer;font:600 15px/1.3 var(--lb-font-ui);text-align:left">Show 30-minute parts<span aria-hidden="true" style="width:52px;height:32px;flex:none;border-radius:999px;background:{{ swBg }};padding:3px;transition:background-color 200ms"><span style="display:block;width:26px;height:26px;border-radius:50%;background:#FFFFFF;box-shadow:0 2px 6px rgba(42,30,23,.3);transform:translateX({{ swX }});transition:transform 420ms cubic-bezier(.34,1.56,.5,1)"></span></span></button>
+        <span style="font:700 13px/1 var(--lb-font-ui);color:var(--lb-text-muted);margin-top:6px">Progress</span>
+        <div style="height:10px;border-radius:99px;background:var(--lb-surface-sunken);overflow:hidden"><div style="height:100%;width:62%;background:var(--lb-action);border-radius:99px"></div></div>
+        <div style="height:6px;border-radius:99px;background:var(--lb-surface-sunken);overflow:hidden"><div style="width:40%;height:100%;border-radius:99px;background:var(--lb-action);animation:lbIndet 1.3s cubic-bezier(.77,0,.175,1) infinite"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font:800 28px/1.1 var(--lb-font-display)">Books</h2>
+    <code style="color:var(--lb-text-muted)">&lt;BookCover book size="xs|sm|md|lg|fluid" /&gt; · &lt;GeneratedCover title /&gt; · &lt;BookCard book state onOpen onPlay onMenu /&gt; · &lt;BookRow /&gt; · &lt;Badge tone="success|warning|neutral" /&gt;</code>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:24px 16px">
+      <sc-for list="{{ cards }}" as="b" hint-placeholder-count="6">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="position:relative;transform:{{ b.tf }};transition:transform 380ms cubic-bezier(.34,1.56,.5,1)" style-hover="transform:translateY(-5px) scale(1.035) rotate(-1deg)">
+            <div style="container-type:inline-size;width:100%;aspect-ratio:2/3;border-radius:16px;background:{{ b.art.bg }};color:{{ b.art.fg }};border:{{ b.art.border }};overflow:hidden;position:relative;box-shadow:{{ b.shadow }};opacity:{{ b.op }}"><div style="position:absolute;inset:0;padding:9cqw;display:flex;flex-direction:column;justify-content:{{ b.art.justify }};gap:5cqw"><div style="width:20cqw;height:4cqw;border-radius:9px;background:{{ b.art.accent }}"></div><div style="font:800 {{ b.art.fs }}/1 var(--lb-font-display);letter-spacing:-.025em;overflow-wrap:anywhere;text-wrap:balance">{{ b.art.display }}</div><div style="font:600 7cqw/1.2 var(--lb-font-ui)">{{ b.art.author }}</div></div></div>
+            <span style="position:absolute;right:8px;bottom:8px;width:44px;height:44px;border-radius:50%;background:var(--lb-action);color:var(--lb-on-action);display:flex;align-items:center;justify-content:center"><span style="width:18px;height:18px;display:flex">{{ ic.play }}</span></span>
+          </div>
+          <span style="height:5px;border-radius:9px;background:var(--lb-surface-sunken);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ b.pct }};background:{{ b.color }}"></span></span>
+          <span style="font:700 15px/1.3 var(--lb-font-ui);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere">{{ b.title }}</span>
+          <span style="font:500 13px/1.3 var(--lb-font-ui);color:{{ b.color }}">{{ b.meta }}</span>
+          <code style="color:var(--lb-text-muted)">state="{{ b.state }}"</code>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <span style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 8px;border-radius:999px;background:var(--lb-success-bg);color:var(--lb-success);font:700 13px/1 var(--lb-font-ui)"><span style="width:16px;height:16px;display:flex">{{ ic.check }}</span>Finished</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 10px 0 6px;border-radius:999px;background:var(--lb-success);color:#FFFFFF;font:700 12px/1 var(--lb-font-ui)"><span style="width:16px;height:16px;display:flex">{{ ic.check }}</span>New</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 8px;border-radius:999px;background:var(--lb-warning-bg);color:var(--lb-warning);font:700 13px/1 var(--lb-font-ui)"><span style="width:16px;height:16px;display:flex">{{ ic.alert }}</span>Audio file missing</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 8px;border-radius:999px;background:var(--lb-danger-bg);color:var(--lb-danger);font:700 13px/1 var(--lb-font-ui)"><span style="width:16px;height:16px;display:flex">{{ ic.alert }}</span>Can't be used</span>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font:800 28px/1.1 var(--lb-font-display)">Chapters &amp; reorder</h2>
+    <code style="color:var(--lb-text-muted)">&lt;ChapterRow chapter status="upcoming|current|done" onPlay /&gt; · &lt;EditableChapterRow onRename onMoveUp onMoveDown onRemove dragging? error? /&gt; · &lt;ReorderHandle /&gt;</code>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px">
+      <ol style="list-style:none;margin:0;padding:0;background:var(--lb-surface);border:1.5px solid var(--lb-border);border-radius:22px;overflow:hidden">
+        <li style="min-height:60px;display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 16px"><span style="width:22px;height:22px;display:flex;color:var(--lb-success)">{{ ic.check }}</span><span style="font:600 15px/1.3 var(--lb-font-ui)">Static on the Line</span><span style="font:500 13px/1 var(--lb-font-ui);color:var(--lb-text-muted)">38 min</span></li>
+        <li style="min-height:60px;display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 16px;background:var(--lb-surface-sunken);border-top:1px solid var(--lb-border)"><span style="width:22px;height:22px;display:flex;color:var(--lb-accent-text)">{{ ic.pause }}</span><span style="display:flex;flex-direction:column;gap:3px"><span style="font:600 15px/1.3 var(--lb-font-ui)">The Long Tide</span><span style="font:600 12px/1.2 var(--lb-font-ui);color:var(--lb-accent-text)">Playing now</span></span><span style="font:500 13px/1 var(--lb-font-ui);color:var(--lb-text-muted)">41 min</span></li>
+        <li style="min-height:60px;display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--lb-border)"><span style="font:700 14px/1 var(--lb-font-ui);color:var(--lb-text-muted);text-align:center">5</span><span style="font:600 15px/1.3 var(--lb-font-ui);overflow-wrap:anywhere">On the Correct Interpretation of Fog, With Notes for the Inexperienced Keeper</span><span style="font:500 13px/1 var(--lb-font-ui);color:var(--lb-text-muted)">44 min</span></li>
+      </ol>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="height:76px;display:grid;grid-template-columns:36px 22px 1fr auto;align-items:center;gap:6px;padding:0 6px 0 2px;border-radius:18px;background:var(--lb-surface);border:1.5px solid var(--lb-border)"><span style="width:36px;display:flex;justify-content:center;color:var(--lb-text-muted)"><span style="width:20px;height:20px;display:flex">{{ ic.grip }}</span></span><span style="font:700 14px/1 var(--lb-font-ui);color:var(--lb-text-muted)">1</span><span style="display:flex;flex-direction:column;gap:3px"><span style="font:600 16px/1.2 var(--lb-font-ui)">The Front Door</span><span style="font:500 12px/1.3 var(--lb-font-ui);color:var(--lb-text-muted)">Quiet Rooms 1 - The Front Door.mp3 · 28:00 · 25.8 MB</span></span><span style="display:flex;color:var(--lb-text)"><span style="width:40px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--lb-disabled-fg)"><span style="width:18px;height:18px;display:flex">{{ ic.up }}</span></span><span style="width:40px;height:44px;display:flex;align-items:center;justify-content:center"><span style="width:18px;height:18px;display:flex">{{ ic.dn }}</span></span><span style="width:40px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--lb-text-muted)"><span style="width:18px;height:18px;display:flex">{{ ic.x }}</span></span></span></div>
+        <div style="position:relative;height:76px">
+          <div style="position:absolute;inset:0;border:2px dashed var(--lb-border-strong);border-radius:18px"></div>
+          <div style="position:absolute;inset:0;transform:translateY(-14px) scale(1.03);display:grid;grid-template-columns:36px 22px 1fr;align-items:center;gap:6px;padding:0 6px 0 2px;border-radius:18px;background:var(--lb-surface-raised);border:1.5px solid var(--lb-border);box-shadow:var(--lb-shadow-lift)"><span style="width:36px;display:flex;justify-content:center;color:var(--lb-text)"><span style="width:20px;height:20px;display:flex">{{ ic.grip }}</span></span><span style="font:700 14px/1 var(--lb-font-ui);color:var(--lb-text-muted)">2</span><span style="display:flex;flex-direction:column;gap:3px"><span style="font:600 16px/1.2 var(--lb-font-ui)">The Reading Room</span><span style="font:500 12px/1.3 var(--lb-font-ui);color:var(--lb-text-muted)">Lifted · placeholder shows where it lands</span></span></div>
+        </div>
+        <div style="height:76px;display:grid;grid-template-columns:36px 22px 1fr;align-items:center;gap:6px;padding:0 6px 0 2px;border-radius:18px;background:var(--lb-danger-bg);border:1.5px solid var(--lb-border)"><span></span><span style="font:700 14px/1 var(--lb-font-ui);color:var(--lb-text-muted)">3</span><span style="display:flex;flex-direction:column;gap:3px"><span style="font:600 16px/1.2 var(--lb-font-ui)">Quiet Rooms extras</span><span style="font:500 12px/1.3 var(--lb-font-ui);color:var(--lb-danger)">FLAC isn't supported yet. Use MP3, M4A/M4B or WAV.</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font:800 28px/1.1 var(--lb-font-display)">Fields</h2>
+    <code style="color:var(--lb-text-muted)">&lt;TextField label hint? error? required? inputMode /&gt; · &lt;TextArea /&gt; · &lt;FileDropzone accept multiple onFiles /&gt; · &lt;CoverPicker value onChange /&gt; · &lt;Select /&gt;</code>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px">
+      <label style="display:flex;flex-direction:column;gap:8px;font:700 15px/1.2 var(--lb-font-ui)">Default<input placeholder="Book title" style="height:52px;border:1.5px solid var(--lb-border-strong);border-radius:16px;background:var(--lb-surface-raised);color:var(--lb-text);padding:0 16px;font:500 17px/1 var(--lb-font-ui)"></label>
+      <label style="display:flex;flex-direction:column;gap:8px;font:700 15px/1.2 var(--lb-font-ui)">Focused<span style="height:52px;border:1.5px solid var(--lb-text);border-radius:16px;background:var(--lb-surface-raised);padding:0 16px;font:500 17px/52px var(--lb-font-ui);outline:3px solid var(--lb-focus);outline-offset:2px">Moth Hours</span></label>
+      <label style="display:flex;flex-direction:column;gap:8px;font:700 15px/1.2 var(--lb-font-ui)">Error<span style="height:52px;border:1.5px solid var(--lb-danger);border-radius:16px;background:var(--lb-surface-raised)"></span><span style="display:flex;align-items:center;gap:6px;font:600 14px/1.3 var(--lb-font-ui);color:var(--lb-danger)"><span style="width:16px;height:16px;display:flex">{{ ic.alert }}</span>Add a title to save this book.</span></label>
+      <label style="display:flex;flex-direction:column;gap:8px;font:700 15px/1.2 var(--lb-font-ui);color:var(--lb-disabled-fg)">Disabled<span style="height:52px;border:1.5px solid var(--lb-border);border-radius:16px;background:var(--lb-disabled-bg);padding:0 16px;font:500 17px/52px var(--lb-font-ui)">482915</span></label>
+      <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 16px;border:2px dashed var(--lb-border-strong);border-radius:22px;background:var(--lb-surface)"><span style="width:28px;height:28px;display:flex;color:var(--lb-accent-text)">{{ ic.music }}</span><span style="height:48px;padding:0 20px;border-radius:999px;background:var(--lb-action);color:var(--lb-on-action);font:700 16px/48px var(--lb-font-ui)">Choose audio files</span><span style="font:500 14px/1.3 var(--lb-font-ui);color:var(--lb-text-muted)">or drop them here · on drag-over the border turns ink and the box lifts 2 px</span></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font:800 28px/1.1 var(--lb-font-display)">Transfer</h2>
+    <code style="color:var(--lb-text-muted)">&lt;SendBookDialog book step /&gt; · &lt;ReceiveScanner onResult onPaste /&gt; · &lt;PairingCode digits role="show|enter" /&gt; · &lt;TransferProgress bytes total fileIndex fileCount /&gt;</code>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="width:180px;height:180px;padding:6px;border-radius:18px;background:#FFFFFF;border:1.5px solid var(--lb-border)">{{ qr }}</div>
+        <span style="font:600 14px/1.3 var(--lb-font-ui);color:var(--lb-text-muted);display:flex;gap:8px;align-items:center"><span style="width:18px;height:18px;display:flex">{{ ic.spin }}</span>Waiting for your phone</span>
+      </div>
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px">
+        <div style="display:flex;gap:6px"><sc-for list="{{ digits }}" as="g" hint-placeholder-count="6"><span style="width:42px;height:58px;margin-left:{{ g.gap }};border-radius:14px;background:var(--lb-bg);border:1.5px solid var(--lb-border);display:flex;align-items:center;justify-content:center;font:800 30px/1 var(--lb-font-display)">{{ g.c }}</span></sc-for></div>
+        <span style="height:64px;width:100%;max-width:280px;border:1.5px solid var(--lb-border-strong);border-radius:18px;background:var(--lb-surface-raised);font:800 32px/64px var(--lb-font-display);letter-spacing:.32em;text-align:center;font-variant-numeric:tabular-nums">4829</span>
+      </div>
+      <div style="padding:22px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;gap:10px;justify-content:center">
+        <strong style="font:700 20px/1.2 var(--lb-font-display)">Receiving Moth Hours</strong>
+        <div style="display:flex;justify-content:space-between;font:600 14px/1 var(--lb-font-ui);font-variant-numeric:tabular-nums"><span>138 of 270 MB</span><span>51%</span></div>
+        <div style="height:10px;border-radius:99px;background:var(--lb-surface-sunken);overflow:hidden"><div style="height:100%;width:51%;background:var(--lb-action);border-radius:99px"></div></div>
+        <span style="font:500 13px/1.4 var(--lb-font-ui);color:var(--lb-text-muted)">File 5 of 8 · Keep Loud Books open on both devices.</span>
+      </div>
+      <div style="position:relative;aspect-ratio:1;max-width:300px;border-radius:28px;background:#140F0C;overflow:hidden">
+        <span style="position:absolute;inset:18%;border-radius:20px;box-shadow:0 0 0 999px rgba(20,15,12,.55)"></span>
+        <span style="position:absolute;left:18%;top:18%;width:22%;height:22%;border-left:5px solid #FF6B4A;border-top:5px solid #FF6B4A;border-radius:20px 0 0 0"></span><span style="position:absolute;right:18%;top:18%;width:22%;height:22%;border-right:5px solid #FF6B4A;border-top:5px solid #FF6B4A;border-radius:0 20px 0 0"></span><span style="position:absolute;left:18%;bottom:18%;width:22%;height:22%;border-left:5px solid #FF6B4A;border-bottom:5px solid #FF6B4A;border-radius:0 0 0 20px"></span><span style="position:absolute;right:18%;bottom:18%;width:22%;height:22%;border-right:5px solid #FF6B4A;border-bottom:5px solid #FF6B4A;border-radius:0 0 20px 0"></span>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font:800 28px/1.1 var(--lb-font-display)">Feedback &amp; overlays</h2>
+    <code style="color:var(--lb-text-muted)">&lt;Toast /&gt; · &lt;Menu /&gt; · &lt;Tooltip side delay={500} instantAfterFirst /&gt; · &lt;Dialog /&gt; · &lt;AlertDialog tone="danger" /&gt; · &lt;BottomSheet snap dismissible /&gt; · &lt;Skeleton /&gt; · &lt;EmptyState /&gt; · &lt;ErrorState /&gt; · &lt;StorageBar segments /&gt; · &lt;MiniPlayer /&gt;</code>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="padding:14px 18px;border-radius:18px;background:var(--lb-strong);color:var(--lb-on-strong);font:600 14px/1.4 var(--lb-font-ui);box-shadow:var(--lb-shadow-menu)">Temporary files cleared. 566 MB freed.</div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:48px;height:48px;border-radius:999px;background:var(--lb-surface-sunken);display:flex;align-items:center;justify-content:center"><span style="width:24px;height:24px;display:flex">{{ ic.list }}</span></span><span style="position:relative;padding:8px 12px;border-radius:10px;background:var(--lb-strong);color:var(--lb-on-strong);font:600 13px/1 var(--lb-font-ui)">Chapters<span style="position:absolute;left:-5px;top:50%;width:10px;height:10px;margin-top:-5px;background:var(--lb-strong);transform:rotate(45deg)"></span></span><span style="font:500 12px/1.3 var(--lb-font-ui);color:var(--lb-text-muted)">Tooltip, desktop only. Touch targets carry visible labels instead.</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:20px;background:var(--lb-surface)"><span style="height:14px;width:60%;border-radius:8px;background:var(--lb-surface-sunken);animation:lbShimmer 1.4s ease-in-out infinite"></span><span style="height:14px;width:85%;border-radius:8px;background:var(--lb-surface-sunken);animation:lbShimmer 1.4s ease-in-out 120ms infinite"></span><span style="font:500 12px/1.3 var(--lb-font-ui);color:var(--lb-text-muted)">Skeleton: only for loads over 300 ms; never for local reads that are instant.</span></div>
+      </div>
+      <div role="menu" style="padding:8px;border-radius:22px;background:var(--lb-surface-raised);box-shadow:var(--lb-shadow-menu);display:flex;flex-direction:column;align-self:start">
+        <span style="height:52px;display:flex;align-items:center;gap:14px;padding:0 12px;font:600 16px/1 var(--lb-font-ui);border-radius:14px;background:var(--lb-surface-sunken)"><span style="width:22px;height:22px;display:flex">{{ ic.pencil }}</span>Edit details and chapters</span>
+        <span style="height:52px;display:flex;align-items:center;gap:14px;padding:0 12px;font:600 16px/1 var(--lb-font-ui)"><span style="width:22px;height:22px;display:flex">{{ ic.send }}</span>Send to another device</span>
+        <span style="height:52px;display:flex;align-items:center;gap:14px;padding:0 12px;font:600 16px/1 var(--lb-font-ui)"><span style="width:22px;height:22px;display:flex">{{ ic.archive }}</span>Export backup</span>
+        <span style="height:1px;background:var(--lb-border);margin:4px 12px"></span>
+        <span style="height:52px;display:flex;align-items:center;gap:14px;padding:0 12px;font:700 16px/1 var(--lb-font-ui);color:var(--lb-danger)"><span style="width:22px;height:22px;display:flex">{{ ic.trash }}</span>Delete book</span>
+      </div>
+      <div style="padding:20px;border-radius:28px;background:var(--lb-surface-raised);box-shadow:var(--lb-shadow-sheet);display:flex;flex-direction:column;gap:14px;align-self:start">
+        <strong style="font:700 22px/1.2 var(--lb-font-display)">Delete “Moth Hours”?</strong>
+        <span style="font:400 15px/1.5 var(--lb-font-ui);color:var(--lb-text-muted)">This removes the book and its audio (270 MB) from this device. It can't be undone.</span>
+        <span style="height:52px;border-radius:999px;background:var(--lb-danger);color:var(--lb-on-danger);font:700 16px/52px var(--lb-font-ui);text-align:center">Delete book</span>
+        <span style="height:52px;border-radius:999px;background:var(--lb-surface-sunken);font:600 16px/52px var(--lb-font-ui);text-align:center">Cancel</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:3px;height:16px;border-radius:99px;overflow:hidden"><span style="width:76%;background:var(--lb-action)"></span><span style="width:10%;background:var(--lb-highlight)"></span><span style="width:8%;background:var(--lb-text-muted)"></span><span style="width:6%;background:var(--lb-border-strong)"></span></div>
+        <span style="font:500 12px/1.3 var(--lb-font-ui);color:var(--lb-text-muted)">StorageBar: books · continuous-book cache · temporary sessions · app files. Each segment is also listed as text.</span>
+        <div style="height:72px;display:flex;align-items:center;gap:10px;padding:8px;border-radius:24px;background:var(--lb-strong);color:var(--lb-on-strong);box-shadow:var(--lb-shadow-lift)"><span style="width:38px;height:56px;margin-left:6px;border-radius:7px;background:#FF6B4A"></span><span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font:700 15px/1.2 var(--lb-font-ui)">Salt &amp; Static</span><span style="font:500 12px/1.2 var(--lb-font-ui);opacity:.78">28:14 of listening left</span></span><span style="width:56px;height:56px;border-radius:50%;background:var(--lb-action);color:var(--lb-on-action);display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;display:flex">{{ ic.pause }}</span></span></div>
+        <span style="font:500 12px/1.3 var(--lb-font-ui);color:var(--lb-text-muted)">MiniPlayer: only while a book is active; hidden on Add/Edit so it never covers Save.</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+      <div style="padding:28px 20px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border);display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px"><span style="width:28px;height:28px;display:flex;color:var(--lb-text-muted)">{{ ic.search }}</span><strong style="font:700 20px/1.25 var(--lb-font-display)">EmptyState</strong><span style="font:400 15px/1.5 var(--lb-font-ui);color:var(--lb-text-muted);max-width:280px">Title, one sentence of help, one primary action. Art is optional and moves once.</span></div>
+      <div style="padding:28px 20px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border)"><dc-import name="LB Status Panel" panel="{{ errPanel }}" style="width:100%" hint-size="100%,220px"></dc-import></div>
+      <div style="padding:28px 20px;border-radius:24px;background:var(--lb-surface);border:1.5px solid var(--lb-border)"><dc-import name="LB Status Panel" panel="{{ okPanel }}" style="width:100%" hint-size="100%,220px"></dc-import></div>
+    </div>
+  </section>
+
+  <p style="margin:0;font:400 14px/1.5 var(--lb-font-ui);color:var(--lb-text-muted)">Every component in its real context: <a href="Screens.dc.html">Screens</a> and <a href="Prototype.dc.html">Prototype</a>. Inventory and props: <a href="components/README.md">components/README.md</a>, <a href="components/api.d.ts">components/api.d.ts</a>.</p>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const P = { spin: 1, play: ['M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5Z'], pause: ['M7 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z', 'M14 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z'], back: ['M3 12a9 9 0 1 0 3-6.7L3 8', 'M3 3v5h5'], fwd: ['M21 12a9 9 0 1 1-3-6.7L21 8', 'M21 3v5h-5'], moon: ['M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'], check: ['M20 6L9 17l-5-5'], alert: ['M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z', 'M12 9v4', 'M12 17h.01'], grip: ['M9 5h.01', 'M9 12h.01', 'M9 19h.01', 'M15 5h.01', 'M15 12h.01', 'M15 19h.01'], up: ['M12 19V5', 'M5 12l7-7 7 7'], dn: ['M12 5v14', 'M19 12l-7 7-7-7'], x: ['M18 6L6 18', 'M6 6l12 12'], music: ['M9 18V5l12-2v13', 'M6 15a3 3 0 1 0 0 6a3 3 0 1 0 0-6', 'M18 13a3 3 0 1 0 0 6a3 3 0 1 0 0-6'], list: ['M8 6h13', 'M8 12h13', 'M8 18h13', 'M3 6h.01', 'M3 12h.01', 'M3 18h.01'], pencil: ['M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'], send: ['M22 2L11 13', 'M22 2l-7 20-4-9-9-4Z'], archive: ['M3 3h18v5H3z', 'M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8', 'M10 12h4'], trash: ['M3 6h18', 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6', 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'], search: ['M11 3a8 8 0 1 0 0 16a8 8 0 1 0 0-16', 'M21 21l-4.3-4.3'], wifi: ['M5 12.55a11 11 0 0 1 14.08 0', 'M1.42 9a16 16 0 0 1 21.16 0', 'M8.53 16.11a6 6 0 0 1 6.95 0', 'M12 20h.01'] };
+const h = React.createElement;
+const IC = {};
+for (const k in P) IC[k] = k === 'spin' ? h('svg', { viewBox: '0 0 24 24', width: '100%', height: '100%', 'aria-hidden': 'true', style: { display: 'block', animation: 'lbSpin 800ms linear infinite' } }, h('circle', { cx: 12, cy: 12, r: 9, fill: 'none', stroke: 'currentColor', strokeOpacity: .2, strokeWidth: 2.5 }), h('circle', { cx: 12, cy: 12, r: 9, fill: 'none', stroke: 'currentColor', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '16 100' })) : h('svg', { viewBox: '0 0 24 24', width: '100%', height: '100%', fill: 'none', stroke: 'currentColor', strokeWidth: k === 'grip' ? 3 : 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', style: { display: 'block' } }, P[k].map((d, i) => h('path', { key: i, d, ...((k === 'play' || k === 'pause') ? { fill: 'currentColor', stroke: 'none' } : {}) })));
+const N = 25; const cells = []; let x = 0x9e3779b9;
+const fin = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= N - 7) || (r >= N - 7 && c < 7);
+for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; if (!fin(r, c) && ((x >>> 0) % 100) < 47) cells.push(h('rect', { key: r + '-' + c, x: c, y: r, width: 1, height: 1 })); }
+const F = (r, c) => [h('rect', { key: 'o' + r + c, x: c, y: r, width: 7, height: 7, rx: 1.4 }), h('rect', { key: 'w' + r + c, x: c + 1, y: r + 1, width: 5, height: 5, rx: .9, fill: '#FFFFFF' }), h('rect', { key: 'i' + r + c, x: c + 2, y: r + 2, width: 3, height: 3, rx: .6 })];
+const QR = h('svg', { viewBox: `-2 -2 ${N + 4} ${N + 4}`, width: '100%', height: '100%', role: 'img', 'aria-label': 'Sample pairing code', style: { display: 'block' }, fill: '#2A1E17', shapeRendering: 'crispEdges' }, ...cells, ...F(0, 0), ...F(0, N - 7), ...F(N - 7, 0));
+const CARDS = [
+ ['default', 'Salt & Static', { bg: '#FF6B4A', fg: '#2A1E17', accent: '#2A1E17', border: '0', justify: 'space-between', author: 'Mara Quell' }, '62%', '6 h 45 min left', 'var(--lb-text-muted)'],
+ ['hover', "The Lighthouse Keeper's Almanac of Small Weather", { bg: '#2A1E17', fg: '#FBF4EA', accent: '#FFC93C', border: '0', justify: 'space-between', author: 'Ines Abernathy' }, '18%', '11 h 12 min left', 'var(--lb-text-muted)'],
+ ['pressed', 'Moth Hours', { bg: '#93301C', fg: '#FBF4EA', accent: '#FF9878', border: '0', justify: 'flex-start', author: 'J. P. Amari' }, '72%', '1 h 21 min left', 'var(--lb-text-muted)'],
+ ['finished', 'North of Nowhere', { bg: '#FFC93C', fg: '#2A1E17', accent: '#C23E22', border: '0', justify: 'flex-end', author: 'Tomas Reyl' }, '100%', 'Finished', 'var(--lb-success)'],
+ ['generated', 'A Field Guide to Quiet Rooms', { bg: '#FFC93C', fg: '#2A1E17', accent: '#C23E22', border: '0', justify: 'space-between', author: 'A Field Guide to Quiet Rooms', display: 'F.G.', fs: '30cqw' }, '0%', '1 h 32 min', 'var(--lb-text-muted)'],
+ ['missing', 'The Orchard at the End of the Line', { bg: '#FFF3CF', fg: '#2A1E17', accent: '#FF6B4A', border: '0', justify: 'flex-end', author: 'Kasimir Vale' }, '5%', 'Audio file missing', 'var(--lb-warning)'],
+ ['one-letter', 'Q', { bg: '#FFFBF5', fg: '#2A1E17', accent: '#FF6B4A', border: '2px solid #2A1E17', justify: 'flex-start', author: '' }, '0%', '12 min', 'var(--lb-text-muted)'],
+];
+const fs = n => n <= 12 ? '21cqw' : n <= 24 ? '16cqw' : n <= 40 ? '12.5cqw' : '10cqw';
+const panel = (o) => ({ align: 'center', textAlign: 'center', toneBg: o.bg, toneFg: o.fg, icon: o.icon, iconAnim: 'none', title: o.title, body: o.body, hasProgress: false, indeterminate: false, hasNote: false, hasPrimary: true, primary: { label: o.btn, on: () => { }, bg: 'var(--lb-action)', fg: 'var(--lb-on-action)' }, hasSecondary: false, secondary: {}, hasTertiary: false, tertiary: {} });
+class Component extends DCLogic {
+ state = { theme: 'light', playing: false, sp: 1, sw: true };
+ renderVals() {
+  const s = this.state, pl = s.playing;
+  return {
+   ic: IC, qr: QR, theme: s.theme, themeX: s.theme === 'dark' ? '96px' : '0px', lightOn: s.theme === 'light' ? 'true' : 'false', darkOn: s.theme === 'dark' ? 'true' : 'false', lightFg: s.theme === 'light' ? 'var(--lb-on-strong)' : 'var(--lb-text)', darkFg: s.theme === 'dark' ? 'var(--lb-on-strong)' : 'var(--lb-text)',
+   setLight: () => this.setState({ theme: 'light' }), setDark: () => this.setState({ theme: 'dark' }),
+   togglePlay: () => this.setState({ playing: !pl }), playAria: pl ? 'Pause' : 'Play', pauseO: pl ? 1 : 0, pauseS: pl ? 1 : .6, pauseB: pl ? '0px' : '2px', playO: pl ? 0 : 1, playS: pl ? .6 : 1, playB: pl ? '2px' : '0px',
+   speeds: ['0.75×', '1×', '1.25×', '1.5×', 'Custom'].map((label, i) => ({ label, on: i === s.sp ? 'true' : 'false', color: i === s.sp ? 'var(--lb-on-strong)' : 'var(--lb-text)', pick: () => this.setState({ sp: i }) })), pillX: `calc(100% * ${s.sp})`,
+   swOn: s.sw ? 'true' : 'false', swBg: s.sw ? 'var(--lb-action)' : 'var(--lb-border-strong)', swX: s.sw ? '20px' : '0px', toggleSw: () => this.setState({ sw: !s.sw }),
+   cards: CARDS.map(([state, title, art, pct, meta, color]) => ({ state, title, art: { display: title, fs: fs(title.length), ...art }, pct, meta, color, tf: state === 'hover' ? 'translateY(-5px) scale(1.035) rotate(1deg)' : state === 'pressed' ? 'scale(.95)' : 'none', shadow: state === 'hover' ? 'var(--lb-shadow-lift)' : 'var(--lb-shadow-card)', op: state === 'missing' ? .45 : 1 })),
+   digits: ['4', '8', '2', '9', '1', '5'].map((c, i) => ({ c, gap: i === 3 ? '12px' : '0px' })),
+   errPanel: panel({ bg: 'var(--lb-warning-bg)', fg: 'var(--lb-warning)', icon: IC.wifi, title: 'Connection lost', body: 'Make sure both devices are on the same regular Wi-Fi, then try again.', btn: 'Pair again' }),
+   okPanel: panel({ bg: 'var(--lb-success-bg)', fg: 'var(--lb-success)', icon: IC.check, title: 'Your book is ready to listen offline', body: 'Moth Hours is now in your library on this phone.', btn: 'Open book' }),
+  };
+ }
+}
+</script>
+</body>
+</html>

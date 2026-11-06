@@ -1,0 +1,27 @@
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.wrangler/
+.dev.vars
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+# Real audiobooks never enter Git
+audio_samples/
+fixtures/downloads/
+fixtures/generated/
+*.mp3
+*.m4a
+*.m4b
+*.wav
+!fixtures/small/**
+# Test output
+playwright-report/
+test-results/
+blob-report/
+storybook-static/
+.qa/
+.worktrees/

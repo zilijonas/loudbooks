@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:{{ panel.align }};text-align:{{ panel.textAlign }};gap:12px;width:100%">
+  <div style="width:56px;height:56px;flex:none;border-radius:50%;background:{{ panel.toneBg }};color:{{ panel.toneFg }};display:flex;align-items:center;justify-content:center;animation:{{ panel.iconAnim }}"><span style="width:26px;height:26px;display:flex">{{ panel.icon }}</span></div>
+  <h3 style="margin:0;font:700 22px/1.2 var(--lb-font-display);letter-spacing:-.01em;text-wrap:balance;overflow-wrap:anywhere">{{ panel.title }}</h3>
+  <p style="margin:0;font:400 16px/1.5 var(--lb-font-ui);color:var(--lb-text-muted);text-wrap:pretty;max-width:380px">{{ panel.body }}</p>
+  <sc-if value="{{ panel.hasProgress }}" hint-placeholder-val="{{ false }}">
+    <div style="width:100%;display:flex;flex-direction:column;gap:8px;text-align:left;margin-top:4px">
+      <div style="display:flex;justify-content:space-between;gap:12px;font:600 14px/1.3 var(--lb-font-ui);font-variant-numeric:tabular-nums"><span>{{ panel.progLabel }}</span><span>{{ panel.progPct }}</span></div>
+      <div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ panel.progNow }}" aria-label="{{ panel.progAria }}" style="height:10px;border-radius:99px;background:var(--lb-surface-sunken);overflow:hidden"><div style="height:100%;width:100%;border-radius:99px;background:var(--lb-action);transform-origin:left center;transform:scaleX({{ panel.progScale }});transition:transform 240ms linear"></div></div>
+      <div style="font:500 13px/1.4 var(--lb-font-ui);color:var(--lb-text-muted);font-variant-numeric:tabular-nums">{{ panel.progSub }}</div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ panel.indeterminate }}" hint-placeholder-val="{{ false }}">
+    <div role="progressbar" aria-label="{{ panel.title }}" style="width:100%;max-width:280px;height:6px;border-radius:99px;background:var(--lb-surface-sunken);overflow:hidden"><div data-spin="" style="width:40%;height:100%;border-radius:99px;background:var(--lb-action);animation:lbIndet 1.3s cubic-bezier(.77,0,.175,1) infinite"></div></div>
+  </sc-if>
+  <sc-if value="{{ panel.hasNote }}" hint-placeholder-val="{{ false }}">
+    <p style="margin:0;font:500 13px/1.45 var(--lb-font-ui);color:var(--lb-text-muted);max-width:380px;text-wrap:pretty">{{ panel.note }}</p>
+  </sc-if>
+  <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:380px;margin-top:6px">
+    <sc-if value="{{ panel.hasPrimary }}" hint-placeholder-val="{{ false }}"><button onClick="{{ panel.primary.on }}" style="height:52px;padding:0 22px;border:0;border-radius:999px;background:{{ panel.primary.bg }};color:{{ panel.primary.fg }};font:700 16px/1 var(--lb-font-ui);cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1),filter 150ms" style-hover="filter:brightness(1.06)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">{{ panel.primary.label }}</button></sc-if>
+    <sc-if value="{{ panel.hasSecondary }}" hint-placeholder-val="{{ false }}"><button onClick="{{ panel.secondary.on }}" style="height:52px;padding:0 22px;border:0;border-radius:999px;background:var(--lb-surface-sunken);color:var(--lb-text);font:600 16px/1 var(--lb-font-ui);cursor:pointer;transition:transform 320ms cubic-bezier(.34,1.8,.5,1),background-color 150ms" style-hover="background:var(--lb-border)" style-active="transform:scale(.96);transition:transform 110ms cubic-bezier(.23,1,.32,1)">{{ panel.secondary.label }}</button></sc-if>
+    <sc-if value="{{ panel.hasTertiary }}" hint-placeholder-val="{{ false }}"><button onClick="{{ panel.tertiary.on }}" style="height:44px;border:0;background:transparent;color:var(--lb-accent-text);font:600 15px/1 var(--lb-font-ui);cursor:pointer;text-decoration:underline;text-underline-offset:3px">{{ panel.tertiary.label }}</button></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;panel&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;StatusPanelModel&quot;}}"></script>
+</body>
+</html>

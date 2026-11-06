@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#E9E4DC;font-family:'Hanken Grotesk',sans-serif;color:#2A1E17;-webkit-tap-highlight-color:transparent}*{box-sizing:border-box}a{color:#C23E22}a:hover{color:#2A1E17}</style>
+</helmet>
+<div style="height:100dvh;display:flex;min-height:560px">
+  <aside data-screen-label="Scenario controls" style="width:360px;flex:none;height:100%;overflow-y:auto;background:#FBF4EA;border-right:1px solid #E8DCCB;padding:24px 20px 40px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:10px"><img src="brand/logo/symbol.svg" alt="" style="width:30px;height:30px"><span style="font:800 20px/1 'Bricolage Grotesque';letter-spacing:-.02em">Loud Books prototype</span></div>
+      <p style="margin:0;font:400 14px/1.5 'Hanken Grotesk';color:#4A3B31">Click through the app freely, or jump between steps here. Steps marked "simulated" stand in for a real file picker, camera, network or a 30-minute wait.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#6B5A4E">Scenario</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <sc-for list="{{ scens }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="min-height:52px;padding:8px 10px;border:0;border-radius:14px;background:{{ c.bg }};color:{{ c.fg }};font:600 13px/1.25 'Hanken Grotesk';text-align:left;cursor:pointer;transition:transform 300ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.96);transition:transform 100ms ease-out">{{ c.label }}</button></sc-for>
+      </div>
+    </div>
+    <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="8">
+        <li><button onClick="{{ st.go }}" aria-current="{{ st.cur }}" style="width:100%;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:10px;border:0;border-radius:14px;background:{{ st.bg }};color:#2A1E17;text-align:left;cursor:pointer;transition:background-color 150ms" style-hover="background:#F1E6D6">
+          <span style="width:28px;height:28px;border-radius:50%;background:{{ st.numBg }};color:{{ st.numFg }};display:flex;align-items:center;justify-content:center;font:800 13px/1 'Bricolage Grotesque'">{{ st.n }}</span>
+          <span style="display:flex;flex-direction:column;gap:3px"><span style="font:700 14px/1.3 'Hanken Grotesk'">{{ st.label }}</span><span style="font:400 12px/1.4 'Hanken Grotesk';color:#6B5A4E">{{ st.note }}</span></span>
+        </button></li>
+      </sc-for>
+    </ol>
+    <div style="display:flex;gap:8px">
+      <button onClick="{{ prev }}" style="flex:1;height:44px;border:0;border-radius:999px;background:#F1E6D6;color:#2A1E17;font:600 14px/1 'Hanken Grotesk';cursor:pointer">Previous</button>
+      <button onClick="{{ next }}" style="flex:1;height:44px;border:0;border-radius:999px;background:#FF6B4A;color:#2A1E17;font:700 14px/1 'Hanken Grotesk';cursor:pointer;transition:transform 300ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.96);transition:transform 100ms ease-out">Next step</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:18px;background:#F1E6D6">
+      <div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#6B5A4E">Live state</div>
+      <div style="font:500 13px/1.5 ui-monospace,Menlo,monospace;color:#2A1E17;white-space:pre-wrap">{{ live }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{ tools }}" as="t" hint-placeholder-count="6"><button onClick="{{ t.on }}" style="height:34px;padding:0 10px;border:0;border-radius:999px;background:#FFFBF5;color:#2A1E17;font:600 12px/1 'Hanken Grotesk';cursor:pointer">{{ t.label }}</button></sc-for>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#6B5A4E">Viewport &amp; preferences</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{ views }}" as="v" hint-placeholder-count="5"><button onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" style="height:36px;padding:0 12px;border:0;border-radius:999px;background:{{ v.bg }};color:{{ v.fg }};font:600 13px/1 'Hanken Grotesk';cursor:pointer">{{ v.label }}</button></sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{ themes }}" as="v" hint-placeholder-count="3"><button onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" style="height:36px;padding:0 12px;border:0;border-radius:999px;background:{{ v.bg }};color:{{ v.fg }};font:600 13px/1 'Hanken Grotesk';cursor:pointer">{{ v.label }}</button></sc-for>
+        <button onClick="{{ toggleRm }}" aria-pressed="{{ rmOn }}" style="height:36px;padding:0 12px;border:0;border-radius:999px;background:{{ rmBg }};color:{{ rmFg }};font:600 13px/1 'Hanken Grotesk';cursor:pointer">Reduced motion</button>
+      </div>
+    </div>
+    <p style="margin:0;font:400 12px/1.5 'Hanken Grotesk';color:#6B5A4E">See <a href="Screens.dc.html">Screens</a> for every state side by side, and <a href="handoff/README.md">handoff/README.md</a> for what is simulated.</p>
+  </aside>
+  <main ref="{{ stageRef }}" style="flex:1;min-width:0;height:100%;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:32px;padding:24px">
+    <sc-if value="{{ showDesk }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+        <span style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#6B5A4E">Computer · 1440 × 900</span>
+        <div style="width:{{ deskBoxW }};height:{{ deskBoxH }};border-radius:14px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(60,30,10,.5),0 0 0 1px rgba(42,30,23,.1);background:#FBF4EA">
+          <div style="width:1440px;height:900px;transform:scale({{ deskScale }});transform-origin:0 0">
+            <dc-import name="Loud Books App" preset="{{ desk.preset }}" nonce="{{ desk.nonce }}" command="{{ desk.command }}" theme="{{ theme }}" reduced-motion="{{ rm }}" on-state="{{ onDesk }}" style="width:100%;height:100%" hint-size="100%,100%"></dc-import>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ showPhone }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+        <span style="font:700 12px/1 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#6B5A4E">{{ phoneLabel }}</span>
+        <div style="width:{{ phoneBoxW }};height:{{ phoneBoxH }};border-radius:{{ phoneR }};overflow:hidden;box-shadow:0 30px 60px -30px rgba(60,30,10,.5),0 0 0 1px rgba(42,30,23,.1);background:#FBF4EA">
+          <div style="width:{{ phoneW }};height:{{ phoneH }};transform:scale({{ phoneScale }});transform-origin:0 0">
+            <dc-import name="Loud Books App" preset="{{ phone.preset }}" nonce="{{ phone.nonce }}" command="{{ phone.command }}" theme="{{ theme }}" reduced-motion="{{ rm }}" on-state="{{ onPhone }}" style="width:100%;height:100%" hint-size="100%,100%"></dc-import>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const S = [
+ { label: '1 · Add, listen, timed session', view: 'phone', steps: [
+  { label: 'Empty library', note: 'First launch after Welcome.', phone: 'library-empty' },
+  { label: 'Add book', note: 'Tap "Choose audio files" (simulated file picker).', phone: 'add-empty' },
+  { label: 'Three files picked', note: 'Sorted naturally: 1, 2, 10. Chapter titles come from file names.', phone: 'add-multi' },
+  { label: 'Reorder chapters', note: 'Drag the handle, or use the arrow buttons.', phone: 'add-reorder' },
+  { label: 'Save and import', note: 'Copying happens on the device.', phone: 'add-multi', pcmd: { type: 'save' } },
+  { label: 'Book details', note: 'The new book, with a generated cover.', phone: 'details-new' },
+  { label: 'Prepare 30 minutes and play', note: 'Preparing builds one session file, then plays.', pcmd: { type: 'play' } },
+  { label: 'Change speed to 1.5×', note: 'The session is rebuilt; listened time is kept.', pcmd: { type: 'speed', v: 1.5 } },
+  { label: 'Pause', note: "Pausing doesn't use up the 30 minutes.", pcmd: { type: 'pause' } },
+  { label: 'Skip to the end of the session', note: 'Simulated: stands in for 30 minutes of listening.', pcmd: { type: 'endSession' } },
+  { label: 'Resume', note: 'Play starts 5 seconds earlier in the book.', pcmd: { type: 'play' } }] },
+ { label: '2 · Chapter timer', view: 'phone', steps: [
+  { label: 'Paused in Chapter 4', note: 'Salt & Static, 30-minute session set.', phone: 'player-paused' },
+  { label: 'Open the sleep timer', note: 'Options by time or by chapter.', pcmd: { type: 'openTimer' } },
+  { label: 'Stop at the end of this chapter', note: 'Applies the chapter option.', pcmd: { type: 'chapterTimer' } },
+  { label: 'Play', note: 'Prepares up to the end of Chapter 4.', pcmd: { type: 'play' } },
+  { label: 'Skip to the chapter boundary', note: 'Simulated wait.', pcmd: { type: 'endSession' } },
+  { label: 'Resume', note: 'Starts Chapter 5 from the beginning.', pcmd: { type: 'play' } }] },
+ { label: '3 · Send to phone, play offline', view: 'both', steps: [
+  { label: 'Computer: Send', note: 'QR shows pairing details, not the book.', desk: 'send-qr', phone: 'phone-library' },
+  { label: 'Phone: Receive', note: 'Inside the installed app.', phone: 'receive-intro' },
+  { label: 'Phone: scan the code', note: 'Simulated camera. Tap the viewfinder to scan.', phone: 'receive-scanning' },
+  { label: 'Phone shows a code', note: 'The computer asks for it.', phone: 'receive-code', desk: 'send-code' },
+  { label: 'Enter code and transfer', note: 'Simulated direct connection with real-looking progress.', dcmd: { type: 'pair' }, pcmd: { type: 'rxReceive' } },
+  { label: 'Book is in the library', note: '"Your book is ready to listen offline."', phone: 'phone-received', desk: 'send-done' },
+  { label: 'Airplane mode, play', note: 'Playback from local storage only.', phone: 'phone-offline-player' },
+  { label: 'Error: connection lost', note: 'Recovery suggests the same regular Wi-Fi.', phone: 'receive-disconnected', desk: 'send-failed' }] },
+ { label: '4 · Manage & recover', view: 'phone', steps: [
+  { label: 'Edit a book', note: 'Rename, reorder, change parts.', phone: 'edit' },
+  { label: 'Delete a book', note: 'Confirmation names the book and size.', phone: 'dialog-delete' },
+  { label: 'Clear temporary files', note: 'Books stay; sessions and cache go.', phone: 'dialog-clear' },
+  { label: 'Change theme to Dark', note: 'Full dark theme, not a background swap.', phone: 'settings', theme: 'dark' },
+  { label: 'Playback error', note: 'Tap Try again to recover.', phone: 'player-error', theme: 'light' },
+  { label: 'Not enough space while importing', note: 'Simulated full storage; existing books are safe.', phone: 'add-multi', pcmd: [{ type: 'quota' }, { type: 'save' }] },
+  { label: 'Delete the whole library', note: 'Type "delete" to confirm.', phone: 'dialog-delete-library' }] },
+];
+const VIEWS = [['phone', 'iPhone 390'], ['small', 'Small 320'], ['large', 'Large 430'], ['desk', 'Desktop 1440'], ['both', 'Both']];
+let N = 1;
+class Component extends DCLogic {
+ constructor(p) { super(p); this.stageRef = React.createRef(); this.state = { sc: 0, step: 0, view: 'phone', theme: 'light', rm: false, phone: { preset: 'library-empty', nonce: 0, command: null }, desk: { preset: 'library-many', nonce: 0, command: null }, ps: null, ds: null, sw: 900, sh: 800 }; }
+ componentDidMount() { const el = this.stageRef.current; if (el && window.ResizeObserver) { this.ro = new ResizeObserver(([e]) => this.setState({ sw: e.contentRect.width, sh: e.contentRect.height })); this.ro.observe(el); } this.go(0, 0); }
+ componentWillUnmount() { this.ro && this.ro.disconnect(); clearTimeout(this.t2); }
+ go(sc, i) {
+  const st = S[sc].steps[i]; const patch = { sc, step: i, view: S[sc].view === 'both' ? 'both' : (this.state.view === 'both' || this.state.view === 'desk' ? 'phone' : this.state.view) };
+  if (st.theme) patch.theme = st.theme;
+  const dev = (k, pre, cmd) => { const cur = this.state[k]; let d = { ...cur }; if (pre) d = { preset: pre, nonce: N++, command: null }; return d; };
+  patch.phone = dev('phone', st.phone); patch.desk = dev('desk', st.desk);
+  this.setState(patch, () => { const fire = (k, c) => { if (!c) return; const list = Array.isArray(c) ? c : [c]; list.forEach((x, j) => setTimeout(() => this.setState(s => ({ [k]: { ...s[k], command: { ...x, n: N++ } } })), 120 + j * 160)); }; fire('phone', st.pcmd); fire('desk', st.dcmd); });
+ }
+ renderVals() {
+  const s = this.state, sc = S[s.sc];
+  const v = s.view, both = v === 'both';
+  const pw = v === 'small' ? 320 : v === 'large' ? 430 : 390, ph = v === 'small' ? 700 : v === 'large' ? 932 : 844;
+  const availH = s.sh - 70, availW = s.sw - 48;
+  const pScale = Math.min(1, availH / ph, (both ? availW * .3 : availW) / pw);
+  const dScale = Math.min(1, availH / 900, (both ? availW - pw * pScale - 40 : availW) / 1440);
+  const cmd = (k) => (c) => this.setState(st => ({ [k]: { ...st[k], command: { ...c, n: N++ } } }));
+  const target = v === 'desk' ? 'desk' : 'phone';
+  const ls = s[target === 'desk' ? 'ds' : 'ps'];
+  return {
+   stageRef: this.stageRef,
+   scens: S.map((c, i) => ({ label: c.label, on: i === s.sc ? 'true' : 'false', bg: i === s.sc ? '#2A1E17' : '#F1E6D6', fg: i === s.sc ? '#FBF4EA' : '#2A1E17', pick: () => this.go(i, 0) })),
+   steps: sc.steps.map((st, i) => ({ n: String(i + 1), label: st.label, note: st.note, cur: i === s.step ? 'step' : 'false', bg: i === s.step ? '#FFFFFF' : 'transparent', numBg: i === s.step ? '#FF6B4A' : i < s.step ? '#2A1E17' : '#E8DCCB', numFg: i < s.step && i !== s.step ? '#FBF4EA' : '#2A1E17', go: () => this.go(s.sc, i) })),
+   next: () => s.step < sc.steps.length - 1 ? this.go(s.sc, s.step + 1) : s.sc < S.length - 1 && this.go(s.sc + 1, 0), prev: () => s.step > 0 && this.go(s.sc, s.step - 1),
+   live: ls ? `screen   ${ls.screen}\nplayer   ${ls.status}${ls.timer === 'min' ? `\nsession  ${Math.floor(ls.left / 60)}:${String(ls.left % 60).padStart(2, '0')} of listening left` : ls.timer === 'ch' ? '\nsession  stops at chapter end' : '\nsession  no timer'}\nspeed    ${ls.speed}×${ls.sheet ? `\nsheet    ${ls.sheet}` : ''}${ls.dialog ? `\ndialog   ${ls.dialog}` : ''}` : '…',
+   tools: [['+5 min (simulated)', { type: 'advance', sec: 300 }], ['End session', { type: 'endSession' }], ['Interrupt', { type: 'interrupt' }], ['Playback error', { type: 'fail' }], ['Require tap to play', { type: 'gesture' }], ['Airplane mode', { type: 'airplane' }], ['Near book end', { type: 'toEnd' }], ['Disconnect transfer', { type: 'disconnect' }]].map(([label, c]) => ({ label, on: () => cmd(target)(c) })),
+   views: VIEWS.map(([k, l]) => ({ label: l, on: k === v ? 'true' : 'false', bg: k === v ? '#2A1E17' : '#F1E6D6', fg: k === v ? '#FBF4EA' : '#2A1E17', pick: () => this.setState({ view: k }) })),
+   themes: [['light', 'Light'], ['dark', 'Dark'], ['system', 'System']].map(([k, l]) => ({ label: l, on: k === s.theme ? 'true' : 'false', bg: k === s.theme ? '#2A1E17' : '#F1E6D6', fg: k === s.theme ? '#FBF4EA' : '#2A1E17', pick: () => this.setState({ theme: k }) })),
+   theme: s.theme, rm: s.rm, rmOn: s.rm ? 'true' : 'false', rmBg: s.rm ? '#2A1E17' : '#F1E6D6', rmFg: s.rm ? '#FBF4EA' : '#2A1E17', toggleRm: () => this.setState({ rm: !s.rm }),
+   showPhone: v !== 'desk', showDesk: v === 'desk' || both, phone: s.phone, desk: s.desk,
+   phoneW: `${pw}px`, phoneH: `${ph}px`, phoneScale: pScale, phoneBoxW: `${Math.round(pw * pScale)}px`, phoneBoxH: `${Math.round(ph * pScale)}px`, phoneR: `${Math.round(40 * pScale)}px`, phoneLabel: `Phone · ${pw} × ${ph}`,
+   deskScale: dScale, deskBoxW: `${Math.round(1440 * dScale)}px`, deskBoxH: `${Math.round(900 * dScale)}px`,
+   onPhone: st => this.setState({ ps: st }), onDesk: st => this.setState({ ds: st }),
+  };
+ }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#E9E4DC;font-family:'Hanken Grotesk',sans-serif;color:#2A1E17}*{box-sizing:border-box}a{color:#C23E22}a:hover{color:#2A1E17}</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:72px">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:960px">
+    <div style="font:700 13px/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#6B5A4E">Loud Books · Phase 3 · Screens &amp; states</div>
+    <div style="font:800 52px/1.02 'Bricolage Grotesque';letter-spacing:-.03em">Every screen, overlay and state</div>
+    <p style="margin:0;font:400 18px/1.5 'Hanken Grotesk';color:#4A3B31;text-wrap:pretty">Each frame is the live app (Loud Books App) loaded with one fixture, so everything here is clickable. Phone frames are 390 × 844 unless marked otherwise. Pick a group below. Timers are frozen in this gallery; the clock runs in the Prototype.</p>
+  </header>
+  <nav aria-label="Screen groups" style="position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;padding:12px;margin:-12px;border-radius:24px;background:rgba(233,228,220,.94)">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="9"><button onClick="{{ t.pick }}" aria-pressed="{{ t.on }}" style="height:44px;padding:0 16px;border:0;border-radius:999px;background:{{ t.bg }};color:{{ t.fg }};font:600 15px/1 'Hanken Grotesk';cursor:pointer;transition:transform 300ms cubic-bezier(.34,1.8,.5,1)" style-active="transform:scale(.95);transition:transform 100ms ease-out">{{ t.label }}</button></sc-for>
+  </nav>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <section data-screen-label="{{ g.title }}" style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:6px;max-width:900px"><div style="font:800 34px/1.1 'Bricolage Grotesque';letter-spacing:-.02em">{{ g.title }}</div><div style="font:400 16px/1.5 'Hanken Grotesk';color:#4A3B31">{{ g.note }}</div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:40px 32px;align-items:flex-start">
+        <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+          <figure style="margin:0;display:flex;flex-direction:column;gap:12px;width:{{ it.fw }}">
+            <figcaption style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><span style="background:#2A1E17;color:#FBF4EA;font:700 12px/1 'Hanken Grotesk';padding:5px 8px;border-radius:99px">{{ it.id }}</span><span style="font:700 15px/1.3 'Hanken Grotesk'">{{ it.label }}</span><span style="font:500 12px/1.3 'Hanken Grotesk';color:#6B5A4E">{{ it.meta }}</span></figcaption>
+            <div style="width:{{ it.fw }};height:{{ it.fh }};overflow:hidden;border-radius:{{ it.r }};box-shadow:0 30px 60px -30px rgba(60,30,10,.45),0 0 0 1px rgba(42,30,23,.08);background:#FBF4EA">
+              <div style="width:{{ it.w }};height:{{ it.h }};transform:scale({{ it.s }});transform-origin:0 0">
+                <dc-import name="Loud Books App" preset="{{ it.preset }}" theme="{{ it.theme }}" live="false" style="width:100%;height:100%" hint-size="100%,100%"></dc-import>
+              </div>
+            </div>
+          </figure>
+        </sc-for>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const G = [
+ ['Welcome & installation', 'First launch only. Returning users land in the library.', [['welcome', 'Welcome, in Safari, not yet offline-ready'], ['welcome-installed', 'Welcome, installed and offline-ready'], ['sheet-install', 'Add to Home Screen guidance'], ['welcome', 'Welcome · desktop', 'desk']]],
+ ['Library', 'Empty, single, many, search, finished, missing file, offline, update waiting and storage failure.', [['library-empty', 'First run, empty'], ['library-empty-safari', 'Empty, in Safari'], ['library-one', 'Single book'], ['library-many', 'Many books, mini-player'], ['library-playing', 'Playing, dark', 'dark'], ['library-no-results', 'No search results'], ['library-missing', 'Missing local file (scroll)'], ['library-new', 'New book arrives'], ['library-offline', 'Airplane mode, normal use'], ['library-update', 'Update postponed while playing'], ['data-unavailable', 'Local data unavailable'], ['library-many', 'Library · desktop', 'desk'], ['library-many', 'Library · 320 px', 'small'], ['library-many', 'Library · 768 tablet', 'tab'], ['library-many', 'Library · desktop dark', 'deskdark']]],
+ ['Add / edit book', 'Title required; description and cover optional. Several files become reorderable chapters.', [['add-empty', 'Empty form'], ['add-multi', 'Three files, natural sort'], ['add-reorder', 'Reordering by drag'], ['add-single', 'One file with 30-minute parts'], ['add-errors', 'Missing title, unsupported file'], ['add-importing', 'Importing'], ['add-quota', 'Not enough space'], ['add-discard', 'Leaving unsaved form'], ['edit', 'Edit an existing book'], ['add-multi', 'Add book · desktop', 'desk']]],
+ ['Book details', 'A single-file book explains itself instead of looking broken.', [['details', 'In progress'], ['details-long', 'Long title and chapters'], ['details-single', 'Single file, no parts'], ['details-completed', 'Finished'], ['details-new', 'Just added'], ['sheet-menu', 'Book actions sheet'], ['dialog-delete', 'Delete book'], ['dialog-delete-playing', 'Delete the playing book'], ['details', 'Details · desktop', 'desk']]],
+ ['Player', 'Chapter time sits under the slider; session time is the moon badge. They never share a label.', [['player-paused', 'Paused, 30-minute session'], ['player-playing', 'Playing'], ['player-preparing', 'Preparing session'], ['player-gesture', 'Ready — play (needs a tap)'], ['player-rebuilding', 'Rebuilding after speed change'], ['player-chapter-timer', 'Chapter timer'], ['player-no-timer', 'No timer'], ['player-first-chapter', 'First chapter'], ['player-final-chapter', 'Final chapter'], ['player-ended-timer', 'Timed session ended'], ['player-ended-chapter', 'Stopped at chapter end'], ['player-completed', 'Book completed'], ['player-interrupted', 'Interrupted'], ['player-error', 'Playback error'], ['player-long-title', 'Long titles'], ['player-playing', 'Player · dark', 'dark'], ['player-playing', 'Player · 320 px', 'small'], ['player-playing', 'Player · desktop', 'desk']]],
+ ['Speed, timer & chapters', 'Bottom sheets on phones, centered dialogs on desktop.', [['sheet-speed', 'Speed'], ['sheet-speed-custom', 'Custom speed, invalid'], ['sheet-timer', 'Sleep timer'], ['sheet-timer-custom', 'Custom duration'], ['sheet-timer-last', 'Not enough chapters left'], ['sheet-chapters', 'Chapters'], ['sheet-timer', 'Timer · desktop', 'desk']]],
+ ['Send (computer)', 'The QR contains pairing details only; the book travels over a direct connection.', [['send-qr', 'QR, waiting', 'desk'], ['send-code', 'Enter code', 'desk'], ['send-wrong', 'Wrong code', 'desk'], ['send-connecting', 'Connecting', 'desk'], ['send-sending', 'Sending', 'desk'], ['send-done', 'Sent', 'desk'], ['send-failed', 'Disconnected', 'desk'], ['send-signaling', 'Pairing service unavailable', 'desk'], ['send-qr', 'Send from a phone'], ['send-qr', 'Send · dark', 'deskdark']]],
+ ['Receive (phone)', 'Always inside the installed app. Never through the Files app.', [['receive-intro', 'Start'], ['receive-safari', 'Started in Safari'], ['receive-permission', 'Camera permission'], ['receive-denied', 'Permission denied'], ['receive-scanning', 'Scanner'], ['receive-expired', 'Expired code'], ['receive-paste', 'Paste link'], ['receive-paste-error', 'Invalid link'], ['receive-code', 'Confirmation code'], ['receive-connecting', 'Connecting'], ['receive-receiving', 'Receiving'], ['receive-verifying', 'Verifying'], ['receive-success', 'Ready to listen offline'], ['receive-disconnected', 'Disconnected, retry'], ['receive-storage', 'Not enough space'], ['receive-duplicate', 'Duplicate book'], ['receive-signaling', 'Pairing service unavailable'], ['receive-receiving', 'Receiving · dark', 'dark']]],
+ ['Settings, storage & about', 'Clearing temporary files is separate from deleting the library.', [['settings', 'Settings, protected storage'], ['settings-standard', 'Standard storage, not installed'], ['settings-update', 'Update postponed'], ['dialog-clear', 'Clear temporary files'], ['dialog-delete-library', 'Delete library'], ['settings', 'Settings · dark', 'dark'], ['settings', 'Settings · desktop', 'desk']]],
+];
+const SZ = { phone: [390, 844, 1, '36px'], dark: [390, 844, 1, '36px'], small: [320, 700, 1, '30px'], tab: [768, 1024, .62, '20px'], desk: [1440, 900, .56, '14px'], deskdark: [1440, 900, .56, '14px'] };
+class Component extends DCLogic {
+ state = { g: 0 };
+ renderVals() {
+  let n = 0;
+  const tabs = G.map(([t], i) => ({ label: `${i + 1}. ${t}`, on: i === this.state.g ? 'true' : 'false', bg: i === this.state.g ? '#2A1E17' : '#FBF4EA', fg: i === this.state.g ? '#FBF4EA' : '#2A1E17', pick: () => this.setState({ g: i }) }));
+  return { tabs, groups: G.map(([title, note, items], gi) => ({ title: `${gi + 1}. ${title}`, note, items: items.map(([preset, label, v = 'phone']) => { const [w, hh, s, r] = SZ[v]; n++; return { id: `${gi + 1}.${items.indexOf(items.find(x => x[1] === label)) + 1}`, preset, label, meta: v === 'phone' ? '' : v === 'dark' ? 'dark' : v === 'small' ? '320 × 700' : v === 'tab' ? '768 × 1024' : v === 'deskdark' ? '1440 × 900 · dark' : '1440 × 900', theme: v === 'dark' || v === 'deskdark' ? 'dark' : 'light', w: `${w}px`, h: `${hh}px`, s, fw: `${Math.round(w * s)}px`, fh: `${Math.round(hh * s)}px`, r }; }) })).filter((_, i) => i === this.state.g) };
+ }
+}
+</script>
+</body>
+</html>
