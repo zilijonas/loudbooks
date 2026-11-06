@@ -41,10 +41,12 @@ describe("library persistence", () => {
   });
   it("moves progress from removed audio to a remaining chapter and retains cleanup on failure", async () => {
     await seed();
+    await db.books.update("b", { status: "completed" });
     await db.progress.put({ bookId: "b", bookRevision: 1, sourceAssetId: "a", sourceOffset: 20, globalOffset: 20, updatedAt: 1, stopReason: null, rewindPending: false });
     storage.fail = true;
     await expect(new LibraryCommands(() => false, repo, storage).removeChapter("b", "a")).rejects.toThrow("storage unavailable");
     expect(await db.progress.get("b")).toMatchObject({ bookRevision: 2, sourceAssetId: "b", sourceOffset: 0, globalOffset: 0 });
+    expect((await db.books.get("b"))?.status).toBe("ready");
     expect(await db.imports.count()).toBe(1);
     storage.fail = false;
     await new ImportCoordinator({ repository: repo, storage, exclusive: work => work() }).recover(() => false);

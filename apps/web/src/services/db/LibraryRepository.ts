@@ -101,6 +101,7 @@ export class LibraryRepository {
           const range = chapter.sourceRanges[0]!;
           mapped = { sourceAssetId: range.assetId, sourceOffset: range.sourceStart, globalOffset: chapter.globalStart };
           await this.database.progress.update(bookId, { stopReason: null, rewindPending: false });
+          if (book.status === "completed") await this.database.books.update(bookId, { status: "ready" });
         }
         await this.database.progress.update(bookId, { ...mapped, bookRevision: revision });
       }
