@@ -23,4 +23,12 @@
   .lb-player-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .lb-player-tool { height: 48px; padding: 0 8px; border: 0; border-radius: 16px; background: var(--lb-surface-sunken); color: var(--lb-text); font: 700 15px/1 var(--lb-font-ui); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; transition: background-color 200ms; }
   .lb-player-tool[data-on] { background: var(--lb-strong); color: var(--lb-on-strong); }
+  /* Desktop shell but a narrow main column (768-1099 px): two columns leave the controls ~100-250 px, so stay single column like the phone. */
+  @media (max-width: 1099px) {
+    .lb-player[data-wide] .lb-player-grid { grid-template-columns: minmax(0, 1fr); }
+    .lb-player[data-wide] .lb-player-cover { width: min(240px, 42vw); }
+    .lb-player[data-wide] .lb-player-main { width: 100%; max-width: 480px; justify-self: center; }
+    .lb-player[data-wide] .lb-player-head { align-items: center; text-align: center; }
+    .lb-player[data-wide] .lb-player-badge { justify-content: center; }
+  }
 }

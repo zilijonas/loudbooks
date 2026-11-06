@@ -121,6 +121,13 @@ const widths = a.widths.split(',').map(Number)
 const themes = a.themes.split(',')
 const engines = { chromium, webkit, firefox }
 const browser = await engines[a.browser].launch()
+if (a.browser === 'webkit') {
+  // Headless WebKit hit-tests <html> for some pointer clicks (LB-9 notes): activate through the DOM instead.
+  const probe = await (await browser.newContext()).newPage()
+  const proto = Object.getPrototypeOf(probe.locator('body'))
+  proto.click = function () { return this.evaluate((e) => e.click()) }
+  await probe.context().close()
+}
 const out = resolve(a.out)
 await mkdir(out, { recursive: true })
 const errors = []
