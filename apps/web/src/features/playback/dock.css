@@ -1,0 +1,4 @@
+/* Phone mini-player placement: floats above the content, clear of the home indicator. */
+@layer components {
+  .lb-dock-mini { position: fixed; left: 12px; right: 12px; bottom: calc(12px + var(--lb-safe-bottom)); z-index: 30; max-width: 480px; margin: 0 auto; }
+}

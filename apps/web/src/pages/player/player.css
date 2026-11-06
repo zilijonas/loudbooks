@@ -1,0 +1,23 @@
+/* Full player and dock placement, values from the Player markup in design/Loud Books App.dc.html. */
+@layer components {
+  .lb-player { min-height: 100%; max-width: 100%; margin: 0 auto; padding: 6px 20px 40px; display: flex; flex-direction: column; gap: 10px; }
+  .lb-player[data-wide] { max-width: 1120px; padding: 36px 48px 40px; }
+  .lb-player-top { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; margin: 0 -12px; }
+  .lb-player-kicker { text-align: center; font: 600 13px/1.2 var(--lb-font-ui); color: var(--lb-text-muted); }
+  .lb-player-grid { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px 48px; align-items: center; }
+  .lb-player[data-wide] .lb-player-grid { grid-template-columns: minmax(260px, 380px) minmax(0, 1fr); }
+  .lb-player-cover { width: min(164px, 42vw); justify-self: center; border-radius: 20px; box-shadow: var(--lb-shadow-lift); }
+  .lb-player[data-wide] .lb-player-cover { width: 100%; }
+  .lb-player-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .lb-player-head { display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; }
+  .lb-player[data-wide] .lb-player-head { align-items: flex-start; text-align: left; }
+  .lb-player-head h1 { margin: 0; font: 800 22px/1.2 var(--lb-font-display); letter-spacing: -.015em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; text-wrap: balance; }
+  .lb-player-head span { font: 500 14px/1.35 var(--lb-font-ui); color: var(--lb-text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .lb-player-badge { display: flex; justify-content: center; }
+  .lb-player[data-wide] .lb-player-badge { justify-content: flex-start; }
+  .lb-player-transport { display: flex; flex-direction: column; gap: 16px; }
+  .lb-player-panel { padding: 20px 16px; border-radius: 24px; background: var(--lb-surface); border: 1.5px solid var(--lb-border); }
+  .lb-player-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .lb-player-tool { height: 48px; padding: 0 8px; border: 0; border-radius: 16px; background: var(--lb-surface-sunken); color: var(--lb-text); font: 700 15px/1 var(--lb-font-ui); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; transition: background-color 200ms; }
+  .lb-player-tool[data-on] { background: var(--lb-strong); color: var(--lb-on-strong); }
+}

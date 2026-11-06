@@ -1,6 +1,7 @@
 import { createHashRouter } from 'react-router'
 import { lazy, Suspense } from 'react'
 import { Placeholder } from '../pages/Placeholder'
+import { PlayerPage } from '../pages/player/PlayerPage'
 import { ErrorFallback } from './ErrorFallback'
 import { Shell } from './Shell'
 
@@ -29,7 +30,8 @@ export const router = createHashRouter([
     element: <Shell />,
     errorElement: <ErrorFallback />,
     children: [
-      ...routes.map((r) =>
+      { path: 'player', element: <PlayerPage /> },
+      ...routes.filter((r) => r.route !== 'player').map((r) =>
         'index' in r
           ? { index: true, element: <Placeholder route={r.route} title={r.title} /> }
           : { path: r.path, element: <Placeholder route={r.route} title={r.title} /> },
