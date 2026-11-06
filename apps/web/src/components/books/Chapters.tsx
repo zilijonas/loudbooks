@@ -1,8 +1,8 @@
 import { DndContext, DragOverlay, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { motion, useReducedMotion } from 'motion/react'
-import { useState, type ReactNode } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
 import { formatBytes, formatClock, formatDuration } from '../format'
@@ -62,7 +62,6 @@ interface RowProps extends EditableChapter {
   onRename: (title: string) => void
   onMoveUp?: () => void
   onMoveDown?: () => void
-  /** Omitted when files can't be removed (editing a saved book). */
   onRemove?: () => void
   handle?: ReactNode
 }
@@ -104,7 +103,7 @@ export function ReorderHandle(props: Record<string, unknown>) {
   )
 }
 
-function SortableRow(props: RowProps & { id: string }) {
+function SortableRow(props: RowProps & { id: string; keyboard: boolean }) {
   const reduce = useReducedMotion()
   const { setNodeRef, setActivatorNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: props.id,
@@ -113,13 +112,13 @@ function SortableRow(props: RowProps & { id: string }) {
   const { role: _r, tabIndex: _t, ...attrs } = attributes // the grip is pointer-only; buttons cover keyboard
   void _r; void _t
   return (
-    <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition: reduce ? undefined : transition }}>
+    <div ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition: reduce || props.keyboard ? undefined : transition }}>
       {isDragging ? (
         <div className="lb-edit-placeholder" aria-hidden="true" />
       ) : (
         <RowBody {...props} handle={<ReorderHandle ref={setActivatorNodeRef} {...attrs} {...listeners} title={undefined} />} />
       )}
-    </li>
+    </div>
   )
 }
 
@@ -134,6 +133,22 @@ export interface EditableChapterListProps {
 export function EditableChapterList({ items, onReorder, onRename, onRemove }: EditableChapterListProps) {
   const p = usePreset()
   const [active, setActive] = useState<string | null>(null)
+  const [keyboard, setKeyboard] = useState(false)
+  useEffect(() => {
+    const key = () => setKeyboard(true)
+    const pointer = () => setKeyboard(false)
+    const click = (event: MouseEvent) => {
+      if (event.detail === 0 && !(event.target instanceof HTMLInputElement && event.target.type === 'file')) setKeyboard(true)
+    }
+    document.addEventListener('keydown', key, true)
+    document.addEventListener('pointerdown', pointer, true)
+    document.addEventListener('click', click, true)
+    return () => {
+      document.removeEventListener('keydown', key, true)
+      document.removeEventListener('pointerdown', pointer, true)
+      document.removeEventListener('click', click, true)
+    }
+  }, [])
   // Pointer only: keyboard users reorder with the labelled Up/Down buttons, which move without animation.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
   const ids = items.map((i) => i.id)
@@ -157,8 +172,16 @@ export function EditableChapterList({ items, onReorder, onRename, onRemove }: Ed
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={(e) => setActive(String(e.active.id))} onDragEnd={end} onDragCancel={() => setActive(null)}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-        <ol className="lb-edit-list" aria-label={t('details.chapters')}>
-          {items.map((c, i) => <SortableRow key={c.id} {...rowProps(c, i)} />)}
+        <ol className="lb-edit-list" aria-label={t('details.chapters')} style={items.length ? undefined : { marginBottom: 0 }}>
+          <AnimatePresence initial={false} custom={keyboard}>
+            {items.map((c, i) => (
+              <motion.li key={c.id} initial={keyboard ? false : p.reveal.initial} animate={p.reveal.animate}
+                variants={{ exit: (viaKeyboard: boolean) => viaKeyboard ? { opacity: 0, transition: { duration: 0 } } : p.reveal.exit }}
+                exit="exit" transition={p.reveal.transition}>
+                <SortableRow {...rowProps(c, i)} keyboard={keyboard} />
+              </motion.li>
+            ))}
+          </AnimatePresence>
         </ol>
       </SortableContext>
       <DragOverlay dropAnimation={{ duration: 220, easing: 'cubic-bezier(.23,1,.32,1)' }}>

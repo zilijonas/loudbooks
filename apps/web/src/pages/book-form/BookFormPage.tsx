@@ -234,19 +234,17 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
           <FileDropzone accept={ACCEPT} onFiles={(f) => void addFiles(f)} label={t(rows.length ? 'form.addMore' : 'form.choose')} note={desktop ? undefined : ''} />
           <Reveal show={!!filesErr} as="span" className="lb-error" role="alert"><Ic name="alert" size={16} />{filesErr}</Reveal>
           {display.length > 0 && (
-            <>
-              <div className="lb-files-sum">
-                <span>{ok.length === 0 ? t('form.noFiles') : ok.length === 1 ? t('form.oneFile', { duration: formatDuration(seconds) }) : t('form.chapters', { count: ok.length, duration: formatDuration(seconds) })}</span>
-                <span>{formatBytes(bytes)}</span>
-              </div>
-              <EditableChapterList
-                items={display}
-                onReorder={move}
-                onRename={(rid, v) => { setRows((r) => r.map((x) => (x.id === rid ? { ...x, title: v } : x))); setDirty(true) }}
-                onRemove={(rid) => { setRows((r) => r.filter((x) => x.id !== rid)); setDirty(true) }}
-              />
-            </>
+            <div className="lb-files-sum">
+              <span>{ok.length === 0 ? t('form.noFiles') : ok.length === 1 ? t('form.oneFile', { duration: formatDuration(seconds) }) : t('form.chapters', { count: ok.length, duration: formatDuration(seconds) })}</span>
+              <span>{formatBytes(bytes)}</span>
+            </div>
           )}
+          <EditableChapterList
+            items={display}
+            onReorder={move}
+            onRename={(rid, v) => { setRows((r) => r.map((x) => (x.id === rid ? { ...x, title: v } : x))); setDirty(true) }}
+            onRemove={(rid) => { setRows((r) => r.filter((x) => x.id !== rid)); setDirty(true) }}
+          />
           <Reveal show={single}>
             <Switch label={t('form.parts')} description={parts ? t('form.partsOn', { count: Math.ceil(seconds / 1800) }) : t('form.partsOff')} checked={parts} onChange={change(setParts)} />
           </Reveal>
