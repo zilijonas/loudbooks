@@ -7,7 +7,9 @@ import { resolve } from 'node:path'
 import { expect, test, type BrowserContext, type Page, type PlaywrightWorkerArgs } from '@playwright/test'
 
 const root = resolve(process.cwd(), '../..')
-const sample = resolve(root, 'audio_samples/book-short.mp3')
+// The 12-minute sample when installed, otherwise the committed 5-second sample (CI).
+const short = resolve(root, 'audio_samples/book-short.mp3')
+const sample = existsSync(short) ? short : resolve(root, 'fixtures/small/sample-5s-cbr64k.mp3')
 const dist = resolve(process.cwd(), 'dist')
 const app = 'http://localhost:4173/loudbooks/'
 

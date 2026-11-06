@@ -1,4 +1,4 @@
-import { mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { expect, test, type BrowserContext } from "@playwright/test";
@@ -39,7 +39,8 @@ test("backup UI exports, restores and replaces the playing book", async ({ playw
     const page = await context.newPage();
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(String(error)));
-    const file = resolve(directory, readdirSync(directory).filter(name => /^001 /.test(name))[0]!);
+    // Downloaded Zeland chapter when installed, otherwise the committed small chapter (CI).
+    const file = existsSync(directory) ? resolve(directory, readdirSync(directory).filter(name => /^001 /.test(name))[0]!) : resolve(import.meta.dirname, "../../../fixtures/small/chapter-1.mp3");
     await page.goto("#/__harness/import");
     await page.getByLabel("Audio files").setInputFiles(file);
     await page.getByRole("button", { name: "Import" }).click();
