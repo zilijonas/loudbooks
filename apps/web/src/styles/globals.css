@@ -2,9 +2,11 @@
 @import "./fonts.css";
 @import "./tokens.css";
 @import "./tailwind.theme.css";
+@import "./components.css";
 
 @layer base {
   html { background: var(--lb-bg); color: var(--lb-text); font-family: var(--lb-font-ui); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
-  body { margin: 0; min-height: 100dvh; overscroll-behavior: contain; }
+  body { margin: 0; min-height: 100dvh; overscroll-behavior: contain; -webkit-font-smoothing: antialiased; }
+  input, textarea, button { font-family: inherit; }
   :focus-visible { outline: 3px solid var(--lb-focus); outline-offset: 2px; }
 }
