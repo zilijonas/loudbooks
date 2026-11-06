@@ -354,6 +354,11 @@
   @media (hover: hover) and (pointer: fine) { .lb-playerbar-open:hover { background: var(--lb-surface-sunken); } }
   .lb-playerbar-mid { display: flex; align-items: center; gap: 12px; }
   .lb-playerbar-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+  /* 768-1023 px: the main column is 520-775 px, so the bar drops its duplicate "open player" icon (the cover and title open it) and tightens, or the forward-15 button is hidden behind the speed chip. */
+  @media (max-width: 1023px) {
+    .lb-playerbar { gap: 12px; padding: 0 16px; }
+    .lb-playerbar-end > .lb-iconbtn { display: none; }
+  }
   .lb-chip { height: 40px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--lb-surface-sunken); color: var(--lb-text); font: 700 14px/1 var(--lb-font-ui); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
   .lb-chip[data-on] { background: var(--lb-strong); color: var(--lb-on-strong); }
 
