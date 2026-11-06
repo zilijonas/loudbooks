@@ -89,19 +89,10 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
   const contexts: BrowserContext[] = []
   try {
     const open = async (dir: string, width: number, name: string) => {
-      // Host candidates as plain LAN addresses: two headless browsers on one host resolve each other's mDNS names unreliably.
-      const args = browserName === 'chromium' ? ['--disable-features=WebRtcHideLocalIpsWithMdns'] : []
-      const ctx = await playwright[browserName].launchPersistentContext(dir, { headless: true, viewport: { width, height: 900 }, args })
+      const ctx = await playwright[browserName].launchPersistentContext(dir, { headless: true, viewport: { width, height: 900 }, channel: test.info().project.use.channel })
       contexts.push(ctx)
       const page = ctx.pages()[0] ?? await ctx.newPage()
       page.on('pageerror', (e) => { throw e })
-      // Both "devices" share one host and one public IP here; with a STUN server, Chromium's ICE on this machine
-      // intermittently never completes the host pair (reproduced outside the app). Test runs are a same-LAN pairing,
-      // so drop STUN in the test only; the app keeps stun.cloudflare.com.
-      await page.addInitScript(() => {
-        const P = window.RTCPeerConnection
-        window.RTCPeerConnection = class extends P { constructor(c?: RTCConfiguration) { super({ ...c, iceServers: [] }) } } as typeof RTCPeerConnection
-      })
       page.on('console', (m) => { if (m.type() === 'warning' || m.type() === 'error') console.log(`[${name}] ${m.text()}`) })
       return page
     }
@@ -191,7 +182,7 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       expect(files.map((f) => f.sha)).toContain(await sha(long))
       // Transfer staging is gone once the book is committed.
       expect(files.filter((f) => f.path.startsWith('staging/') && /^staging\/[^/]+\/\d+$/.test(f.path))).toEqual([])
-      await b.getByRole('button', { name: 'Back to library' }).click()
+      await b.getByRole('status').getByRole('button', { name: 'Back to library' }).click()
       await expect(b.getByRole('listitem').filter({ hasText: 'Browser test' })).toHaveCount(2)
     })
   } finally {

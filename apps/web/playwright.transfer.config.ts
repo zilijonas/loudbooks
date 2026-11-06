@@ -13,7 +13,9 @@ export default defineConfig({
   reporter: 'list',
   use: { baseURL: url, trace: 'retain-on-failure', actionTimeout: 30_000 },
   projects: [
-    { name: 'chromium', use: devices['Desktop Chrome'] },
+    // Google Chrome, not the headless shell: peers on one machine exchange UDP, and the host firewall here blocks
+    // incoming connections for chrome-headless-shell (two shells connect once, then ICE fails).
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], channel: 'chrome' } },
     { name: 'webkit', use: devices['Desktop Safari'] },
   ],
   webServer: [
