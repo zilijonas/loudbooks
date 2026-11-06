@@ -16,5 +16,5 @@ export default defineConfig({
     { name: 'firefox', use: devices['Desktop Firefox'] },
   ],
   // Builds first so the test never runs against a stale dist.
-  webServer: { command: 'pnpm build && pnpm preview --port 4173 --strictPort', url, reuseExistingServer: !process.env.CI, timeout: 180_000 },
+  webServer: { command: 'VITE_DATA_HARNESS=1 pnpm build && pnpm preview --port 4173 --strictPort', url, reuseExistingServer: false, timeout: 180_000 },
 })
