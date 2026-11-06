@@ -6,6 +6,7 @@ export {
   isActivePath,
   pause,
   stopListening,
+  releaseBook,
   togglePlay,
   initPlayback,
 } from './controller'

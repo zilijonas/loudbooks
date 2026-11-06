@@ -13,7 +13,7 @@ import { Reveal } from '../../components/ui/Reveal'
 import { Ic } from '../../components/icons'
 import { ImportError, naturalSort } from '../../features/import/probe'
 import { coverPath } from '../../features/library/LibraryCommands'
-import { isBookActive, stopListening } from '../../features/playback/api'
+import { isBookActive, releaseBook } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { db } from '../../services/db/database'
 import { MediaStorage } from '../../services/opfs/MediaStorage'
@@ -25,13 +25,14 @@ const ACCEPT = ['.mp3', '.m4a', '.m4b', '.wav', 'audio/mpeg', 'audio/mp4', 'audi
 interface Row extends EditableChapter {
   file?: File
   codec?: string
+  sampleRate?: number
+  channels?: number
   /** Title the row started with: unchanged titles are not written back. */
   initialTitle: string
 }
 
 /** "Quiet Rooms 2 - The Reading Room.mp3" → "The Reading Room" (design cleanName). */
 const cleanName = (name: string) => name.replace(/\.[^.]+$/, '').replace(/^.*?\d+\s*-\s*/, '') || name
-const family = (codec?: string) => (codec?.startsWith('pcm-') ? 'pcm' : codec)
 const ext = (name: string) => (name.match(/\.([^.]+)$/)?.[1] ?? name).toUpperCase()
 
 type ImportState = { kind: 'running'; written: number; total: number } | { kind: 'quota'; need: number; free: number } | null
@@ -48,10 +49,15 @@ export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
 
 function rowsFromBook(v: BookView): Row[] {
   const assets = new Map(v.assets.map((a) => [a.id, a]))
+  if (v.parts && v.assets.length === 1) {
+    const a = v.assets[0]!
+    const title = a.originalFilename.replace(/\.[^.]+$/, '')
+    return [{ id: v.chapters[0]!.id, title, initialTitle: title, filename: a.originalFilename, durationSec: a.duration, bytes: a.bytes, codec: a.codec, sampleRate: a.sampleRate, channels: a.channels, status: 'ok' }]
+  }
   return v.chapters.map((c, i) => {
     const asset = assets.get(c.sourceRanges[0]?.assetId ?? '')
     const title = chapterTitle(v, c, i)
-    return { id: c.id, title, initialTitle: title, filename: asset?.originalFilename ?? '', durationSec: c.globalEnd - c.globalStart, bytes: c.kind === 'imported' ? asset?.bytes : undefined, status: 'ok' }
+    return { id: c.id, title, initialTitle: title, filename: asset?.originalFilename ?? '', durationSec: c.globalEnd - c.globalStart, bytes: c.kind === 'imported' ? asset?.bytes : undefined, codec: asset?.codec, sampleRate: asset?.sampleRate, channels: asset?.channels, status: 'ok' }
   })
 }
 
@@ -64,7 +70,7 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
   const [cover, setCover] = useState<Blob | null>(null)
   const [coverChanged, setCoverChanged] = useState(false)
   const [rows, setRows] = useState<Row[]>(() => (view ? rowsFromBook(view) : []))
-  const [parts, setParts] = useState(false)
+  const [parts, setParts] = useState(view?.parts ?? false)
   const [touched, setTouched] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [imp, setImp] = useState<ImportState>(null)
@@ -87,12 +93,12 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
   const change = <T,>(set: (v: T) => void) => (v: T) => { set(v); setDirty(true) }
 
   // Mismatched codecs are only known once every row is checked: the first usable file sets the family.
-  const firstFamily = family(rows.find((r) => r.status === 'ok')?.codec)
-  const display: Row[] = rows.map((r) => (r.status === 'ok' && r.codec && family(r.codec) !== firstFamily ? { ...r, status: 'error', error: t('form.mismatch') } : r))
+  const first = rows.find((r) => r.status === 'ok' && r.codec)
+  const display: Row[] = rows.map((r) => (r.status === 'ok' && r.codec && first && (r.codec !== first.codec || r.sampleRate !== first.sampleRate || r.channels !== first.channels) ? { ...r, status: 'error', error: t('form.mismatch') } : r))
   const ok = display.filter((r) => r.status === 'ok')
   const seconds = ok.reduce((a, r) => a + (r.durationSec ?? 0), 0)
   const bytes = ok.reduce((a, r) => a + (r.bytes ?? r.file?.size ?? 0), 0)
-  const single = !edit && ok.length === 1 && display.length === 1
+  const single = ok.length === 1 && display.length === 1
   const titleErr = touched && !title.trim() ? t('form.titleError') : ''
   const filesErr = !touched ? '' : display.length === 0 ? t('form.filesNone') : display.some((r) => r.status === 'error') ? t('form.filesError') : display.some((r) => r.status === 'checking') ? t('form.filesChecking') : ''
 
@@ -102,7 +108,7 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
     setDirty(true)
     for (const row of added) {
       const patch: Partial<Row> = await importer.check(row.file!).then(
-        (info) => ({ status: 'ok' as const, durationSec: info.duration, codec: info.codec }),
+        (info) => ({ status: 'ok' as const, durationSec: info.duration, codec: info.codec, sampleRate: info.sampleRate, channels: info.channels }),
         () => ({ status: 'error' as const, error: t('form.unsupported', { format: ext(row.filename) }) }),
       )
       setRows((r) => r.map((x) => (x.id === row.id ? { ...x, ...patch } : x)))
@@ -164,18 +170,39 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
 
   const saveEdit = async () => {
     const v = view!
+    const wasPlaying = isBookActive(v.book.id)
     setSaving(true)
     try {
-      if (playing) await stopListening()
+      await releaseBook(v.book.id)
       const id = v.book.id
+      const added = rows.filter(r => r.file)
+      if (added.length) await commands.addFiles(id, added.map(r => r.file!))
+      let current = await db.chapters.where('bookId').equals(id).sortBy('order')
+      const appended = current.slice(current.length - added.length)
+      const resolved = rows.map(r => r.file ? { ...r, id: appended[added.indexOf(r)]!.id } : r)
+      if (!v.parts || added.length) {
+        for (const chapter of current) if (!resolved.some(r => r.id === chapter.id)) await commands.removeChapter(id, chapter.id)
+        current = await db.chapters.where('bookId').equals(id).sortBy('order')
+        const order = resolved.map(r => r.id)
+        if (order.some((rid, i) => rid !== current[i]?.id)) await commands.reorderChapters(id, order)
+        for (const r of resolved) if (r.title.trim() && (r.file || r.title.trim() !== r.initialTitle)) await commands.renameChapter(r.id, r.title.trim())
+      }
+      if (single) await commands.setGeneratedParts(id, parts)
+      if (v.parts && !parts && !added.length && rows[0]?.title.trim() && rows[0].title.trim() !== rows[0].initialTitle) {
+        const chapter = await db.chapters.where('bookId').equals(id).first()
+        if (chapter) await commands.renameChapter(chapter.id, rows[0].title.trim())
+      }
       if (title.trim() !== v.book.title) await commands.renameBook(id, title)
       if (desc.trim() !== v.book.description) await commands.updateDescription(id, desc.trim())
-      const order = rows.map((r) => r.id)
-      if (order.some((rid, i) => rid !== v.chapters[i]?.id)) await commands.reorderChapters(id, order)
-      for (const r of rows) if (r.title.trim() && r.title.trim() !== r.initialTitle) await commands.renameChapter(r.id, r.title.trim())
       if (coverChanged) await commands.setCover(id, cover)
-      finish(`/book/${id}`, t(playing ? 'form.savedPlaying' : 'form.saved'))
+      finish(`/book/${id}`, t(wasPlaying ? 'form.savedPlaying' : 'form.saved'))
     } catch {
+      const [book, chapters, assets] = await Promise.all([db.books.get(v.book.id), db.chapters.where('bookId').equals(v.book.id).sortBy('order'), db.assets.where('bookId').equals(v.book.id).toArray()])
+      if (book && book.revision !== v.book.revision) {
+        const current = { ...v, book, chapters, assets, parts: chapters.some(c => c.kind === 'generated') }
+        setRows(rowsFromBook(current))
+        setParts(current.parts)
+      }
       showToast(t('form.saveFailed'))
     } finally {
       setSaving(false)
@@ -204,22 +231,20 @@ function BookForm({ mode, view }: { mode: 'add' | 'edit'; view?: BookView }) {
         <TextArea label={t('form.description')} value={desc} onChange={change(setDesc)} required={false} />
         <div className="lb-files">
           <div className="lb-files-head"><strong>{t('form.files')}</strong><span>{t('form.filesHelp')}</span></div>
-          {!edit && <FileDropzone accept={ACCEPT} onFiles={(f) => void addFiles(f)} label={t(rows.length ? 'form.addMore' : 'form.choose')} note={desktop ? undefined : ''} />}
+          <FileDropzone accept={ACCEPT} onFiles={(f) => void addFiles(f)} label={t(rows.length ? 'form.addMore' : 'form.choose')} note={desktop ? undefined : ''} />
           <Reveal show={!!filesErr} as="span" className="lb-error" role="alert"><Ic name="alert" size={16} />{filesErr}</Reveal>
           {display.length > 0 && (
-            <>
-              <div className="lb-files-sum">
-                <span>{ok.length === 0 ? t('form.noFiles') : ok.length === 1 ? t('form.oneFile', { duration: formatDuration(seconds) }) : t('form.chapters', { count: ok.length, duration: formatDuration(seconds) })}</span>
-                <span>{formatBytes(bytes)}</span>
-              </div>
-              <EditableChapterList
-                items={display}
-                onReorder={move}
-                onRename={(rid, v) => { setRows((r) => r.map((x) => (x.id === rid ? { ...x, title: v } : x))); setDirty(true) }}
-                onRemove={edit ? undefined : (rid) => { setRows((r) => r.filter((x) => x.id !== rid)); setDirty(true) }}
-              />
-            </>
+            <div className="lb-files-sum">
+              <span>{ok.length === 0 ? t('form.noFiles') : ok.length === 1 ? t('form.oneFile', { duration: formatDuration(seconds) }) : t('form.chapters', { count: ok.length, duration: formatDuration(seconds) })}</span>
+              <span>{formatBytes(bytes)}</span>
+            </div>
           )}
+          <EditableChapterList
+            items={display}
+            onReorder={move}
+            onRename={(rid, v) => { setRows((r) => r.map((x) => (x.id === rid ? { ...x, title: v } : x))); setDirty(true) }}
+            onRemove={(rid) => { setRows((r) => r.filter((x) => x.id !== rid)); setDirty(true) }}
+          />
           <Reveal show={single}>
             <Switch label={t('form.parts')} description={parts ? t('form.partsOn', { count: Math.ceil(seconds / 1800) }) : t('form.partsOff')} checked={parts} onChange={change(setParts)} />
           </Reveal>
