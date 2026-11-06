@@ -65,7 +65,7 @@ export function SendDialog({ book, bytes, files }: SendDialogProps) {
   const close = { label: t('common.close'), onClick: closeSend }
   const panels: Partial<Record<string, StatusPanelProps>> = {
     connecting: { icon: 'wifi', title: t('send.connecting'), body: t('send.sameWifi'), indeterminate: true },
-    sending: { align: 'start', tone: 'action', icon: 'send', title: t('send.sending', { title: book.title }), progress: progressFor(book.title, s), note: t('send.keepOpen'), secondary: { label: t('common.cancel'), onClick: () => setStop(true) } },
+    sending: { align: 'start', tone: 'action', icon: 'send', title: t('send.sending', { title: book.title }), body: '', progress: progressFor(book.title, s), note: t('send.keepOpen'), secondary: { label: t('common.cancel'), onClick: () => setStop(true) } },
     verifying: { icon: 'shield', title: t('send.verifying'), body: t('send.almostDone'), indeterminate: true },
     done: { tone: 'success', icon: 'check', title: t('send.done'), body: t('send.doneBody', { title: book.title }), primary: { label: t('send.doneAction'), onClick: closeSend } },
     failed: { tone: 'warning', icon: 'wifi', title: t('send.failed'), body: t('send.failedBody'), note: t('send.keptFiles'), primary: { label: t('common.tryAgain'), onClick: retry }, secondary: close },

@@ -100,7 +100,7 @@ export function ReceivePage() {
     denied: { tone: 'warning', icon: 'camera', title: t('receive.denied'), body: t('receive.deniedBody'), primary: { label: t('receive.paste'), onClick: () => showReceive('paste') }, secondary: { label: t('receive.tryCamera'), onClick: () => showReceive('permission') } },
     expired: { tone: 'warning', icon: 'info', title: t('receive.expired'), body: t('receive.expiredBody'), primary: { label: t('receive.scanAgain'), onClick: scan } },
     connecting: { icon: 'wifi', title: t('receive.connecting'), body: t('send.sameWifi'), indeterminate: true },
-    receiving: { align: 'start', tone: 'action', icon: 'download', title: t('receive.receiving', { title: r.title }), progress: progressFor(r.title, r), note: t('receive.keepOpen'), secondary: { label: t('common.cancel'), onClick: () => setStop(true) } },
+    receiving: { align: 'start', tone: 'action', icon: 'download', title: t('receive.receiving', { title: r.title }), body: '', progress: progressFor(r.title, r), note: t('receive.keepOpen'), secondary: { label: t('common.cancel'), onClick: () => setStop(true) } },
     verifying: { icon: 'shield', title: t('receive.verifying'), body: t('receive.verifyingBody'), indeterminate: true },
     success: { tone: 'success', icon: 'check', title: t('receive.success'), body: t('receive.successBody', { title: r.title }), primary: { label: t('receive.openBook'), onClick: () => navigate(`/book/${r.bookId}`) }, secondary: library },
     disconnected: { tone: 'warning', icon: 'wifi', title: t('receive.lost'), body: t('receive.lostBody'), note: t('receive.lostNote'), primary: { label: t('receive.pairAgain'), onClick: scan }, secondary: { label: t('receive.cancelRemove'), onClick: () => void discardReceive() } },

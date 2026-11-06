@@ -34,7 +34,11 @@ const transferStore = (page, slice, patch) => page.evaluate(async ([slice, patch
 async function sendState(page, k) {
   await page.getByRole('button', { name: 'Send', exact: true }).click()
   // The live session tries the real pairing service first; wait for it to settle, then show the preset state.
-  await page.waitForFunction(async () => { const s = (await import('/loudbooks/src/features/transfer/store.ts')).useTransfer.getState().send; return s.step !== 'qr' || s.link })
+  for (let i = 0; i < 100; i++) {
+    const s = await page.evaluate(async () => (await import('/loudbooks/src/features/transfer/store.ts')).useTransfer.getState().send)
+    if (s.step !== 'qr' || s.link) break
+    await page.waitForTimeout(100)
+  }
   const bytes = await page.evaluate(async () => (await (await import('/loudbooks/src/services/db/database.ts')).db.assets.where('bookId').equals('b5').toArray()).reduce((n, a) => n + a.bytes, 0))
   const step = k === 'wrong' ? 'code' : k
   await transferStore(page, 'send', { step, link: 'https://zilijonas.github.io/loudbooks/#/receive/r/0f8fad5b-d9cb-469f-a165-70867728950e.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.mhwq1f3k', expiresAt: Date.now() + 272_000, bytesTotal: bytes, bytesDone: bytes * 0.51, fileIndex: 5, fileCount: 8, codeError: k === 'wrong' ? 'wrong' : null, triesLeft: k === 'wrong' ? 2 : 3 })
