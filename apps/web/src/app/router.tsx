@@ -23,8 +23,14 @@ const devRoutes = import.meta.env.DEV
   ? [{ path: '__gallery', lazy: async () => ({ Component: (await import('../pages/dev-gallery/Gallery')).Gallery }) }]
   : []
 
+// Dev-only player presets for side-by-side parity screenshots (e2e/tools/compare.mjs).
+const devPlayer = import.meta.env.DEV
+  ? [{ path: '/__player/:preset', lazy: async () => ({ Component: (await import('../pages/player/DevPlayerFixture')).DevPlayerFixture }) }]
+  : []
+
 export const router = createHashRouter([
   ...(Harness ? [{ path: '/__harness/import', element: <Suspense><Harness /></Suspense> }] : []),
+  ...devPlayer,
   {
     path: '/',
     element: <Shell />,
