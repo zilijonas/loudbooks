@@ -310,7 +310,8 @@ export async function startListening(bookId: string, chapterId?: string) {
   prepareAbort?.abort()
   checkpoint('pause')
   retire(detach()?.session ?? null)
-  dispatch({ type: 'select', bookId })
+  // Busy from the tap on (spinner, not a Play button), so loading the book never shows a tappable gap.
+  dispatch({ type: 'prepare', bookId })
   try {
     await writes
     const { book, timeline, progress } = await loadBook(bookId)

@@ -156,7 +156,7 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       const ready = b.getByRole('button', { name: 'Play', exact: true })
       const pause = b.getByRole('button', { name: 'Pause', exact: true })
       await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
-      if (await ready.isVisible()) await tap(ready)
+      if ((await ready.isVisible()) && (await ready.page().evaluate(() => document.querySelector("audio")!.paused))) await tap(ready)
       await expect.poll(() => b.evaluate(() => document.querySelector('audio')!.currentTime), { timeout: 20_000 }).toBeGreaterThan(0.5)
       await tap(pause)
     })

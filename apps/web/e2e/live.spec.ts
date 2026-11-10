@@ -17,7 +17,7 @@ async function playFromStart(page: Page) {
   const ready = page.getByRole('button', { name: 'Play', exact: true })
   const pause = page.getByRole('button', { name: 'Pause', exact: true })
   await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
-  if (await ready.isVisible()) await tap(ready)
+  if ((await ready.isVisible()) && (await ready.page().evaluate(() => document.querySelector("audio")!.paused))) await tap(ready)
   await expect.poll(() => page.evaluate(() => document.querySelector('audio')!.currentTime), { timeout: 20_000 }).toBeGreaterThan(0.5)
   await tap(pause)
 }

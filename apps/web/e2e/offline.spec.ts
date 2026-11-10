@@ -44,7 +44,7 @@ async function expectPlaying(page: Page) {
   const pause = page.getByRole('button', { name: 'Pause', exact: true })
   const ready = page.getByRole('button', { name: 'Play', exact: true })
   await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
-  if (await ready.isVisible()) await ready.click()
+  if ((await ready.isVisible()) && (await ready.page().evaluate(() => document.querySelector("audio")!.paused))) await ready.click()
   await expect(pause).toBeVisible()
   await expect.poll(() => page.evaluate(() => document.querySelector('audio')!.paused)).toBe(false)
 }
