@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { memo, useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { Navigate, useNavigate } from 'react-router'
-import { BookCard, ContinueCard } from '../../components/books/BookCard'
+import { BookCard, ContinueCard, bookMeta } from '../../components/books/BookCard'
+import { BookCover } from '../../components/books/BookCover'
 import { Ic } from '../../components/icons'
 import { Button, IconButton } from '../../components/ui/Button'
 import { EmptyState, UpdateBanner } from '../../components/ui/Feedback'
@@ -18,8 +19,7 @@ import { isSafariTab, useOnline } from '../../app/env'
 import { useUi } from '../../app/store'
 import { BookActions } from '../shared/BookActions'
 import { chapterLine, useLibrary, useSummary, type BookView } from '../shared/data'
-
-const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+import { norm, suggest } from './match'
 
 export function LibraryPage() {
   const settings = useAppSettings()
@@ -51,6 +51,7 @@ export function LibraryPage() {
   // The design hides the grid for a single book because its Continue card shows it; without progress there is no card, so show the grid.
   const showGrid = shown.length > 0 && (n >= 2 || !hero)
   const subtitle = n === 0 ? t('library.nothing') : t(!online ? 'library.subtitleOffline' : pwa.offlineReady ? 'library.subtitle' : 'library.subtitlePreparing', { count: n })
+  const options = suggest(views.map((v) => ({ ...v, title: v.book.title })), query).map(({ item, start, end }) => ({ id: item.book.id, content: <Suggested view={item} start={start} end={end} /> }))
   const openInstall = () => useUi.setState({ installOpen: true })
 
   return (
@@ -74,7 +75,7 @@ export function LibraryPage() {
         <Button variant="secondary" icon="download" onClick={() => navigate('/receive')}>{t('common.receive')}</Button>
       </Reveal>
 
-      <Reveal show={n >= 2}><SearchField value={query} onChange={setQuery} /></Reveal>
+      <Reveal show={n >= 1}><SearchField value={query} onChange={setQuery} options={options} onPick={openBook} /></Reveal>
 
       <Reveal show={!!hero}>{hero && <Hero view={hero} onOpen={() => navigate(`/book/${hero.book.id}`)} />}</Reveal>
 
@@ -137,6 +138,21 @@ const Card = memo(function Card({ view, index, isNew, onOpen, onMenu }: { view: 
   const menu = useCallback(() => onMenu(view), [onMenu, view])
   return <BookCard book={book} index={index} isNew={isNew} isActive={active} isPlaying={playing} onOpen={open} onMenu={menu} onPlay={onPlay} />
 })
+
+/** One autocomplete row: small cover, title with the matched part marked, duration or progress. */
+function Suggested({ view, start, end }: { view: BookView; start: number; end: number }) {
+  const book = useSummary(view)
+  const title = view.book.title
+  return (
+    <>
+      <BookCover book={book} size="xs" style={{ '--w': '30px', '--cover-r': '6px' } as CSSProperties} />
+      <span className="lb-suggest-text">
+        <span className="lb-ellipsis">{title.slice(0, start)}<mark>{title.slice(start, end)}</mark>{title.slice(end)}</span>
+        <small className="lb-ellipsis">{bookMeta(view.summary).text}</small>
+      </span>
+    </>
+  )
+}
 
 function Hero({ view, onOpen }: { view: BookView; onOpen: () => void }) {
   const book = useSummary(view)

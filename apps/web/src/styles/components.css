@@ -64,6 +64,13 @@
   .lb-search input { width: 100%; height: 48px; border: 1.5px solid var(--lb-border); border-radius: var(--lb-radius-pill); background: var(--lb-surface); color: var(--lb-text); padding: 0 16px 0 46px; font: 500 16px/1 var(--lb-font-ui); -webkit-appearance: none; appearance: none; }
   .lb-search input::placeholder { color: var(--lb-text-muted); opacity: 1; }
   .lb-search input::-webkit-search-decoration { -webkit-appearance: none; }
+  /* Autocomplete popup (combobox listbox): a menu-style panel under the input, above the grid. Rows are 56px (min target 44). */
+  .lb-suggest { position: absolute; z-index: var(--lb-z-sticky); top: calc(100% + 8px); left: 0; right: 0; margin: 0; padding: 8px; list-style: none; border-radius: 22px; background: var(--lb-surface-raised); color: var(--lb-text); box-shadow: var(--lb-shadow-menu); transform-origin: top center; max-height: min(60dvh, 400px); overflow-y: auto; overscroll-behavior: contain; }
+  .lb-suggest > li { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 12px; border-radius: 14px; cursor: pointer; }
+  .lb-suggest > li[data-active] { background: var(--lb-surface-sunken); }
+  .lb-suggest-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; font: 600 16px/1.25 var(--lb-font-ui); }
+  .lb-suggest-text small { font: 500 13px/1.2 var(--lb-font-ui); color: var(--lb-text-muted); }
+  .lb-suggest mark { background: color-mix(in srgb, var(--lb-highlight) 35%, transparent); color: inherit; font-weight: 800; border-radius: 4px; }
 
   .lb-dropzone { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 16px; border: 2px dashed var(--lb-border-strong); border-radius: 22px; background: var(--lb-surface); text-align: center; transition: transform 200ms cubic-bezier(.23,1,.32,1); }
   .lb-dropzone[data-over] { border-color: var(--lb-text); transform: translateY(-2px); }

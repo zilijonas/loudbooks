@@ -1,4 +1,6 @@
-import { useId, useRef, useState, type ComponentPropsWithoutRef, type DragEvent } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useId, useRef, useState, type ComponentPropsWithoutRef, type DragEvent, type KeyboardEvent } from 'react'
+import { usePreset } from '../../motion/presets'
 import { t } from '../../i18n'
 import { Ic } from '../icons'
 import { Button } from './Button'
@@ -80,11 +82,86 @@ export function TextArea({ label, value, onChange, hint, error, required, placeh
   )
 }
 
-export function SearchField({ value, onChange, label = t('library.search'), ...rest }: { value: string; onChange: (v: string) => void; label?: string } & Omit<ComponentPropsWithoutRef<'input'>, 'value' | 'onChange'>) {
+export interface SearchOption { id: string; content: React.ReactNode }
+
+/**
+ * Search input. With `options` it is a WAI-ARIA combobox (list autocomplete): the popup is open while the input has focus,
+ * has text and there is at least one option. Arrows move the active option (no animation), Enter picks it, Escape closes
+ * the popup and then clears the text.
+ */
+export function SearchField({ value, onChange, label = t('library.search'), options, onPick, listLabel = t('library.matching'), ...rest }: {
+  value: string
+  onChange: (v: string) => void
+  label?: string
+  options?: SearchOption[]
+  onPick?: (id: string) => void
+  listLabel?: string
+} & Omit<ComponentPropsWithoutRef<'input'>, 'value' | 'onChange'>) {
+  const listId = useId()
+  const p = usePreset()
+  const [focused, setFocused] = useState(false)
+  const [closed, setClosed] = useState(false)
+  const [active, setActive] = useState(-1)
+  const n = options?.length ?? 0
+  const open = focused && !closed && value.trim() !== '' && n > 0
+  const pick = (id: string) => { setClosed(true); onPick?.(id) }
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (!n || !value.trim()) return
+      e.preventDefault()
+      setClosed(false)
+      setActive(e.key === 'ArrowDown' ? (active + 1) % n : active <= 0 ? n - 1 : active - 1)
+    } else if (e.key === 'Enter' && open && active >= 0) {
+      e.preventDefault()
+      pick(options![active]!.id)
+    } else if (e.key === 'Escape' && (open || value)) {
+      e.preventDefault()
+      if (open) { setClosed(true); setActive(-1) } else onChange('')
+    }
+  }
   return (
     <div className="lb-search">
       <Ic name="search" size={20} />
-      <input type="search" enterKeyHint="search" value={value} onChange={(e) => onChange(e.target.value)} placeholder={label} aria-label={label} {...rest} />
+      <input
+        type="search"
+        enterKeyHint="search"
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setClosed(false); setActive(-1) }}
+        placeholder={label}
+        aria-label={label}
+        {...(options && {
+          role: 'combobox',
+          'aria-autocomplete': 'list',
+          'aria-expanded': open,
+          'aria-controls': listId,
+          'aria-activedescendant': open && active >= 0 ? `${listId}-${active}` : undefined,
+          onKeyDown,
+          onFocus: () => setFocused(true),
+          onBlur: () => setFocused(false),
+        })}
+        {...rest}
+      />
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.ul key="list" id={listId} role="listbox" aria-label={listLabel} className="lb-suggest" {...p.menu}>
+            {options!.map((o, i) => (
+              <li
+                key={o.id}
+                id={`${listId}-${i}`}
+                role="option"
+                aria-selected={i === active}
+                data-active={i === active || undefined}
+                // mousedown would blur the input (closing the list) before the click lands.
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseMove={() => setActive(i)}
+                onClick={() => pick(o.id)}
+              >
+                {o.content}
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
