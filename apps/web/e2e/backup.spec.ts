@@ -66,7 +66,7 @@ test("backup UI exports, restores and replaces the playing book", async ({ playw
     await expect(page.getByText("1 book restored.")).toBeVisible({ timeout: 60000 });
     await page.getByRole("button", { name: "Library" }).first().click();
     await page.getByRole("button", { name: "Play Browser test" }).click();
-    const ready = page.getByRole("button", { name: "Ready — play" });
+    const ready = page.getByRole("button", { name: "Play", exact: true });
     await expect(page.getByRole("button", { name: "Pause", exact: true }).or(ready)).toBeVisible({ timeout: 60000 });
     if (await ready.isVisible()) await ready.click();
     const paused = () => page.evaluate(() => document.querySelector("audio")!.paused);

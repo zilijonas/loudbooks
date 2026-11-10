@@ -42,7 +42,7 @@ async function importBook(page: Page) {
 
 async function expectPlaying(page: Page) {
   const pause = page.getByRole('button', { name: 'Pause', exact: true })
-  const ready = page.getByRole('button', { name: 'Ready — play' })
+  const ready = page.getByRole('button', { name: 'Play', exact: true })
   await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
   if (await ready.isVisible()) await ready.click()
   await expect(pause).toBeVisible()

@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Fragment, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
 import { formatDuration, formatSpeed } from '../format'
@@ -7,6 +7,7 @@ import { Ic } from '../icons'
 import { Button } from '../ui/Button'
 import { SegmentedControl } from '../ui/Controls'
 import { Reveal } from '../ui/Reveal'
+import { WheelPicker } from '../ui/WheelPicker'
 import type { TimerSetting } from './Playback'
 
 export interface SpeedSelectorProps {
@@ -64,42 +65,41 @@ export function SpeedSelector({ value, presets, min = 0.5, max = 3, onChange, re
 type Key = 'm5' | 'm15' | 'm30' | 'custom' | 'c1' | 'c2' | 'c3' | 'off'
 const ROW = 60
 const DIV = 32
+export const MAX_TIMER_MINUTES = 600
 
 export interface TimerSheetProps {
   value: TimerSetting
-  /** Zero-based index of the current chapter. */
-  chapterIndex: number
   chaptersRemaining: number
   /** One file without parts: chapter options are disabled. */
   singleFile?: boolean
   speed: number
-  currentChapterLeftSec: number
-  /** Seconds of the book left until the end of chapter 1, 2 and 3 from here (for the summary line); defaults to the current chapter only. */
-  chapterLeftSec?: readonly number[]
+  /** Seconds of the book from here to the end of chapter 1, 2 and 3 (each includes the ones before). */
+  chapterLeftSec: readonly number[]
+  /** A preset or "No timer" was picked: apply it (the sheet closes). */
   onApply: (t: TimerSetting) => void
+  /** "Custom length" was picked: open the wheel dialog. */
+  onCustom: () => void
 }
 
 const keyOf = (v: TimerSetting): Key => (v.mode === 'off' ? 'off' : v.mode === 'chapters' ? (`c${v.count}` as Key) : [5, 15, 30].includes(v.minutes) ? (`m${v.minutes}` as Key) : 'custom')
 
-/** Sleep timer sheet content. The highlight slides between options; the check pops in. */
-export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile, speed, currentChapterLeftSec, chapterLeftSec = [currentChapterLeftSec], onApply }: TimerSheetProps) {
+/** Sleep timer sheet content. Tapping an option applies it at once; the highlight slides to it while the sheet leaves. */
+export function TimerSheet({ value, chaptersRemaining, singleFile, speed, chapterLeftSec, onApply, onCustom }: TimerSheetProps) {
   const p = usePreset()
-  const name = useId()
-  const [key, setKey] = useState<Key>(keyOf(value))
-  const [customMin, setCustomMin] = useState(value.mode === 'minutes' && keyOf(value) === 'custom' ? String(value.minutes) : '')
-  const [err, setErr] = useState('')
+  const key = keyOf(value)
+  const about = (k: number) => t('timer.aboutDuration', { duration: formatDuration((chapterLeftSec[k - 1] ?? 0) / speed) })
+  const chapterSub = (k: number, off: boolean) => (singleFile ? t('timer.noChapters') : off ? t(chaptersRemaining < 1 ? 'timer.lastChapter' : 'timer.oneLeft') : about(k))
 
-  const rows: ({ div: string } | { key: Key; label: string; sub: string; off?: boolean })[] = [
-    { key: 'm5', label: t('timer.m5'), sub: '' },
-    { key: 'm15', label: t('timer.m15'), sub: '' },
-    { key: 'm30', label: t('timer.m30'), sub: '' },
-    { key: 'custom', label: t('timer.custom'), sub: key === 'custom' && customMin ? t('timer.minutesSub', { minutes: customMin }) : t('timer.customSub') },
-    { div: t('timer.byChapter') },
-    { key: 'c1', label: t('timer.c1'), sub: singleFile ? t('timer.noChapters') : t('timer.c1Sub', { n: chapterIndex + 1, duration: formatDuration(currentChapterLeftSec / speed) }), off: singleFile },
-    { key: 'c2', label: t('timer.c2'), sub: singleFile ? t('timer.noChapters') : chaptersRemaining < 1 ? t('timer.lastChapter') : t('timer.chapterN', { n: chapterIndex + 2 }), off: singleFile || chaptersRemaining < 1 },
-    { key: 'c3', label: t('timer.c3'), sub: singleFile ? t('timer.noChapters') : chaptersRemaining < 1 ? t('timer.lastChapter') : chaptersRemaining < 2 ? t('timer.oneLeft') : t('timer.chapterN', { n: chapterIndex + 3 }), off: singleFile || chaptersRemaining < 2 },
+  const rows: ({ div: string } | { key: Key; label: string; sub: string; off?: boolean; apply: () => void })[] = [
+    ...([5, 15, 30] as const).map((m) => ({ key: `m${m}` as Key, label: t(`timer.m${m}`), sub: '', apply: () => onApply({ mode: 'minutes', minutes: m }) })),
+    { key: 'custom', label: t('timer.custom'), sub: key === 'custom' && value.mode === 'minutes' ? formatDuration(value.minutes * 60) : t('timer.customSub'), apply: onCustom },
+    { div: t('timer.stopAfter') },
+    ...([1, 2, 3] as const).map((k) => {
+      const off = singleFile || chaptersRemaining < k - 1
+      return { key: `c${k}` as Key, label: t(`timer.c${k}`), sub: chapterSub(k, off), off, apply: () => onApply({ mode: 'chapters', count: k }) }
+    }),
     { div: '' },
-    { key: 'off', label: t('timer.off'), sub: t('timer.offSub') },
+    { key: 'off', label: t('timer.off'), sub: t('timer.offSub'), apply: () => onApply({ mode: 'off' }) },
   ]
   let y = 0
   let hiY = 0
@@ -110,51 +110,49 @@ export function TimerSheet({ value, chapterIndex, chaptersRemaining, singleFile,
     return { r, top }
   })
 
-  const minutes = key === 'custom' ? parseInt(customMin, 10) : key[0] === 'm' ? Number(key.slice(1)) : 0
-  const k = key[0] === 'c' && key !== 'custom' ? Number(key.slice(1)) as 1 | 2 | 3 : 0
-  const n = chapterIndex + k
-  const [summary, sub] = key === 'off' ? [t('timer.summaryOff'), t('timer.offSub')]
-    : k ? [t('timer.summaryChapter', { n }), t('timer.summaryChapterSub', { duration: formatDuration((chapterLeftSec[k - 1] ?? currentChapterLeftSec) / speed), next: n + 1 })]
-      : minutes >= 1 ? [t('timer.summaryMinutes', { minutes }), speed === 1 ? t('timer.coversPlain', { duration: formatDuration(minutes * 60) }) : t('timer.coversSpeed', { speed: formatSpeed(speed), duration: formatDuration(minutes * 60 * speed) })]
-        : [t('timer.custom'), t('timer.customSub')]
-  const applyLabel = key === 'off' ? t('timer.turnOff') : k ? t('timer.applyChapter', { n }) : minutes >= 1 ? t('timer.start', { minutes }) : t('timer.custom')
-
-  const apply = () => {
-    if (key === 'off') return onApply({ mode: 'off' })
-    if (k) return onApply({ mode: 'chapters', count: k })
-    if (!(minutes >= 1 && minutes <= 600)) return setErr(t('timer.minutesError'))
-    onApply({ mode: 'minutes', minutes })
-  }
-
   return (
     <>
-      <div aria-live="polite" className="lb-timer-summary">
-        <strong>{summary}</strong>
-        {sub && <span>{sub}</span>}
-      </div>
-      <div role="radiogroup" aria-label={t('timer.title')} className="lb-timer-list">
+      <div role="group" aria-label={t('timer.title')} className="lb-timer-list">
         <motion.div aria-hidden="true" className="lb-timer-hi" initial={false} animate={{ transform: `translateY(${hiY}px)` }} transition={p.springPlayful} />
         {placed.map(({ r }, i) => 'div' in r ? (
           <div key={`d${i}`} className="lb-timer-div">{r.div}</div>
         ) : (
-          <Fragment key={r.key}>
-            <label className="lb-timer-opt" data-disabled={r.off || undefined}>
-              <input type="radio" name={name} value={r.key} checked={key === r.key} disabled={r.off} onChange={() => { setKey(r.key); setErr('') }} />
-              <span><strong>{r.label}</strong><small>{r.sub}</small></span>
-              <motion.span className="lb-ic" style={{ width: 24, height: 24 }} initial={false} animate={{ opacity: key === r.key ? 1 : 0, transform: `scale(${key === r.key ? 1 : 0.6})` }} transition={p.springPlayful}>
-                <Ic name="check" size={24} />
-              </motion.span>
-            </label>
-          </Fragment>
+          <button key={r.key} type="button" className="lb-timer-opt" aria-pressed={key === r.key} disabled={r.off} onClick={r.apply}>
+            <span><strong>{r.label}</strong><small>{r.sub}</small></span>
+            <motion.span className="lb-ic" style={{ width: 24, height: 24 }} initial={false} animate={{ opacity: key === r.key ? 1 : 0, transform: `scale(${key === r.key ? 1 : 0.6})` }} transition={p.springPlayful}>
+              <Ic name="check" size={24} />
+            </motion.span>
+          </button>
         ))}
       </div>
-      <Reveal show={key === 'custom'} className="lb-field">
-        <label htmlFor={`${name}-min`} className="lb-field-label">{t('timer.minutesLabel')}</label>
-        <input id={`${name}-min`} className="lb-input" style={{ fontWeight: 600 }} value={customMin} onChange={(e) => { setCustomMin(e.target.value.replace(/\D/g, '').slice(0, 3)); setErr('') }} inputMode="numeric" placeholder="45" aria-invalid={err ? true : undefined} />
-        <Reveal show={!!err} as="span" className="lb-error" role="alert"><Ic name="alert" size={16} />{err}</Reveal>
-      </Reveal>
       <p className="lb-hint" style={{ lineHeight: 1.5 }}>{t('timer.explain')}</p>
-      <Button size="lg" onClick={apply}>{applyLabel}</Button>
+    </>
+  )
+}
+
+/** Body of the custom-length dialog: hours and minutes wheels, Cancel / Save. Valid totals are 1–600 minutes. */
+export function CustomTimerForm({ initialMinutes, onSave, onCancel }: { initialMinutes: number; onSave: (minutes: number) => void; onCancel: () => void }) {
+  const [hours, setHours] = useState(Math.floor(initialMinutes / 60))
+  const [mins, setMins] = useState(initialMinutes % 60)
+  const total = hours * 60 + mins
+  const invalid = total > MAX_TIMER_MINUTES
+  return (
+    <>
+      <div className="lb-wheels">
+        <div className="lb-wheel-col">
+          <span aria-hidden="true">{t('timer.hours')}</span>
+          <WheelPicker label={t('timer.hours')} value={hours} min={0} max={10} onChange={setHours} valueText={(n) => t('timer.hoursValue', { n })} />
+        </div>
+        <div className="lb-wheel-col">
+          <span aria-hidden="true">{t('timer.minutes')}</span>
+          <WheelPicker label={t('timer.minutes')} value={mins} min={0} max={59} onChange={setMins} format={(n) => String(n).padStart(2, '0')} valueText={(n) => t('timer.minutesValue', { n })} />
+        </div>
+      </div>
+      <Reveal show={invalid} as="span" className="lb-error" role="alert"><Ic name="alert" size={16} />{t('timer.minutesError')}</Reveal>
+      <div className="lb-dialog-actions">
+        <Button variant="secondary" size="dialog" onClick={onCancel}>{t('common.cancel')}</Button>
+        <Button size="dialog" disabled={total < 1 || invalid} onClick={() => onSave(total)}>{t('common.save')}</Button>
+      </div>
     </>
   )
 }

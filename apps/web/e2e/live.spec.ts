@@ -14,7 +14,7 @@ const tap = (l: Locator) => (webkitPages.has(l.page()) ? l.dispatchEvent('click'
 async function playFromStart(page: Page) {
   await tap(page.getByRole('button', { name: /^Play from the start|^Listen/ }).first())
   await expect(page).toHaveURL(/#\/player$/)
-  const ready = page.getByRole('button', { name: 'Ready — play' })
+  const ready = page.getByRole('button', { name: 'Play', exact: true })
   const pause = page.getByRole('button', { name: 'Pause', exact: true })
   await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
   if (await ready.isVisible()) await tap(ready)

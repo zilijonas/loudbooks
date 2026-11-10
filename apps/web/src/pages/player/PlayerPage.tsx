@@ -2,13 +2,12 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState, useSyncExternalStore, type CSSProperties } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { BookCover } from '../../components/books/BookCover'
-import { formatDuration, formatSpeed } from '../../components/format'
 import { Ic } from '../../components/icons'
-import { PlaybackControls, Scrubber, SessionPreparation } from '../../components/player/Playback'
+import { PlaybackControls, Scrubber } from '../../components/player/Playback'
 import { IconButton } from '../../components/ui/Button'
 import { StatusPanel, Toast, type StatusPanelProps } from '../../components/ui/Feedback'
 import { useIsDesktop } from '../../components/ui/Overlays'
-import { cancelPreparation, seekBy, seekTo, togglePlay } from '../../features/playback/controller'
+import { seekBy, seekTo, togglePlay } from '../../features/playback/controller'
 import { PlayerSheets, type SheetName } from '../../features/playback/PlayerSheets'
 import { usePlayerStore } from '../../features/playback/store'
 import { useHasSessionBadge, usePlayerPosition, usePlayerView, useSessionBadge, type PlayerView } from '../../features/playback/view'
@@ -23,7 +22,7 @@ const subscribeOnline = (cb: () => void) => {
 }
 const useOnline = () => useSyncExternalStore(subscribeOnline, () => navigator.onLine, () => true)
 
-/** Full player (#/player): cover, session badge, preparation status, transport, outcome panels, sheets. */
+/** Full player (#/player): cover, session badge, transport, outcome panels, sheets. */
 export function PlayerPage() {
   const [sheet, setSheet] = useState<SheetName | null>(null)
   const view = usePlayerView(sheet === 'timer')
@@ -71,14 +70,10 @@ function Player({ view, sheet, setSheet }: { view: PlayerView; sheet: SheetName 
   const online = useOnline()
   const wide = useIsDesktop()
   const hasBadge = useHasSessionBadge()
-  const { s, book, chapter, status, busy } = view
+  const { s, book, chapter, status } = view
   const chapterStart = chapter.globalStart
   const chapterLen = chapter.globalEnd - chapterStart
   const panel = outcome(view, () => setSheet('timer'), () => navigate('/'), () => navigate(`/book/${book.id}`))
-  const prepSummary = s.timer.mode === 'minutes'
-    ? t('player.prepMinutes', { minutes: s.timer.minutes, speed: formatSpeed(s.rate), duration: formatDuration(s.timer.minutes * 60 * s.rate) })
-    : s.timer.mode === 'chapters' ? t('player.prepChapter', { n: Math.min(view.chapters.length, view.chapterIndex + s.timer.count) })
-      : t('player.prepAll')
   const reveal = p.reveal
 
   return (
@@ -102,26 +97,6 @@ function Player({ view, sheet, setSheet }: { view: PlayerView; sheet: SheetName 
             {hasBadge && (
               <motion.div key="badge" className="lb-player-badge" {...reveal}>
                 <SessionBadge onPress={() => setSheet('timer')} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence initial={false} mode="popLayout">
-            {busy && (
-              <motion.div key="prep" {...reveal}>
-                <SessionPreparation
-                  phase={s.state.status === 'preparing' || s.state.status === 'rebuilding' ? s.state.phase : 'analyzing'}
-                  reason={s.state.status === 'rebuilding' ? s.state.reason : 'start'}
-                  summary={s.state.status === 'rebuilding' ? '' : prepSummary}
-                  speedLabel={formatSpeed(s.rate)}
-                  onCancel={cancelPreparation}
-                />
-              </motion.div>
-            )}
-            {status === 'ready' && (
-              <motion.div key="ready" role="status" aria-live="polite" className="lb-prep" {...reveal}>
-                <div className="lb-prep-head"><strong>{t('player.readyTitle')}</strong></div>
-                <span>{t('player.readyBody')}</span>
               </motion.div>
             )}
           </AnimatePresence>

@@ -104,7 +104,7 @@ const CASES = [
   ['sheet-speed', 'sheet-speed', '#/__player/playing', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Playback speed/ }).click() }],
   ['sheet-speed-custom', 'sheet-speed-custom', '#/__player/playing', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Playback speed/ }).click(); await p.getByText('Custom', { exact: true }).click(); await p.getByLabel('Custom speed').fill('4'); await p.getByRole('button', { name: 'Set', exact: true }).click() }],
   ['sheet-timer', 'sheet-timer', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Sleep timer/ }).click() }],
-  ['sheet-timer-custom', 'sheet-timer-custom', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Sleep timer/ }).click(); await p.getByText('Custom length', { exact: true }).click(); await p.getByLabel('Minutes of listening').fill('45') }],
+  ['sheet-timer-custom', 'sheet-timer-custom', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: /^Sleep timer/ }).click(); await p.getByText('Custom length', { exact: true }).click(); await p.getByRole('spinbutton', { name: 'Minutes' }).waitFor() }],
   ['sheet-chapters', 'sheet-chapters', '#/__player/paused', {}, async (p) => { await toPlayer(p); await p.getByRole('button', { name: 'Chapters', exact: true }).first().click() }],
   // library-playing / dialog-delete-playing need a real loaded book: the dev fixture's fake assets clash with the seeded books' real ones, and seeded files are empty, so
   // those states are checked in real Safari (imported audio) and by e2e/player.spec.ts instead.

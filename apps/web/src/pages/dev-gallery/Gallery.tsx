@@ -10,7 +10,7 @@ import { CoverPicker } from '../../components/books/CoverPicker'
 import type { Art } from '../../components/books/cover'
 import { Ic } from '../../components/icons'
 import { MiniPlayer, PlayerBar } from '../../components/player/Bars'
-import { ActiveSessionBadge, PlaybackControls, Scrubber, SessionPreparation, type PlayerStatus, type TimerSetting } from '../../components/player/Playback'
+import { ActiveSessionBadge, PlaybackControls, Scrubber, type PlayerStatus, type TimerSetting } from '../../components/player/Playback'
 import { SpeedSelector, TimerSheet } from '../../components/player/Sheets'
 import { PairingCode, QR, TransferProgress, Viewfinder, ReceiveScanner } from '../../components/transfer/Transfer'
 import { Button, IconButton } from '../../components/ui/Button'
@@ -159,7 +159,6 @@ export function Gallery() {
                 <ActiveSessionBadge timer={{ mode: 'chapters', count: 1 }} stopChapterLabel="4" paused={false} onPress={noop} />
                 <ActiveSessionBadge timer={{ mode: 'minutes', minutes: 30 }} listeningLeftSec={1694} paused onPress={noop} />
               </div>
-              <SessionPreparation phase="reading" summary="30 minutes at 1.5× covers about 45 min of the book." />
             </div>
             <div className="g-card" style={{ gap: 14 }}>
               <span className="g-label">SpeedSelector · SegmentedControl</span>
@@ -375,7 +374,7 @@ export function Gallery() {
         <ActionList items={MENU.map((m) => ({ ...m, onClick: close }))} />
       </BottomSheet>
       <BottomSheet open={open === 'timer'} onOpenChange={(o) => !o && close()} title="Sleep timer">
-        <TimerSheet value={timer} chapterIndex={3} chaptersRemaining={10} speed={speed} currentChapterLeftSec={1694} onApply={(v) => { setTimer(v); close() }} />
+        <TimerSheet value={timer} chaptersRemaining={10} speed={speed} chapterLeftSec={[1694, 4154, 6794]} onApply={(v) => { setTimer(v); close() }} onCustom={close} />
       </BottomSheet>
       <BottomSheet open={open === 'speed'} onOpenChange={(o) => !o && close()} title="Playback speed">
         <SpeedSelector value={speed} presets={[0.75, 1, 1.25, 1.5]} onChange={setSpeed} rebuildNotice summary={`At ${speed}×, an hour of listening covers ${Math.round(60 * speed)} min of the book.`} />

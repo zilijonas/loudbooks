@@ -153,7 +153,7 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       await expect(b.getByRole('list', { name: 'Chapters' }).getByRole('button')).toHaveCount(3)
       await tap(b.getByRole('button', { name: /^Play from the start|^Listen/ }).first())
       await expect(b).toHaveURL(/#\/player$/)
-      const ready = b.getByRole('button', { name: 'Ready — play' })
+      const ready = b.getByRole('button', { name: 'Play', exact: true })
       const pause = b.getByRole('button', { name: 'Pause', exact: true })
       await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
       if (await ready.isVisible()) await tap(ready)

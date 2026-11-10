@@ -20,10 +20,10 @@ const audioState = (page: Page) =>
 const slider = (page: Page) => page.getByRole('slider', { name: 'Position in chapter' })
 const sliderNow = async (page: Page) => Number(await slider(page).getAttribute('aria-valuenow'))
 
-/** Play started, or the browser asked for one more tap ("Ready — play"): tap it. */
+/** Play started, or the browser asked for one more tap (the play button is back after preparing): tap it. */
 async function expectPlaying(page: Page) {
   const pause = page.getByRole('button', { name: 'Pause', exact: true })
-  const ready = page.getByRole('button', { name: 'Ready — play' })
+  const ready = page.getByRole('button', { name: 'Play', exact: true })
   await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
   if (await ready.isVisible()) await ready.click()
   await expect(pause).toBeVisible()
@@ -65,8 +65,7 @@ test('listening sessions stop at the file end and resume by the rules', async ({
       await page.getByRole('button', { name: 'Set', exact: true }).click()
       await page.keyboard.press('Escape')
       await page.getByRole('button', { name: /^Sleep timer, / }).click()
-      await page.locator('label.lb-timer-opt', { hasText: /^5 minutes/ }).click()
-      await page.getByRole('button', { name: 'Start 5-minute session' }).click()
+      await page.locator('button.lb-timer-opt', { hasText: /^5 minutes/ }).click()
       await expectPlaying(page)
       await expect(page.getByRole('button', { name: /of listening left/ })).toBeVisible()
       const { time, duration } = await audioState(page)
@@ -119,8 +118,7 @@ test('listening sessions stop at the file end and resume by the rules', async ({
       await importAndListen(page, chapters)
       await expect(page.getByText(/^Chapter 1 of 3/)).toBeVisible()
       await page.getByRole('button', { name: /^Sleep timer, / }).click()
-      await page.locator('label.lb-timer-opt', { hasText: /^End of this chapter/ }).click()
-      await page.getByRole('button', { name: 'Stop after Chapter 1' }).click()
+      await page.locator('button.lb-timer-opt', { hasText: /^One chapter/ }).click()
       await expectPlaying(page)
       await runToEnd(page)
       await expect(page.getByText('Stopped after Chapter 1')).toBeVisible({ timeout: 15_000 })

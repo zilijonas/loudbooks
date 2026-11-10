@@ -25,7 +25,7 @@ describe('player state machine', () => {
     expect(run([{ type: 'paused' }, { type: 'playing' }, { type: 'interrupted' }], ended)).toBe(ended)
   })
 
-  it('shows Ready — play when play() is refused, then plays on the tap', () => {
+  it('is ready (play button again) when play() is refused, then plays on the tap', () => {
     const ready = run([{ type: 'prepare', bookId: 'b' }, { type: 'blocked' }])
     expect(ready.status).toBe('ready')
     expect(reduce(ready, { type: 'playing' }).status).toBe('playing')

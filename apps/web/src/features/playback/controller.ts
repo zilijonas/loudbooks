@@ -449,7 +449,12 @@ export function setTimer(timer: TimerSetting) {
   const s = get()
   set({ timer })
   if (canChange(s)) return void rebuild('timer', { mode: timerMode(timer) })
-  if (s.book && s.state.status !== 'preparing') void startListening(s.book.id)
+  // First preparation in flight: "No timer" cancels it, anything else restarts it with the new stop point.
+  if (s.state.status === 'preparing') {
+    cancelPreparation()
+    if (timer.mode === 'off') return
+  }
+  if (s.book) void startListening(s.book.id)
 }
 
 export function jumpToChapter(chapterId: string) {
