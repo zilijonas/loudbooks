@@ -194,21 +194,25 @@
 
   /* ---------- Overlays ---------- */
   .lb-ov { position: fixed; inset: 0; z-index: var(--lb-z-sheet); display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .lb-ov[data-kind="sheet"] { align-items: flex-end; padding: 0; }
+  .lb-ov[data-kind="sheet"] { align-items: flex-end; padding: 0; overflow: hidden; }
   .lb-scrim { position: absolute; inset: 0; background: var(--lb-scrim); }
   .lb-ov-slide { position: relative; width: 100%; max-width: 440px; max-height: 88%; display: flex; flex-direction: column; }
   .lb-ov[data-wide] .lb-ov-slide { max-width: 520px; }
-  .lb-ov[data-kind="sheet"] .lb-ov-slide { max-width: 100%; }
+  .lb-ov[data-kind="sheet"] .lb-ov-slide { max-width: 100%; max-height: none; will-change: transform; }
   .lb-ov-panel:focus-visible { outline: none; } /* the panel is only a focus anchor for the dialog; WebKit showed a ring on it after programmatic focus */
   .lb-ov-panel { position: relative; min-height: 0; max-height: 100%; display: flex; flex-direction: column; background: var(--lb-surface-raised); color: var(--lb-text); border-radius: var(--lb-radius-xl); box-shadow: var(--lb-shadow-sheet); padding-bottom: 8px; overflow: hidden; outline: none; }
-  .lb-ov[data-kind="sheet"] .lb-ov-panel { border-radius: var(--lb-radius-xl) var(--lb-radius-xl) 0 0; padding-bottom: max(34px, var(--lb-safe-bottom)); }
+  /* Sheet: sized by Overlays.tsx (inline height) and moved only by transform y; overflow stays visible so ::after can paint the surface under it while it is lifted or rubber-banded. */
+  .lb-ov[data-kind="sheet"] .lb-ov-panel { border-radius: var(--lb-radius-xl) var(--lb-radius-xl) 0 0; padding-bottom: max(34px, var(--lb-safe-bottom)); overflow: visible; max-height: calc(100dvh - var(--lb-safe-top) - 12px); will-change: transform; }
+  .lb-ov[data-kind="sheet"] .lb-ov-panel::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 100dvh; background: inherit; pointer-events: none; }
   .lb-ov-head { flex: none; touch-action: none; padding: 8px 12px 4px 20px; }
   .lb-grabber { width: 40px; height: 5px; border-radius: 9px; background: var(--lb-border-strong); margin: 0 auto 6px; opacity: .6; }
   .lb-ov-headrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; }
   .lb-ov-title { margin: 0; font: 700 22px/1.2 var(--lb-font-display); letter-spacing: -.01em; overflow-wrap: anywhere; padding-top: 6px; }
   .lb-ov[data-kind="sheet"] .lb-ov-title, .lb-ov[data-wide] .lb-ov-title { font-size: 20px; }
-  .lb-ov-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
-  .lb-ov-body > * { flex-shrink: 0; }
+  .lb-ov-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 20px 20px; }
+  .lb-ov-body::after { content: ""; display: block; height: var(--lb-ov-comp, 0px); } /* sheet resting below its full height: the hidden part is scroll room, so the list ends inside the visible box */
+  .lb-ov-content { display: flex; flex-direction: column; gap: 16px; }
+  .lb-ov-content > * { flex-shrink: 0; }
   .lb-dialog-body { margin: 0; font: 400 16px/1.5 var(--lb-font-ui); color: var(--lb-text-muted); text-wrap: pretty; }
   .lb-dialog-note { margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--lb-warning-bg); font: 600 14px/1.4 var(--lb-font-ui); }
   .lb-dialog-actions { display: flex; flex-direction: column-reverse; gap: 10px; margin-top: 4px; }

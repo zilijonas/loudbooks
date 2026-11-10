@@ -1,11 +1,11 @@
 import * as RAlert from '@radix-ui/react-alert-dialog'
 import * as RDialog from '@radix-ui/react-dialog'
-import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react'
-import { useEffect, useRef, useState, useSyncExternalStore, type ComponentPropsWithRef, type PointerEvent, type ReactNode } from 'react'
+import { AnimatePresence, animate, motion, useMotionValue, type AnimationPlaybackControls, type Transition } from 'motion/react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ComponentPropsWithRef, type PointerEvent, type ReactNode } from 'react'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
 import { Button, IconButton } from './Button'
-import { dragOffset, releaseVelocity, shouldDismiss } from './sheetDrag'
+import { dragOffset, releaseTarget, releaseVelocity, sheetSnaps } from './sheetDrag'
 
 const DESKTOP = '(min-width: 768px)'
 /** True at ≥ 768 px, where sheets become centred dialogs. */
@@ -58,58 +58,144 @@ function ScrimMotion() {
   return <motion.div className="lb-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: 0.2 } }} exit={{ opacity: 0, transition: { duration: 0.14 } }} />
 }
 
-/** Drag-to-dismiss from the grabber/header only (never from scrolling content): 1:1 down, rubber band up, velocity flick. */
-function useSheetDrag(enabled: boolean, onDismiss: () => void) {
+/**
+ * Phone bottom sheet: geometry and gestures. The panel is as tall as its content (capped at "full", just under the
+ * status bar) and only ever moves by transform `y`: 0 = expanded, `snaps.at(-1)` = resting at the content snap
+ * (content capped at 60 % of the viewport, the rest scrolls). The bottom edge therefore never leaves the screen;
+ * the hidden part is added to the end of the scroll area (--lb-ov-comp) so the list scrolls inside the visible box.
+ * Drag from the header (pointer) or from the list (touch, when pulling down at scrollTop 0 or up while not expanded).
+ * Measurements are cached in refs: nothing reads layout while a finger moves.
+ */
+function useSheet(isSheet: boolean, enabled: boolean, onDismiss: () => void, outerRef: ComponentPropsWithRef<'div'>['ref']) {
   const p = usePreset()
   const y = useMotionValue(0)
-  const drag = useRef<{ id: number; start: number; samples: { y: number; t: number }[] } | null>(null)
-  if (!enabled) return { y, handlers: {} }
-  const end = (e: PointerEvent) => {
-    const d = drag.current
-    if (!d || e.pointerId !== d.id) return
-    drag.current = null
-    const dy = e.clientY - d.start
+  const panel = useRef<HTMLElement | null>(null)
+  /** Radix hands its own ref to the panel; keep ours beside it (Slot always passes a callback ref). */
+  const panelRef = useCallback((el: HTMLElement | null) => {
+    panel.current = el
+    if (typeof outerRef === 'function') outerRef(el as HTMLDivElement | null)
+  }, [outerRef])
+  const head = useRef<HTMLDivElement>(null)
+  const body = useRef<HTMLDivElement>(null)
+  const content = useRef<HTMLDivElement>(null)
+  const s = useRef({
+    snaps: [0], expanded: false,
+    drag: null as { startY: number; startOffset: number; samples: { y: number; t: number }[] } | null,
+    anim: null as AnimationPlaybackControls | null,
+  })
+
+  /** The resting y for the current snap; also hands the hidden height to the scroll area. */
+  const rest = () => {
+    const { snaps, expanded } = s.current
+    const target = (expanded ? snaps[0] : snaps.at(-1)) ?? 0
+    body.current?.style.setProperty('--lb-ov-comp', `${target}px`)
+    return target
+  }
+
+  const measure = () => {
+    const el = panel.current, h = head.current, b = body.current, c = content.current
+    if (!el || !h || !b || !c) return
+    const cs = getComputedStyle(el), bs = getComputedStyle(b)
+    const natural = h.offsetHeight + c.offsetHeight + parseFloat(bs.paddingTop) + parseFloat(bs.paddingBottom) + parseFloat(cs.paddingBottom)
+    const { height, snaps } = sheetSnaps(natural, parseFloat(cs.maxHeight) || innerHeight * 0.9, innerHeight)
+    el.style.height = `${height}px`
+    s.current.snaps = snaps
+    if (!s.current.drag && !s.current.anim) y.set(rest())
+  }
+
+  const begin = (clientY: number, t: number) => {
+    s.current.anim?.stop()
+    s.current.anim = null
+    s.current.drag = { startY: clientY, startOffset: y.get(), samples: [{ y: clientY, t }] }
+  }
+  const move = (clientY: number, t: number) => {
+    const d = s.current.drag
+    if (!d) return
+    d.samples.push({ y: clientY, t })
+    if (d.samples.length > 6) d.samples.shift()
+    y.set(dragOffset(d.startOffset + clientY - d.startY))
+  }
+  const end = () => {
+    const d = s.current.drag
+    if (!d) return
+    s.current.drag = null
     const v = releaseVelocity(d.samples)
-    if (shouldDismiss(dy, v)) onDismiss()
-    else animate(y, 0, { ...p.sheet.transition, velocity: v * 1000 })
+    const target = releaseTarget(y.get(), v, s.current.snaps)
+    if (target === null) return onDismiss() // the exit slide continues from the current y
+    s.current.expanded = s.current.snaps.length > 1 && target === s.current.snaps[0]
+    rest()
+    const a = animate(y, target, { ...p.springSoft, velocity: v * 1000 } as Transition)
+    s.current.anim = a
+    a.then(() => { if (s.current.anim === a) s.current.anim = null })
   }
-  return {
-    y,
-    handlers: {
-      onPointerDown: (e: PointerEvent<HTMLElement>) => {
-        if (drag.current || (e.target as HTMLElement).closest('button')) return // ignore extra touches and the close button
-        e.currentTarget.setPointerCapture(e.pointerId)
-        drag.current = { id: e.pointerId, start: e.clientY, samples: [{ y: e.clientY, t: e.timeStamp }] }
-      },
-      onPointerMove: (e: PointerEvent<HTMLElement>) => {
-        const d = drag.current
-        if (!d || e.pointerId !== d.id) return
-        d.samples.push({ y: e.clientY, t: e.timeStamp })
-        if (d.samples.length > 6) d.samples.shift()
-        y.set(dragOffset(e.clientY - d.start, window.innerHeight))
-      },
-      onPointerUp: end,
-      onPointerCancel: end,
+  const api = useRef({ begin, move, end })
+  useLayoutEffect(() => { api.current = { begin, move, end } })
+
+  useLayoutEffect(() => {
+    if (!isSheet) return
+    measure()
+    const ro = new ResizeObserver(measure)
+    if (content.current) ro.observe(content.current)
+    addEventListener('resize', measure)
+    return () => { ro.disconnect(); removeEventListener('resize', measure) }
+  }, [isSheet]) // eslint-disable-line react-hooks/exhaustive-deps -- measure only touches refs and the stable motion value
+
+  useEffect(() => {
+    const el = body.current
+    if (!enabled || !el) return
+    let g: { y0: number; engaged: boolean; dead: boolean } | null = null
+    const start = (e: TouchEvent) => { g = e.touches.length === 1 && !s.current.drag ? { y0: e.touches[0]?.clientY ?? 0, engaged: false, dead: false } : null }
+    const touchMove = (e: TouchEvent) => {
+      const cy = e.touches[0]?.clientY
+      if (!g || g.dead || cy === undefined) return
+      if (!g.engaged) {
+        const dy = cy - g.y0
+        if (Math.abs(dy) < 6) return
+        const { snaps, expanded } = s.current
+        if ((dy > 0 && el.scrollTop <= 0) || (dy < 0 && snaps.length > 1 && !expanded)) { g.engaged = true; api.current.begin(cy, e.timeStamp) } else { g.dead = true; return }
+      }
+      if (e.cancelable) e.preventDefault()
+      api.current.move(cy, e.timeStamp)
+    }
+    const stop = () => { if (g?.engaged) api.current.end(); g = null }
+    el.addEventListener('touchstart', start, { passive: true })
+    el.addEventListener('touchmove', touchMove, { passive: false })
+    el.addEventListener('touchend', stop)
+    el.addEventListener('touchcancel', stop)
+    return () => { el.removeEventListener('touchstart', start); el.removeEventListener('touchmove', touchMove); el.removeEventListener('touchend', stop); el.removeEventListener('touchcancel', stop) }
+  }, [enabled])
+
+  useEffect(() => () => s.current.anim?.stop(), [])
+
+  const handlers = enabled ? {
+    onPointerDown: (e: PointerEvent<HTMLElement>) => {
+      if (s.current.drag || (e.target as HTMLElement).closest('button')) return // ignore extra touches and the close button
+      e.currentTarget.setPointerCapture(e.pointerId)
+      begin(e.clientY, e.timeStamp)
     },
-  }
+    onPointerMove: (e: PointerEvent<HTMLElement>) => move(e.clientY, e.timeStamp),
+    onPointerUp: end,
+    onPointerCancel: end,
+  } : {}
+  return { y, panelRef, head, body, content, handlers }
 }
 
 /** Radix Content renders asChild onto this panel, so it receives role, aria and focus props via `rest`. */
-function Panel({ kind, title, showClose, grabber, drag, onDismiss, Title, children, style, ...rest }: {
+function Panel({ kind, title, showClose, grabber, drag, onDismiss, Title, children, style, ref, ...rest }: {
   kind: Kind; title: string; showClose: boolean; grabber: boolean; drag: boolean; onDismiss: () => void
   Title: typeof RDialog.Title; children: ReactNode
 } & Omit<ComponentPropsWithRef<typeof motion.div>, 'children' | 'title'>) {
-  const { y, handlers } = useSheetDrag(drag && kind === 'sheet', onDismiss)
+  const { y, panelRef, head, body, content, handlers } = useSheet(kind === 'sheet', drag && kind === 'sheet', onDismiss, ref)
   return (
-    <motion.div className="lb-ov-panel" {...rest} style={{ ...style, y }}>
-      <div className="lb-ov-head" {...handlers}>
+    <motion.div className="lb-ov-panel" {...rest} ref={panelRef} style={{ ...style, y }}>
+      <div className="lb-ov-head" ref={head} {...handlers}>
         {grabber && kind === 'sheet' && <div className="lb-grabber" aria-hidden="true" />}
         <div className="lb-ov-headrow">
           <Title className="lb-ov-title">{title}</Title>
           {showClose && <IconButton label={t('common.close')} icon="x" size={44} variant="filled" iconSize={20} onClick={onDismiss} />}
         </div>
       </div>
-      <div className="lb-ov-body">{children}</div>
+      <div className="lb-ov-body" ref={body}><div className="lb-ov-content" ref={content}>{children}</div></div>
     </motion.div>
   )
 }
