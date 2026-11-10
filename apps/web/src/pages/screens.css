@@ -1,8 +1,9 @@
 /* Screen layouts (LB-7). Values ported from the screen markup in design/Loud Books App.dc.html; components keep their own styles. */
 @layer components {
   .lb-app { display: flex; height: 100dvh; overflow: hidden; background: var(--lb-bg); color: var(--lb-text); }
-  .lb-app-col { flex: 1; min-width: 0; height: 100%; position: relative; display: flex; flex-direction: column; }
-  .lb-main { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; position: relative; padding-top: var(--lb-safe-top); }
+  /* Safe-area top sits on the non-scrolling column, so nothing ever scrolls up under the status bar (iOS blurs whatever is there). */
+  .lb-app-col { flex: 1; min-width: 0; height: 100%; position: relative; display: flex; flex-direction: column; padding-top: var(--lb-safe-top); }
+  .lb-main { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; position: relative; }
   .lb-page { min-height: 100%; display: flex; flex-direction: column; }
 
   .lb-screen { width: 100%; margin: 0 auto; padding: 6px 20px calc(56px + var(--lb-dock, 0px)); display: flex; flex-direction: column; gap: 20px; }

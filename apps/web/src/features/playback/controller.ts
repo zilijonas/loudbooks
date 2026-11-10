@@ -202,9 +202,10 @@ async function obtain(plan: SessionPlan, timeline: BookTimeline, signal: AbortSi
   const only = plan.parts.length === 1 && plan.stopReason === 'bookEnd' ? assets.get(plan.parts[0]!.assetId) : undefined
   if (only) {
     const file: AttachedFile = { plan, sourceMap: [{ assetId: only.id, sourceStart: 0, sourceEnd: only.duration, sessionStart: 0 }], duration: only.duration, path: only.path, session: null }
-    return { file, blob: await storage.read(only.path) }
+    return { file, blob: await storage.read(only.path), compiled: false }
   }
-  return (await reusable(plan, timeline)) ?? compile(plan, signal)
+  const reused = await reusable(plan, timeline)
+  return reused ? { ...reused, compiled: false } : { ...(await compile(plan, signal)), compiled: true }
 }
 
 async function playAudio() {
@@ -236,8 +237,10 @@ async function prepareFile(plan: SessionPlan, reason: 'start' | RebuildReason, r
   dispatch(reason === 'start' ? { type: 'prepare', bookId: plan.bookId } : { type: 'rebuild', reason })
   set({ pending: plan })
   const timeline = get().timeline!
+  let compiled: boolean
   try {
-    const { file, blob } = await obtain(plan, timeline, ctrl.signal)
+    let file: AttachedFile, blob: Blob
+    ({ file, blob, compiled } = await obtain(plan, timeline, ctrl.signal))
     if (ctrl.signal.aborted) return retire(file.session)
     await attach(file, blob, globalToSession(timeline, file.sourceMap, plan.globalStart) ?? 0)
   } catch (error) {
@@ -251,7 +254,8 @@ async function prepareFile(plan: SessionPlan, reason: 'start' | RebuildReason, r
   }
   if (ctrl.signal.aborted) return
   cleanup()
-  if (resume) await playAudio()
+  // After trimming/merging a new file the listener starts it (spinner -> Play); an existing file plays at once.
+  if (resume && !compiled) await playAudio()
   else dispatch({ type: 'loaded' })
 }
 
@@ -300,7 +304,8 @@ function reconcile() {
 
 // ---- commands
 
-export async function startListening(bookId: string, chapterId?: string) {
+/** `quiet`: no rewind / next-chapter toast (a timer change restarts preparation; the toast would cover the spinner). */
+export async function startListening(bookId: string, chapterId?: string, quiet = false) {
   const s = get()
   if (s.book?.id === bookId && !chapterId) {
     if (hasFile(s.state)) return s.state.status === 'playing' ? undefined : playAudio()
@@ -320,7 +325,7 @@ export async function startListening(bookId: string, chapterId?: string) {
     const start = startPoint(progress, book.status === 'completed', chapter?.globalStart)
     const position = start.position >= bookDuration(timeline) - END_SLACK ? 0 : start.position
     const notice = start.notice
-    if (notice) showToast(t(notice === 'rewind' ? 'player.rewindToast' : 'player.nextChapterToast'))
+    if (notice && !quiet) showToast(t(notice === 'rewind' ? 'player.rewindToast' : 'player.nextChapterToast'))
     // The rewind / next-chapter rule is spent the moment this session starts from it.
     queue(async () => {
       await repo.saveProgress(progressAt(timeline, position, 'pause', false))
@@ -455,7 +460,7 @@ export function setTimer(timer: TimerSetting) {
     cancelPreparation()
     if (timer.mode === 'off') return
   }
-  if (s.book) void startListening(s.book.id)
+  if (s.book) void startListening(s.book.id, undefined, true)
 }
 
 export function jumpToChapter(chapterId: string) {
