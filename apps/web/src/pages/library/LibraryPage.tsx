@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { memo, useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { BookCard, ContinueCard } from '../../components/books/BookCard'
 import { Ic } from '../../components/icons'
@@ -10,7 +10,7 @@ import { PageHeader } from '../../components/ui/Navigation'
 import { useUpdateBusy } from '../../pwa/usePwaUpdate'
 import { useIsDesktop } from '../../components/ui/Overlays'
 import { Reveal } from '../../components/ui/Reveal'
-import { isBookActive, startListening } from '../../features/playback/api'
+import { startListening, togglePlay, usePlayer } from '../../features/playback/api'
 import { useAppSettings } from '../../features/settings/settings'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
@@ -34,6 +34,8 @@ export function LibraryPage() {
   const newBookId = useUi((s) => s.newBookId)
   const [query, setQuery] = useState('')
   const [menu, setMenu] = useState<BookView | null>(null)
+  const activeId = usePlayer((s) => s.book?.id)
+  const openBook = useCallback((id: string) => navigate(`/book/${id}`), [navigate])
 
   // The New badge lasts until the next library visit.
   useEffect(() => () => { if (newBookId) useUi.setState({ newBookId: null }) }, [newBookId])
@@ -45,7 +47,7 @@ export function LibraryPage() {
   const q = norm(query.trim())
   const shown = q ? views.filter((v) => norm(v.book.title).includes(q)) : views
   const playable = (v: BookView) => v.summary.positionSec > 0 && v.book.status === 'ready'
-  const hero = q ? undefined : views.find((v) => isBookActive(v.book.id) && playable(v)) ?? views.filter(playable).sort((a, b) => (b.progress?.updatedAt ?? 0) - (a.progress?.updatedAt ?? 0))[0]
+  const hero = q ? undefined : views.find((v) => v.book.id === activeId && playable(v)) ?? views.filter(playable).sort((a, b) => (b.progress?.updatedAt ?? 0) - (a.progress?.updatedAt ?? 0))[0]
   // The design hides the grid for a single book because its Continue card shows it; without progress there is no card, so show the grid.
   const showGrid = shown.length > 0 && (n >= 2 || !hero)
   const subtitle = n === 0 ? t('library.nothing') : t(!online ? 'library.subtitleOffline' : pwa.offlineReady ? 'library.subtitle' : 'library.subtitlePreparing', { count: n })
@@ -84,7 +86,7 @@ export function LibraryPage() {
         <div role="list" className="lb-grid">
           <AnimatePresence initial={false} mode="popLayout">
             {shown.map((v, i) => (
-              <Card key={v.book.id} view={v} index={i} isNew={v.book.id === newBookId} onOpen={() => navigate(`/book/${v.book.id}`)} onMenu={() => setMenu(v)} />
+              <Card key={v.book.id} view={v} index={i} isNew={v.book.id === newBookId} onOpen={openBook} onMenu={setMenu} />
             ))}
           </AnimatePresence>
         </div>
@@ -119,14 +121,27 @@ export function LibraryPage() {
   )
 }
 
-function Card({ view, index, isNew, onOpen, onMenu }: { view: BookView; index: number; isNew: boolean; onOpen: () => void; onMenu: () => void }) {
-  const book = useSummary(view)
-  return <BookCard book={book} index={index} isNew={isNew} isActive={isBookActive(view.book.id)} isPlaying={false} onOpen={onOpen} onMenu={onMenu} onPlay={() => void startListening(view.book.id)} />
+/** Play button action for a book: pause it when it is the one playing, else start or resume it. */
+function usePlayAction(id: string) {
+  const playing = usePlayer((s) => s.book?.id === id && s.state.status === 'playing')
+  return [playing, useCallback(() => void (playing ? togglePlay() : startListening(id)), [playing, id])] as const
 }
+
+// memo + stable callbacks: a progress write re-renders only the card whose book changed.
+const Card = memo(function Card({ view, index, isNew, onOpen, onMenu }: { view: BookView; index: number; isNew: boolean; onOpen: (id: string) => void; onMenu: (v: BookView) => void }) {
+  const book = useSummary(view)
+  const id = view.book.id
+  const active = usePlayer((s) => s.book?.id === id)
+  const [playing, onPlay] = usePlayAction(id)
+  const open = useCallback(() => onOpen(id), [onOpen, id])
+  const menu = useCallback(() => onMenu(view), [onMenu, view])
+  return <BookCard book={book} index={index} isNew={isNew} isActive={active} isPlaying={playing} onOpen={open} onMenu={menu} onPlay={onPlay} />
+})
 
 function Hero({ view, onOpen }: { view: BookView; onOpen: () => void }) {
   const book = useSummary(view)
-  return <ContinueCard book={book} chapterLine={chapterLine(view)} isPlaying={false} onOpen={onOpen} onToggle={() => void startListening(view.book.id)} />
+  const [playing, onToggle] = usePlayAction(view.book.id)
+  return <ContinueCard book={book} chapterLine={chapterLine(view)} isPlaying={playing} onOpen={onOpen} onToggle={onToggle} />
 }
 
 /** Three covers that bob in once (stagger 40 ms, never blocks input). Decorative. */

@@ -11,7 +11,7 @@ import { useIsDesktop } from '../../components/ui/Overlays'
 import { cancelPreparation, seekBy, seekTo, togglePlay } from '../../features/playback/controller'
 import { PlayerSheets, type SheetName } from '../../features/playback/PlayerSheets'
 import { usePlayerStore } from '../../features/playback/store'
-import { usePlayerView, type PlayerView } from '../../features/playback/view'
+import { useHasSessionBadge, usePlayerPosition, usePlayerView, useSessionBadge, type PlayerView } from '../../features/playback/view'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
 import './player.css'
@@ -25,25 +25,55 @@ const useOnline = () => useSyncExternalStore(subscribeOnline, () => navigator.on
 
 /** Full player (#/player): cover, session badge, preparation status, transport, outcome panels, sheets. */
 export function PlayerPage() {
-  const view = usePlayerView()
+  const [sheet, setSheet] = useState<SheetName | null>(null)
+  const view = usePlayerView(sheet === 'timer')
   // No book once restore finished and nothing is being opened: the player has nothing to show.
   const empty = usePlayerStore((s) => s.restored && !s.state.bookId)
   if (!view) return empty ? <Navigate to="/" replace /> : null
-  return <Player view={view} />
+  return <Player view={view} sheet={sheet} setSheet={setSheet} />
 }
 
-function Player({ view }: { view: PlayerView }) {
+/** Scrubber and time labels: the only part of the player that follows playback ticks. */
+function ChapterScrubber({ chapterStart, chapterLen, total }: { chapterStart: number; chapterLen: number; total: number }) {
+  const position = usePlayerPosition()
+  // While dragging, the thumb follows the finger; the session changes only on release.
+  const [scrub, setScrub] = useState<number | null>(null)
+  const inChapter = scrub ?? Math.min(chapterLen, Math.max(0, position - chapterStart))
+  return (
+    <Scrubber
+      positionSec={inChapter}
+      chapterDurationSec={chapterLen}
+      bookLeftSec={total - (chapterStart + inChapter)}
+      onScrub={setScrub}
+      onCommit={(v) => { setScrub(null); seekTo(chapterStart + v) }}
+    />
+  )
+}
+
+/** The countdown pill; its text ticks every second, so it subscribes itself. */
+function SessionBadge({ onPress }: { onPress: () => void }) {
+  const p = usePreset()
+  const live = useSessionBadge()
+  // Keep the last text while the pill animates out.
+  const [last, setLast] = useState(live)
+  if (live && live !== last) setLast(live)
+  const badge = live || last
+  return (
+    <motion.button type="button" className="lb-sessionbadge" aria-label={`${badge}. ${t('player.changeTimer')}`} onClick={onPress} whileTap={p.press.whileTap} transition={p.press.transition}>
+      <Ic name="moon" size={16} />{badge}<Ic name="right" size={16} />
+    </motion.button>
+  )
+}
+
+function Player({ view, sheet, setSheet }: { view: PlayerView; sheet: SheetName | null; setSheet: (s: SheetName | null) => void }) {
   const p = usePreset()
   const navigate = useNavigate()
   const online = useOnline()
   const wide = useIsDesktop()
-  const [sheet, setSheet] = useState<SheetName | null>(null)
-  // While dragging, the thumb follows the finger; the session changes only on release.
-  const [scrub, setScrub] = useState<number | null>(null)
+  const hasBadge = useHasSessionBadge()
   const { s, book, chapter, status, busy } = view
   const chapterStart = chapter.globalStart
   const chapterLen = chapter.globalEnd - chapterStart
-  const inChapter = scrub ?? Math.min(chapterLen, Math.max(0, view.position - chapterStart))
   const panel = outcome(view, () => setSheet('timer'), () => navigate('/'), () => navigate(`/book/${book.id}`))
   const prepSummary = s.timer.mode === 'minutes'
     ? t('player.prepMinutes', { minutes: s.timer.minutes, speed: formatSpeed(s.rate), duration: formatDuration(s.timer.minutes * 60 * s.rate) })
@@ -69,11 +99,9 @@ function Player({ view }: { view: PlayerView }) {
           </div>
 
           <AnimatePresence initial={false}>
-            {view.badge && (
+            {hasBadge && (
               <motion.div key="badge" className="lb-player-badge" {...reveal}>
-                <motion.button type="button" className="lb-sessionbadge" aria-label={`${view.badge}. ${t('player.changeTimer')}`} onClick={() => setSheet('timer')} whileTap={p.press.whileTap} transition={p.press.transition}>
-                  <Ic name="moon" size={16} />{view.badge}<Ic name="right" size={16} />
-                </motion.button>
+                <SessionBadge onPress={() => setSheet('timer')} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -105,13 +133,7 @@ function Player({ view }: { view: PlayerView }) {
               </motion.div>
             ) : (
               <motion.div key="transport" className="lb-player-transport" {...reveal}>
-                <Scrubber
-                  positionSec={inChapter}
-                  chapterDurationSec={chapterLen}
-                  bookLeftSec={view.total - (chapterStart + inChapter)}
-                  onScrub={setScrub}
-                  onCommit={(v) => { setScrub(null); seekTo(chapterStart + v) }}
-                />
+                <ChapterScrubber chapterStart={chapterStart} chapterLen={chapterLen} total={view.total} />
                 <PlaybackControls status={status} onToggle={togglePlay} onBack={() => seekBy(-30)} onForward={() => seekBy(15)} />
               </motion.div>
             )}

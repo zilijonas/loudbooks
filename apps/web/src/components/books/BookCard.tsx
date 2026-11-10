@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { t } from '../../i18n'
 import { usePreset } from '../../motion/presets'
 import { formatDuration } from '../format'
@@ -45,7 +45,8 @@ export interface BookCardProps {
 }
 
 /** Library grid card. Cover lifts on mouse hover only (touch gets press), Play sits on the cover, title clamps to 2 lines. */
-export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, onPlay, onMenu, art }: BookCardProps) {
+// memo: the library re-renders on every progress write; callers pass stable callbacks so only the changed card repaints.
+export const BookCard = memo(function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, onPlay, onMenu, art }: BookCardProps) {
   const p = usePreset()
   const [hover, setHover] = useState(false)
   const meta = bookMeta(book)
@@ -96,7 +97,7 @@ export function BookCard({ book, isActive, isPlaying, isNew, index = 0, onOpen, 
       </div>
     </motion.div>
   )
-}
+})
 
 export interface ContinueCardProps {
   book: BookSummary

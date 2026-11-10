@@ -1,22 +1,32 @@
 import { AnimatePresence } from 'motion/react'
 import { useLayoutEffect, useState } from 'react'
 import { useLocation } from 'react-router'
-import { MiniPlayer, PlayerBar } from '../../components/player/Bars'
+import { MiniPlayer, PlayerBar, type MiniPlayerProps, type PlayerBarProps } from '../../components/player/Bars'
 import { useIsDesktop } from '../../components/ui/Overlays'
 import { openPlayer, seekBy, togglePlay } from './controller'
 import { PlayerSheets, type SheetName } from './PlayerSheets'
-import { usePlayerView } from './view'
+import { usePlayerView, useSessionBadge } from './view'
 import './dock.css'
 
 // Routes that own the whole screen: the dock would cover Save, the welcome flow, or duplicate the player.
 const HIDDEN = [/^\/add$/, /^\/book\/[^/]+\/edit$/, /^\/welcome$/, /^\/player$/]
 
+// The countdown badge replaces the chapter line; subscribing here keeps its 1 s ticks off the sheets.
+function Mini({ chapterLine, ...p }: Omit<MiniPlayerProps, 'subtitle'> & { chapterLine: string }) {
+  const badge = useSessionBadge()
+  return <MiniPlayer {...p} subtitle={badge || chapterLine} />
+}
+function Bar({ chapterLine, ...p }: Omit<PlayerBarProps, 'subtitle'> & { chapterLine: string }) {
+  const badge = useSessionBadge()
+  return <PlayerBar {...p} subtitle={badge || chapterLine} />
+}
+
 /** Mini-player (phone) or player bar (≥ 768 px) while a book is active. Rendered by the Shell. */
 export function PlayerDock() {
-  const view = usePlayerView()
   const desktop = useIsDesktop()
   const { pathname } = useLocation()
   const [sheet, setSheet] = useState<SheetName | null>(null)
+  const view = usePlayerView(sheet === 'timer')
   const show = !!view && !HIDDEN.some((r) => r.test(pathname))
   const mini = show && !desktop
   // The library grid card and the details cover share `cover-{id}` with this dock; two live members of one id hide each other.
@@ -32,16 +42,16 @@ export function PlayerDock() {
       <AnimatePresence>
         {mini && (
           <div key="mini" className="lb-dock-mini">
-            <MiniPlayer coverLayoutId={coverLayoutId} book={view.summary} status={view.status} subtitle={view.subtitle} onOpen={openPlayer} onToggle={togglePlay} />
+            <Mini coverLayoutId={coverLayoutId} book={view.summary} status={view.status} chapterLine={view.chapterLine} onOpen={openPlayer} onToggle={togglePlay} />
           </div>
         )}
         {show && desktop && (
-          <PlayerBar
+          <Bar
             key="bar"
             coverLayoutId={coverLayoutId}
             book={view.summary}
             status={view.status}
-            subtitle={view.subtitle}
+            chapterLine={view.chapterLine}
             onOpen={openPlayer}
             onToggle={togglePlay}
             speedLabel={view.speedLabel}

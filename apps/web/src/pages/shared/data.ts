@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { BookSummary } from '../../components/books/BookCover'
 import { formatClock, formatDuration } from '../../components/format'
 import type { Book, Chapter, MediaAsset, PlaybackProgress } from '../../domain/models'
@@ -38,17 +38,50 @@ function toView(book: Book, chapters: Chapter[], assets: MediaAsset[], progress?
   }
 }
 
-/** Every book with its chapters, assets and progress, newest first. `undefined` while loading. */
+// Not Map.groupBy: iOS 17.0–17.3 lacks it.
+const by = <T extends { bookId: string }>(rows: T[]) => {
+  const m = new Map<string, T[]>()
+  for (const r of rows) { const l = m.get(r.bookId); if (l) l.push(r); else m.set(r.bookId, [r]) }
+  return m
+}
+
+interface Row { book: Book; chapters: Chapter[]; assets: MediaAsset[] }
+// A BookView survives progress writes that do not touch it, so memoised cards keep their props.
+const viewOfRow = new WeakMap<Row, BookView>()
+
+/**
+ * Every book with its chapters, assets and progress, newest first. `undefined` while loading.
+ * Progress is its own query: the player checkpoints every 5 s and must not re-read chapters and assets.
+ */
 export function useLibrary(): BookView[] | undefined {
-  return useLiveQuery(async () => {
-    const [books, chapters, assets, progress] = await Promise.all([db.books.toArray(), db.chapters.toArray(), db.assets.toArray(), db.progress.toArray()])
-    // Not Map.groupBy: iOS 17.0–17.3 lacks it.
-    const by = <T extends { bookId: string }>(rows: T[]) => rows.reduce((m, r) => m.set(r.bookId, [...(m.get(r.bookId) ?? []), r]), new Map<string, T[]>())
-    const ch = by(chapters), as = by(assets), pr = new Map(progress.map((p) => [p.bookId, p]))
+  const rows = useLiveQuery(async () => {
+    const [books, chapters, assets] = await Promise.all([db.books.toArray(), db.chapters.toArray(), db.assets.toArray()])
+    const ch = by(chapters), as = by(assets)
     return books
       .sort((a, b) => b.createdAt - a.createdAt)
-      .map((b) => toView(b, (ch.get(b.id) ?? []).sort((x, y) => x.order - y.order), as.get(b.id) ?? [], pr.get(b.id)))
+      .map((book): Row => ({ book, chapters: (ch.get(book.id) ?? []).sort((x, y) => x.order - y.order), assets: as.get(book.id) ?? [] }))
   }, [])
+  const progress = useLiveQuery(() => db.progress.toArray(), [])
+  return useMemo(() => {
+    if (!rows || !progress) return undefined
+    const pr = new Map(progress.map((p) => [p.bookId, p]))
+    return rows.map((r) => {
+      const p = pr.get(r.book.id), old = viewOfRow.get(r)
+      if (old && old.progress?.updatedAt === p?.updatedAt && old.progress?.globalOffset === p?.globalOffset) return old
+      const v = toView(r.book, r.chapters, r.assets, p)
+      viewOfRow.set(r, v)
+      return v
+    })
+  }, [rows, progress])
+}
+
+/** One book without the others or its progress (Send dialog); `undefined` while loading or when `id` is unset. */
+export function useBookView(id: string | undefined): BookView | undefined {
+  return useLiveQuery(async () => {
+    if (!id) return undefined
+    const [book, chapters, assets] = await Promise.all([db.books.get(id), db.chapters.where('bookId').equals(id).sortBy('order'), db.assets.where('bookId').equals(id).toArray()])
+    return book && toView(book, chapters, assets)
+  }, [id])
 }
 
 /** Index of the chapter that holds the listening position. */
@@ -91,7 +124,7 @@ export function useCoverUrl(book: Pick<Book, 'id' | 'coverAssetId'> | undefined)
     if (!key || coverUrls.has(key)) return
     let live = true
     storage.read(key).then((file) => {
-      coverUrls.set(key, URL.createObjectURL(file))
+      if (!coverUrls.has(key)) coverUrls.set(key, URL.createObjectURL(file))
       if (live) setLoaded((n) => n + 1)
     }).catch(() => { /* unreadable cover: the generated art stays */ })
     return () => { live = false }
@@ -99,10 +132,19 @@ export function useCoverUrl(book: Pick<Book, 'id' | 'coverAssetId'> | undefined)
   return key ? coverUrls.get(key) : undefined
 }
 
-/** BookSummary with its stored cover (when any) for the presentational components. */
+/** The cached object URL for a cover Blob that is already loaded (the player's), so every surface shows the same URL. */
+export function coverUrlFor(bookId: string, coverAssetId: string | null, blob: Blob) {
+  if (!coverAssetId) return undefined
+  const key = coverPath(bookId, coverAssetId)
+  let url = coverUrls.get(key)
+  if (!url) coverUrls.set(key, (url = URL.createObjectURL(blob)))
+  return url
+}
+
+/** BookSummary with its stored cover (when any) for the presentational components. Stable while its inputs are. */
 export function useSummary(v: BookView): BookSummary {
   const url = useCoverUrl(v.book)
-  return url ? { ...v.summary, cover: { kind: 'image', url } } : v.summary
+  return useMemo<BookSummary>(() => (url ? { ...v.summary, cover: { kind: 'image', url } } : v.summary), [v.summary, url])
 }
 
 /** Browser estimate of what is still free for the app (bytes), refreshed when `dep` changes. */

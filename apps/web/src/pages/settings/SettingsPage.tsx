@@ -9,7 +9,7 @@ import { Reveal, Swap } from '../../components/ui/Reveal'
 import { useTheme, type ThemePreference } from '../../theme/ThemeProvider'
 import { AlertDialog, useIsDesktop } from '../../components/ui/Overlays'
 import { StorageBar } from '../../components/ui/StorageBar'
-import { isBookActive, isBookPlaying, stopListening } from '../../features/playback/api'
+import { isBookPlaying, stopListening, usePlayer } from '../../features/playback/api'
 import { t } from '../../i18n'
 import { isStandalone } from '../../app/env'
 import { showToast, useUi } from '../../app/store'
@@ -46,13 +46,16 @@ export function SettingsPage() {
   const backup = useBackup()
   const picker = useRef<HTMLInputElement>(null)
   const books = views ?? []
-  const playing = books.some((v) => isBookActive(v.book.id))
+  const activeId = usePlayer((s) => s.book?.id)
+  const playing = books.some((v) => v.book.id === activeId)
+  // Progress checkpoints rebuild `views` every few seconds; usage only changes when the set of books or their revisions does.
+  const libraryKey = books.map((v) => `${v.book.id}:${v.book.revision}`).join()
 
   useEffect(() => {
     let live = true
     readUsage().then((u) => live && setUsage(u)).catch(() => {})
     return () => { live = false }
-  }, [tick, views])
+  }, [tick, libraryKey])
 
   const temp = (usage?.sessions ?? 0) + (usage?.continuousCache ?? 0)
   const bookBytes = (usage?.books ?? 0) + (usage?.covers ?? 0)
