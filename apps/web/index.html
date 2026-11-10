@@ -11,6 +11,14 @@
     <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/icons/favicon-16.png" sizes="16x16" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
+    <script>
+      // iOS snapshots the apple-touch-icon when the page is added to the Home Screen and has no
+      // per-appearance markup, so pick the dark variant (black, cream book, orange arcs) while the system is dark.
+      if (matchMedia('(prefers-color-scheme: dark)').matches) {
+        var l = document.querySelector('link[rel=apple-touch-icon]')
+        l.href = l.href.replace('apple-touch-icon-180', 'apple-touch-icon-dark-180')
+      }
+    </script>
     <title>Loud Books</title>
   </head>
   <body>
