@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { expect, test, type BrowserContext } from "@playwright/test";
+import { needsPlayTap } from "./play-tap";
 
 const directory = resolve(import.meta.dirname, "../../../fixtures/downloads/zeland");
 test("Zeland backup roundtrip plays restored audio", async ({ playwright, browserName, baseURL }) => {
@@ -68,7 +69,7 @@ test("backup UI exports, restores and replaces the playing book", async ({ playw
     await page.getByRole("button", { name: "Play Browser test" }).click();
     const ready = page.getByRole("button", { name: "Play", exact: true });
     await expect(page.getByRole("button", { name: "Pause", exact: true }).or(ready)).toBeVisible({ timeout: 60000 });
-    if ((await ready.isVisible()) && (await ready.page().evaluate(() => document.querySelector("audio")!.paused))) await ready.click();
+    if (await needsPlayTap(ready)) await ready.click();
     const paused = () => page.evaluate(() => document.querySelector("audio")!.paused);
     await expect.poll(paused).toBe(false);
 
@@ -83,7 +84,7 @@ test("backup UI exports, restores and replaces the playing book", async ({ playw
 
     // The same guard serves editing and deleting the book that is loaded in the player.
     await page.getByRole("button", { name: "Play Browser test" }).click();
-    if ((await ready.isVisible()) && (await ready.page().evaluate(() => document.querySelector("audio")!.paused))) await ready.click();
+    if (await needsPlayTap(ready)) await ready.click();
     await expect.poll(paused).toBe(false);
     await page.getByRole("button", { name: "Browser test, details" }).click();
     await page.getByRole("button", { name: "Edit", exact: true }).click();

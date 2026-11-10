@@ -8,6 +8,7 @@ import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { expect, test, type BrowserContext, type Locator, type Page } from '@playwright/test'
+import { needsPlayTap } from "./play-tap";
 
 const root = resolve(process.cwd(), '../..')
 const long = resolve(root, 'audio_samples/book-long.mp3')
@@ -156,7 +157,7 @@ test('send books between two devices: wrong code lock, full transfer, cancel and
       const ready = b.getByRole('button', { name: 'Play', exact: true })
       const pause = b.getByRole('button', { name: 'Pause', exact: true })
       await expect(pause.or(ready)).toBeVisible({ timeout: 60_000 })
-      if ((await ready.isVisible()) && (await ready.page().evaluate(() => document.querySelector("audio")!.paused))) await tap(ready)
+      if (await needsPlayTap(ready)) await tap(ready)
       await expect.poll(() => b.evaluate(() => document.querySelector('audio')!.currentTime), { timeout: 20_000 }).toBeGreaterThan(0.5)
       await tap(pause)
     })
